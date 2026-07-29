@@ -523,7 +523,9 @@
   .card canvas,.trend-canvas{filter:grayscale(1) contrast(.78);opacity:.9}
   .pack-day.on,.status-pill,.tab.on{background:#dedede!important;box-shadow:none!important;color:#202020!important}
   .screen-index button.on::before{background:#202020}
-  .state-visual{display:none}
+  .state-visual{display:block;flex:1;min-height:104px}
+  .state-visual .forecast-bars{top:0;bottom:0;transform:none;height:auto;gap:10px;align-items:flex-end}
+  .state-visual .forecast-bars i{width:auto;flex:1;filter:none}
   .attn-label{padding-top:30px;font-size:10px;letter-spacing:1.6px}
   #attnRows{position:relative;z-index:1;display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:12px}
   .attn-row{display:flex;min-height:124px;flex-direction:column;align-items:flex-start;justify-content:space-between;
