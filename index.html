@@ -517,6 +517,8 @@
   .card canvas,.trend-canvas{filter:grayscale(1) contrast(.78);opacity:.9}
   .pack-day.on,.status-pill,.tab.on{background:#dedede!important;box-shadow:none!important;color:#202020!important}
   .screen-index button.on::before{background:#202020}
+  .state-visual .forecast-bars{top:0;bottom:0;transform:none;height:auto;gap:10px;align-items:flex-end}
+  .state-visual .forecast-bars i{width:auto;flex:1;filter:none}
 </style>
 </head>
 <body>
@@ -621,8 +623,8 @@
         <div class="state-sub" id="stateSub">7 of 9 biomarkers in personal range</div>
         <div class="state-visual">
           <div class="forecast-bars" aria-hidden="true">
-            <i style="height:28px"></i><i style="height:42px"></i><i style="height:56px"></i><i style="height:66px"></i>
-            <i style="height:61px"></i><i style="height:48px"></i><i style="height:36px"></i><i style="height:44px"></i><i style="height:32px"></i>
+            <i style="height:42%"></i><i style="height:61%"></i><i style="height:82%"></i><i style="height:100%"></i>
+            <i style="height:92%"></i><i style="height:73%"></i><i style="height:54%"></i><i style="height:67%"></i><i style="height:48%"></i>
           </div>
         </div>
         <div class="attn-label" id="attnLabel">Needs attention · 2</div>
@@ -1103,7 +1105,7 @@ function gradScale(el,cfg){
     el.innerHTML=`<div class="gt"></div><div class="gfill" style="width:${t.toFixed(1)}%"></div>`;
   }
 }
-/* trend: blurred gradient columns with thin neutral line + nodes */
+/* low-fi trend: neutral line and datapoints, no colour meaning */
 function drawTrend(canvas,bm){
   const ctx=canvas.getContext('2d');
   const W=canvas.width,H=canvas.height;
@@ -1113,48 +1115,34 @@ function drawTrend(canvas,bm){
   const X=i=>padL+iw*i/(n-1);
   const Y=v=>padT+ih*(1-Math.max(0,Math.min(1,(v-bm.sMin)/(bm.sMax-bm.sMin))));
   // faint gridlines + y labels
-  ctx.strokeStyle='rgba(120,126,136,.12)'; ctx.lineWidth=1;
-  ctx.fillStyle='#9ba0a7'; ctx.font='500 18px -apple-system,Inter,sans-serif';
+  ctx.strokeStyle='rgba(32,32,32,.13)'; ctx.lineWidth=1;
+  ctx.fillStyle='#777'; ctx.font='500 18px -apple-system,Inter,sans-serif';
   ctx.textAlign='right'; ctx.textBaseline='middle';
   [[bm.sMax,padT],[(bm.sMin+bm.sMax)/2,padT+ih/2],[bm.sMin,padT+ih]].forEach(([v,yy])=>{
     ctx.beginPath(); ctx.moveTo(padL,yy); ctx.lineTo(W-padR,yy); ctx.stroke();
     ctx.fillText((+v).toFixed(bm.dec>1?1:0),padL-12,yy);
   });
-  // blurred gradient columns
+  // quiet grey columns make individual measurements legible in low-fi
   const base=padT+ih;
-  ctx.save();
-  ctx.filter='blur(8px)';
   bm.trend.forEach((v,i)=>{
-    const x=X(i)-7;
+    const x=X(i)-4;
     const y=Y(v);
-    const h=Math.max(10,base-y);
-    const g=ctx.createLinearGradient(0,y,0,base);
-    if(i>n-3){
-      g.addColorStop(0,'rgba(246,127,218,.78)');
-      g.addColorStop(.55,'rgba(145,113,232,.62)');
-      g.addColorStop(1,'rgba(255,255,255,0)');
-    }else{
-      g.addColorStop(0,'rgba(150,220,255,.74)');
-      g.addColorStop(.55,'rgba(169,232,118,.66)');
-      g.addColorStop(1,'rgba(255,255,255,0)');
-    }
-    ctx.fillStyle=g;
-    roundRect(ctx,x,y,14,h,7); ctx.fill();
+    ctx.fillStyle='rgba(32,32,32,.08)';
+    ctx.fillRect(x,y,8,Math.max(2,base-y));
   });
-  ctx.restore();
-  // line
+  // measured trend
   ctx.beginPath();
   ctx.moveTo(X(0),Y(bm.trend[0]));
   for(let i=1;i<n;i++) ctx.lineTo(X(i),Y(bm.trend[i]));
-  ctx.strokeStyle='rgba(92,96,104,.34)'; ctx.lineWidth=1.4; ctx.lineJoin='round'; ctx.stroke();
-  // neutral nodes
-  ctx.fillStyle='rgba(255,255,255,.9)';
-  ctx.strokeStyle='rgba(120,126,136,.34)';
+  ctx.strokeStyle='#262626'; ctx.lineWidth=1.7; ctx.lineJoin='round'; ctx.stroke();
+  // datapoints
+  ctx.fillStyle='#fff';
+  ctx.strokeStyle='#262626';
   ctx.lineWidth=1.2;
   bm.trend.forEach((v,i)=>{
     ctx.beginPath(); ctx.arc(X(i),Y(v),3.2,0,6.283); ctx.fill(); ctx.stroke();
   });
-  ctx.fillStyle='rgba(80,86,96,.64)';
+  ctx.fillStyle='#262626';
   ctx.beginPath(); ctx.arc(X(n-1),Y(bm.trend[n-1]),2,0,6.283); ctx.fill();
 }
 
