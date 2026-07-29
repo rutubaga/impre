@@ -1,0 +1,2018 @@
+<!DOCTYPE html>
+<html lang="ru" data-theme="light">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no" />
+<title>Impre — low-fi flow</title>
+<style>
+  :root{
+    --accent: 90,210,160;
+    --accent-hex:#5ad2a0;
+    --bg-hi:#484a4f;
+    --bg-lo:#2d2f34;
+    --body-bg:#141416;
+    --ink:#f3f2ef;
+    --ink-mute:#9a9ba0;
+    --ink-faint:#6b6c72;
+    --control-bg:rgba(255,255,255,.055);
+    --control-bg-strong:rgba(255,255,255,.12);
+    --control-border:rgba(255,255,255,.09);
+    --tick-major:rgba(255,255,255,.16);
+    --tick-minor:rgba(255,255,255,.09);
+    --selector-border:rgba(255,255,255,.17);
+    --selector-border-soft:rgba(255,255,255,.07);
+    --notch:#0c0c0e;
+    --phone-shadow:0 40px 120px -30px rgba(0,0,0,.85), inset 0 0 0 1px rgba(255,255,255,.04);
+    --vignette:rgba(0,0,0,.22);
+    --capsule-base-top:rgba(255,255,255,.05);
+    --capsule-base-mid:rgba(20,21,24,.28);
+    --capsule-base-bot:rgba(12,13,15,.42);
+    --rim-left:rgba(255,255,255,.20);
+    --rim-mid:rgba(255,255,255,.05);
+    --rim-right:rgba(255,255,255,.16);
+    --scrim:#26272b;
+  }
+  :root[data-theme="light"]{
+    --bg-hi:#e4e7eb;
+    --bg-lo:#e4e7eb;
+    --body-bg:#d6d9de;
+    --ink:#222327;
+    --ink-mute:#777b82;
+    --ink-faint:#9ba0a7;
+    --control-bg:rgba(255,255,255,.62);
+    --control-bg-strong:rgba(255,255,255,.9);
+    --control-border:rgba(30,34,40,.08);
+    --tick-major:rgba(48,53,60,.20);
+    --tick-minor:rgba(48,53,60,.10);
+    --selector-border:rgba(255,255,255,.82);
+    --selector-border-soft:rgba(255,255,255,.36);
+    --notch:#111215;
+    --phone-shadow:0 36px 110px -42px rgba(32,36,44,.55), inset 0 0 0 1px rgba(255,255,255,.82);
+    --vignette:rgba(120,126,136,.12);
+    --capsule-base-top:rgba(255,255,255,.72);
+    --capsule-base-mid:rgba(230,234,238,.46);
+    --capsule-base-bot:rgba(210,216,224,.58);
+    --rim-left:rgba(255,255,255,.8);
+    --rim-mid:rgba(80,88,98,.08);
+    --rim-right:rgba(255,255,255,.72);
+    --scrim:#e4e7eb;
+  }
+  *{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+  html,body{height:100%}
+  body{
+    font-family:-apple-system,BlinkMacSystemFont,"Inter","Segoe UI",Helvetica,Arial,sans-serif;
+    background:var(--body-bg);
+    display:flex;align-items:center;justify-content:center;
+    min-height:100vh;padding:24px;color:var(--ink);
+    -webkit-font-smoothing:antialiased;
+  }
+  .phone{
+    position:relative;width:390px;height:844px;border-radius:52px;
+    overflow:hidden;
+    background:radial-gradient(130% 100% at 50% 12%, var(--bg-hi), var(--bg-lo) 60%, #26272b 100%);
+    box-shadow:var(--phone-shadow);
+    isolation:isolate;
+    transition:none;
+  }
+  .phone::after{ /* soft vignette */
+    content:"";position:absolute;inset:0;pointer-events:none;
+    background:radial-gradient(120% 85% at 50% 42%, transparent 62%, var(--vignette) 100%);
+    z-index:6;
+  }
+  :root[data-theme="light"] .phone{
+    background:#e4e7eb;
+  }
+  :root[data-theme="light"] .phone::after{display:none}
+
+  /* ── dashboard widgets ── */
+  .dashboard{position:absolute;inset:112px 18px 96px;z-index:5;
+    display:grid;grid-template-columns:1fr;grid-template-rows:1fr;
+    gap:12px;transition:opacity .45s ease}
+  .widget{position:relative;overflow:hidden;border-radius:46px;
+    background:#fff;
+    border:0;
+    box-shadow:none;
+    backdrop-filter:blur(18px)}
+  .widget::after{content:"";position:absolute;inset:0;border-radius:inherit;pointer-events:none;
+    border:1px solid rgba(255,255,255,.72)}
+  :root[data-theme="dark"] .widget{
+    background:linear-gradient(145deg,rgba(255,255,255,.095),rgba(255,255,255,.04));
+    border-color:rgba(255,255,255,.11);
+    box-shadow:0 30px 90px -54px rgba(0,0,0,.9), inset 0 1px 0 rgba(255,255,255,.08)}
+  .hero-widget{grid-column:1;padding:30px 28px 24px;border-radius:54px;
+    display:flex;flex-direction:column;z-index:1}
+  .hero-widget::after{border-color:rgba(255,255,255,.9)}
+  .hero-top,.hero-metrics,.widget-head,.widget-body{position:relative;z-index:1}
+  .eyebrow{font-size:11px;text-transform:uppercase;letter-spacing:2.6px;color:var(--ink-faint)}
+  .hero-title{margin-top:10px;font-size:38px;line-height:.98;font-weight:300;letter-spacing:-1.2px;color:var(--ink)}
+  .hero-title span{display:block;color:var(--ink-mute)}
+
+  /* ── state widget (Состояние) ── */
+  .state-score{position:relative;z-index:1;margin-top:14px;font-size:78px;line-height:.92;font-weight:250;
+    letter-spacing:-3.4px;color:var(--ink);font-variant-numeric:tabular-nums}
+  .state-score small{font-size:26px;font-weight:300;color:var(--ink-mute);letter-spacing:0;margin-left:4px}
+  .state-sub{position:relative;z-index:1;margin-top:10px;font-size:13.5px;line-height:1.35;color:var(--ink-mute)}
+  .state-visual{position:relative;flex:1;min-height:104px;margin:10px -4px 0;z-index:1}
+  .state-visual .forecast-bars{top:50%;bottom:auto;transform:translateY(-50%)}
+  .attn-label{position:relative;z-index:1;padding-top:16px;font-size:10.5px;
+    letter-spacing:2.2px;text-transform:uppercase;color:var(--ink-faint)}
+  .attn-row{position:relative;z-index:1;display:grid;grid-template-columns:minmax(0,1fr) 70px auto 12px;
+    align-items:center;gap:10px;padding:13px 0;cursor:pointer}
+  .attn-row:active{opacity:.6}
+  .attn-row .aname{font-size:14px;font-weight:600;color:var(--ink);line-height:1.2;min-width:0;
+    overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+  .attn-row .aname i{font-style:normal;color:#b4552a;margin-left:3px}
+  .attn-row .aname small{display:block;font-size:11px;font-weight:400;color:var(--ink-faint);margin-top:3px}
+  .attn-row .aval{text-align:right;font-size:15px;font-weight:600;color:var(--ink);white-space:nowrap;
+    font-variant-numeric:tabular-nums}
+  .state-action{position:relative;z-index:1;margin-top:14px;display:flex;align-items:center;
+    justify-content:space-between;gap:10px;height:48px;padding:0 20px;border-radius:999px;cursor:pointer;
+    background:rgba(120,126,136,.09);font-size:13.5px;font-weight:600;color:var(--ink)}
+  .state-action:active{background:rgba(120,126,136,.15)}
+  .state-action i{font-style:normal;font-size:17px;color:var(--ink-faint)}
+
+  .balance-visual{position:absolute;left:24px;right:24px;top:116px;height:96px;z-index:1}
+  .forecast-bars{position:absolute;left:10px;right:10px;bottom:12px;height:72px;display:flex;align-items:flex-end;gap:12px;z-index:2}
+  .forecast-bars i{display:block;width:13px;border-radius:999px;
+    background:linear-gradient(to top,rgba(174,231,126,.92),rgba(143,219,255,.84));
+    filter:blur(7px);box-shadow:0 0 18px rgba(120,220,180,.38)}
+  .forecast-bars i:nth-child(n+8){background:linear-gradient(to top,rgba(133,90,232,.86),rgba(247,109,210,.78));
+    box-shadow:0 0 20px rgba(239,96,216,.38)}
+  .hero-metrics{position:absolute;left:28px;right:28px;bottom:26px;display:flex;justify-content:space-between;align-items:flex-end}
+  .metric strong{display:block;font-size:42px;font-weight:300;letter-spacing:-1.4px;color:var(--ink)}
+  .metric span{display:block;margin-top:4px;font-size:12px;color:var(--ink-faint)}
+  .metric.right{text-align:right}.metric.right strong{font-size:28px}
+
+  .widget-head{display:flex;align-items:flex-start;justify-content:space-between;gap:10px}
+  .widget-title{font-size:13px;color:var(--ink);font-weight:600;letter-spacing:.2px}
+  .widget-sub{margin-top:3px;font-size:11px;color:var(--ink-faint);line-height:1.25}
+  .formula-widget{grid-column:1 / 3;padding:20px 24px;border-radius:42px}
+  .formula-widget::after{border-color:rgba(255,255,255,.86)}
+  .formula-widget .widget-head{position:static}
+  .formula-widget .widget-title{font-size:18px;letter-spacing:-.2px}
+  .formula-state{display:none}
+  .formula-list{position:absolute;left:24px;right:24px;top:62px;bottom:18px;display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
+  .formula-row{position:relative;display:flex;flex-direction:column;align-items:flex-start;justify-content:space-between;
+    color:var(--ink-mute);font-size:13px;padding:10px;border-radius:3px;background:rgba(255,255,255,.92);
+    border:0;min-width:0;overflow:hidden}
+  .formula-row::before{content:"";position:absolute;left:0;top:0;width:4px;height:4px;background:var(--ink)}
+  .formula-row[data-supp]{cursor:pointer}
+  .formula-row[data-supp]:active{background:rgba(120,126,136,.06)}
+  .formula-row span{display:block;color:var(--ink);font-weight:500;font-size:14px;line-height:1.05;letter-spacing:-.2px;min-width:0}
+  .formula-row span small{display:block;margin-top:3px;color:var(--ink-faint);font-size:9px;font-weight:500;line-height:1.05}
+  .effect-orb{position:relative;width:30px;height:30px;border-radius:50%;overflow:hidden;
+    background:radial-gradient(circle at 30% 20%,rgba(255,255,255,.65),transparent 24%),
+      conic-gradient(from 30deg,rgba(102,91,208,.92),rgba(146,216,255,.82),rgba(90,218,152,.9),rgba(242,229,130,.8),rgba(102,91,208,.92));
+    filter:saturate(1.06);box-shadow:inset 0 0 0 1px rgba(255,255,255,.28)}
+  .effect-orb i{position:absolute;inset:18% -20% auto -20%;height:42%;border-radius:50%;
+    background:rgba(255,255,255,.28);transform:rotate(-18deg)}
+  .effect-tags{display:flex;gap:3px;flex-wrap:wrap}
+  .effect-tags em{font-style:normal;background:rgba(120,126,136,.10);color:var(--ink-mute);
+    font-size:8.5px;line-height:1;padding:3px 4px;border-radius:2px;white-space:nowrap}
+  .effect-card{border-radius:30px;background:rgba(120,126,136,.09);padding:18px;display:grid;gap:16px}
+  .effect-card-head{display:flex;align-items:flex-start;justify-content:space-between;gap:14px}
+  .effect-card-title{display:flex;align-items:center;gap:12px;color:var(--ink);font-size:22px;font-weight:500;letter-spacing:-.5px}
+  .effect-card-title .effect-orb{width:42px;height:42px;flex:none}
+  .effect-card-title small{display:block;margin-top:4px;color:var(--ink-faint);font-size:11px;font-weight:500;letter-spacing:0}
+  .effect-impact{text-align:right;color:var(--ink);font-size:26px;font-weight:600;line-height:1}
+  .effect-impact small{display:block;margin-top:5px;color:var(--ink-faint);font-size:11px;font-weight:500}
+  .effect-meta{display:grid;grid-template-columns:1fr auto;gap:10px;align-items:end}
+  .effect-meta span{color:var(--ink-mute);font-size:13px;line-height:1.25}
+  .effect-meta b{color:var(--ink);font-size:13px;white-space:nowrap}
+  .detail-table.effect-grid{display:grid;grid-template-columns:1fr;gap:20px;padding:0 14px 24px}
+  .detail-table.effect-grid .effect-card{cursor:pointer;min-height:0;background:#fff;border-radius:42px;padding:22px;overflow:hidden}
+  .detail-table.effect-grid .effect-card:first-child{grid-column:auto;min-height:0}
+  .detail-table.effect-grid .effect-card:active{transform:scale(.992)}
+  .detail-table.effect-grid .effect-card-head{display:grid;grid-template-columns:minmax(0,1fr) auto;align-items:center;gap:12px}
+  .detail-table.effect-grid .effect-card-title{font-size:25px;min-width:0}
+  .detail-table.effect-grid .effect-card-title .effect-orb{width:42px;height:42px}
+  .detail-table.effect-grid .effect-card-title > div:last-child{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+  .detail-table.effect-grid .effect-impact{text-align:right;font-size:28px;min-width:72px}
+  .detail-table.effect-grid .effect-impact small{max-width:72px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+  .detail-table.effect-grid .detail-row{grid-template-columns:70px minmax(82px,1fr) minmax(92px,auto);gap:12px;padding:18px 0 0}
+  .detail-table.effect-grid .detail-row b{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+  .detail-table.effect-grid .effect-meta{display:none}
+  :root[data-theme="dark"] .detail-table.effect-grid .effect-card{background:linear-gradient(145deg,rgba(255,255,255,.095),rgba(255,255,255,.04))}
+  .effect-card .detail-row{grid-template-columns:96px 1fr auto;padding:0;gap:14px}
+  .effect-card .detail-row span{color:var(--ink);font-size:14px;font-weight:600}
+  .effect-card .detail-row b{font-size:13px;white-space:nowrap}
+  .detail-row .effect-track{position:relative;height:4px;border-radius:999px;background:rgba(120,126,136,.12);overflow:visible}
+  .detail-row .effect-track i{position:absolute;left:0;top:50%;height:10px;transform:translateY(-50%);border-radius:999px;
+    background:linear-gradient(90deg,#80e6aa,#9bdcff,#a79aed);filter:blur(5px);box-shadow:0 0 14px rgba(128,230,170,.28)}
+  .formula-row .gscale .gfill{height:10px;filter:blur(5px);box-shadow:0 0 14px rgba(128,230,170,.28);opacity:.72}
+  .formula-row .gscale .gband,
+  .formula-row .gscale .gnode{filter:none;box-shadow:none}
+  .formula-more{position:absolute;right:26px;top:22px;color:var(--ink-faint);font-size:18px}
+
+  .system-widget{grid-column:1 / 3;padding:24px 22px;border-radius:42px;
+    display:block}
+  .system-widget::before{display:none}
+  .system-item{min-width:0;display:flex;align-items:flex-start;justify-content:space-between;gap:16px}
+  .system-item .widget-sub{margin-top:5px;white-space:nowrap}
+  .pack-price{font-size:24px;line-height:1;font-weight:700;letter-spacing:-.8px;color:var(--ink)}
+  .pack-price small{font-size:11px;font-weight:600;color:var(--ink-faint);letter-spacing:0;margin-left:2px}
+  .pack-row{position:absolute;left:22px;right:22px;bottom:22px;display:flex;align-items:center;gap:8px}
+  .pack-day{position:relative;width:38px;height:38px;border-radius:50%;display:flex;align-items:center;justify-content:center;
+    background:#fff;border:1px solid rgba(120,126,136,.16);font-size:13px;font-weight:700;color:var(--ink)}
+  .pack-day.muted{color:rgba(120,126,136,.28)}
+  .pack-day.on{background:rgba(150,230,240,.54);border-color:transparent;box-shadow:0 0 22px rgba(126,220,235,.32)}
+  .pack-actions{margin-left:auto;display:flex;align-items:center;gap:8px}
+  .pack-all{border:0;border-radius:18px;background:rgba(120,126,136,.10);height:38px;padding:0 16px;
+    font-size:11px;font-weight:700;color:var(--ink)}
+
+  .widget-detail,.bio-panel,.biod-panel{position:absolute;inset:112px 18px 96px;z-index:6;opacity:0;pointer-events:none;
+    transform:translateX(18px);transition:opacity .42s ease,transform .42s cubic-bezier(.32,.72,.28,1)}
+  .view-widget .widget-detail{opacity:1;pointer-events:auto;transform:none}
+  .view-bio .bio-panel{opacity:1;pointer-events:auto;transform:none}
+  .view-biodetail .biod-panel{opacity:1;pointer-events:auto;transform:none}
+  .detail-panel{position:absolute;inset:0;border-radius:44px;background:#fff;padding:24px;
+    overflow-y:auto;overflow-x:hidden;-webkit-overflow-scrolling:touch;overscroll-behavior:contain}
+  .detail-panel.intake-mode{background:transparent;padding:12px 0 24px;border-radius:0}
+  .detail-panel::-webkit-scrollbar{width:0;height:0}
+  :root[data-theme="dark"] .detail-panel{background:linear-gradient(145deg,rgba(255,255,255,.095),rgba(255,255,255,.04))}
+  :root[data-theme="dark"] .detail-panel.intake-mode{background:transparent}
+  .detail-back{all:unset;position:sticky;top:0;z-index:4;width:42px;height:42px;border-radius:16px;background:var(--control-bg);
+    border:1px solid var(--control-border);display:flex;align-items:center;justify-content:center;color:var(--ink);margin-bottom:22px;touch-action:manipulation}
+  .detail-back svg{width:18px;height:18px}
+  .detail-screen{display:none}
+  .detail-screen.on{display:block}
+  .detail-screen.intake-screen .detail-kicker,
+  .detail-screen.intake-screen .detail-title{display:none}
+  .detail-kicker{font-size:11px;letter-spacing:2.2px;text-transform:uppercase;color:var(--ink-faint);margin-bottom:8px}
+  .detail-title{font-size:34px;line-height:.98;font-weight:400;letter-spacing:-1px;color:var(--ink);margin-bottom:22px}
+  .detail-table{display:grid;gap:0}
+  .detail-row{display:grid;grid-template-columns:60px 1fr auto 14px;gap:12px;align-items:center;padding:15px 0}
+  .detail-row[data-supp]{cursor:pointer}
+  .detail-row[data-supp]:active{background:rgba(120,126,136,.06)}
+  .detail-row span{color:var(--ink-mute);font-size:14px}
+  .detail-row b{color:var(--ink);font-size:14px}
+  .detail-row small{display:block;color:var(--ink-faint);font-size:11px;margin-top:3px}
+  .open-arrow{font-size:20px;line-height:1;color:var(--ink-faint);transform:translateY(-1px)}
+  .detail-note{margin-top:20px;border-radius:28px;background:rgba(120,126,136,.10);padding:18px;
+    color:var(--ink-mute);font-size:14px;line-height:1.35}
+  .detail-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+  .detail-card{border-radius:28px;background:rgba(120,126,136,.10);padding:18px;min-height:112px}
+  .detail-card strong{display:block;color:var(--ink);font-size:24px;font-weight:400;margin-top:18px}
+  .detail-card span{color:var(--ink-faint);font-size:12px}
+  [data-screen="system"] .detail-card{min-height:82px;padding:16px 18px;border-radius:26px}
+  [data-screen="system"] .detail-card strong{font-size:21px;margin-top:12px}
+  .subscription-card{margin-top:14px;border-radius:32px;background:rgba(120,126,136,.09);padding:22px 18px 20px}
+  .subscription-head{display:flex;align-items:flex-start;justify-content:space-between;gap:16px;margin-bottom:20px}
+  .subscription-head span,.subscription-row span{display:block;color:var(--ink-faint);font-size:10.5px;letter-spacing:1.6px;text-transform:uppercase}
+  .subscription-head strong{display:block;margin-top:8px;color:var(--ink);font-size:22px;font-weight:500;letter-spacing:-.5px}
+  .subscription-price{color:var(--ink);font-size:20px;font-weight:600;white-space:nowrap}
+  .subscription-rows{display:grid;gap:0}
+  .subscription-row{display:flex;align-items:flex-start;justify-content:space-between;gap:16px;padding:16px 0;border-top:1px solid rgba(120,126,136,.13)}
+  .subscription-row:last-child{padding-bottom:6px}
+  .subscription-row b{color:var(--ink);font-size:13px;font-weight:600;text-align:right;max-width:150px}
+  .subscription-actions{display:flex;gap:8px;margin-top:16px}
+  .subscription-actions button{border:0;border-radius:999px;background:rgba(120,126,136,.10);height:34px;padding:0 14px;
+    color:var(--ink);font-size:12px;font-weight:600}
+  .subscription-actions button.primary{background:rgba(var(--accent),.16)}
+
+  /* ── gradient scales ── */
+  .gscale{position:relative;height:18px;border-radius:999px;overflow:visible}
+  .gscale.mini{height:16px}
+  .gscale .gt{position:absolute;left:0;right:0;top:50%;height:4px;transform:translateY(-50%);
+    border-radius:999px;background:rgba(120,126,136,.12)}
+  :root[data-theme="dark"] .gscale .gt{background:rgba(255,255,255,.10)}
+  .gscale .gfill{position:absolute;left:0;top:50%;height:16px;transform:translateY(-50%);
+    border-radius:999px;background:linear-gradient(90deg,#80e6aa,#9bdcff,#a79aed);
+    filter:blur(6px);box-shadow:0 0 18px rgba(128,230,170,.42)}
+  .gscale .gband{position:absolute;top:50%;height:16px;transform:translateY(-50%);
+    border-radius:999px;background:linear-gradient(90deg,#83e8ac,#9edfff,#c5a1f3);
+    filter:blur(7px);opacity:.62}
+  .gscale .gnode{position:absolute;top:50%;width:18px;height:18px;border-radius:50%;
+    transform:translate(-50%,-50%);z-index:2;
+    background:radial-gradient(circle,#fff 0 18%,rgba(139,224,255,.65) 28%,rgba(154,235,168,.12) 70%,transparent 100%);
+    filter:blur(2px);box-shadow:0 0 18px rgba(126,224,180,.42)}
+  .scale-wrap{margin:8px 0 2px}
+  .scale-labels{display:flex;justify-content:space-between;margin-top:7px;
+    font-size:11px;color:var(--ink-faint);font-variant-numeric:tabular-nums}
+  .status-pill{display:inline-flex;align-items:center;gap:6px;padding:7px 13px;border-radius:999px;
+    background:var(--control-bg-strong);border:1px solid var(--control-border);
+    font-size:12px;font-weight:600;color:var(--ink)}
+  .status-pill.warn{color:#b4552a}
+
+  /* ── biomarkers list (same row language as formula) ── */
+  .bio-list{display:grid;margin-top:4px}
+  .bio-item{display:grid;grid-template-columns:104px 1fr auto 14px;align-items:center;gap:12px;
+    padding:15px 0;cursor:pointer}
+  .bio-item:active{background:rgba(120,126,136,.06)}
+  .bio-item .bname{font-size:14px;font-weight:600;color:var(--ink);line-height:1.2}
+  .bio-item .bname small{display:block;font-size:11px;font-weight:400;color:var(--ink-faint);margin-top:3px}
+  .bio-item .bval{text-align:right;font-size:14px;font-weight:600;color:var(--ink);white-space:nowrap;min-width:0}
+  .bio-item .bval small{display:block;font-size:11px;font-weight:500;margin-top:3px;color:var(--ink-faint)}
+  .bio-item .bval small.warn{color:#b4552a}
+
+  /* ── biomarker detail (Hemoglobin template) ── */
+  .biod-head{display:flex;align-items:flex-start;justify-content:space-between;gap:12px}
+  .biod-value{font-size:52px;font-weight:250;letter-spacing:-1.5px;line-height:1;color:var(--ink);
+    font-variant-numeric:tabular-nums;margin:6px 0 12px}
+  .biod-value .u{font-size:18px;font-weight:400;color:var(--ink-mute);letter-spacing:0;margin-left:4px}
+  .biod-card{margin-top:14px;border-radius:28px;background:rgba(120,126,136,.09);padding:16px 18px}
+  .biod-card .card-kicker{font-size:10px;letter-spacing:1.8px;text-transform:uppercase;color:var(--ink-faint);
+    display:flex;justify-content:space-between;align-items:baseline}
+  .biod-card .card-kicker em{font-style:normal;letter-spacing:.2px;text-transform:none;font-size:11px}
+  .biod-about{margin-top:9px;font-size:14.5px;line-height:1.4;color:var(--ink)}
+  .biod-about small{display:block;margin-top:7px;font-size:12px;line-height:1.4;color:var(--ink-mute)}
+  .biod-delta{margin:8px 0 2px;font-size:20px;font-weight:600;color:var(--ink);font-variant-numeric:tabular-nums}
+  .biod-delta i{font-style:normal;font-size:13px;margin-right:4px;color:#b4552a}
+  .biod-delta i.down{color:var(--ink-mute)}
+  .trend-canvas{display:block;width:100%;height:150px;margin-top:8px}
+  .trend-range{display:flex;justify-content:space-between;font-size:10.5px;color:var(--ink-faint);margin-top:5px}
+
+  /* ── cross-link: component → related biomarker ── */
+  .xlink{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-top:14px;
+    padding:16px 18px;border-radius:28px;background:rgba(var(--accent),.12);cursor:pointer}
+  .xlink:active{background:rgba(var(--accent),.2)}
+  .xlink div{min-width:0}
+  .xlink strong{display:block;font-size:13.5px;font-weight:600;color:var(--ink)}
+  .xlink small{display:block;margin-top:4px;font-size:11.5px;color:var(--ink-mute)}
+  .xlink i{font-style:normal;font-size:18px;color:var(--ink-faint)}
+
+  /* ── sensor: what it reads ── */
+  .sensor-reads{display:flex;flex-wrap:wrap;gap:7px;margin-top:11px}
+  .sensor-reads em{font-style:normal;font-size:12px;font-weight:600;color:var(--ink);
+    padding:7px 12px;border-radius:999px;background:rgba(120,126,136,.10)}
+
+  /* ── next shipment calendar (profile → delivery) ── */
+  .ship-cal{display:grid;grid-template-columns:repeat(7,1fr);gap:6px;margin-top:12px}
+  .ship-cal span{aspect-ratio:1;display:flex;align-items:center;justify-content:center;border-radius:50%;
+    font-size:11.5px;color:var(--ink-mute);font-variant-numeric:tabular-nums}
+  .ship-cal span.blank{visibility:hidden}
+  .ship-cal span.ship{background:rgba(var(--accent),.22);color:var(--ink);font-weight:700;
+    box-shadow:0 0 18px rgba(var(--accent),.35)}
+
+  /* ── status bar ── */
+  .status{position:absolute;top:0;left:0;right:0;height:54px;z-index:7;
+    display:flex;align-items:center;justify-content:space-between;
+    padding:20px 30px 0;font-size:14px;font-weight:600;letter-spacing:.3px;color:var(--ink)}
+  .status-icons{display:flex;gap:6px;align-items:center;color:var(--ink)}
+  .cellular{display:flex;align-items:flex-end;gap:2px;width:18px;height:12px}
+  .cellular i{display:block;width:3px;border-radius:2px;background:currentColor}
+  .cellular i:nth-child(1){height:4px;opacity:.55}
+  .cellular i:nth-child(2){height:6px;opacity:.7}
+  .cellular i:nth-child(3){height:9px;opacity:.86}
+  .cellular i:nth-child(4){height:12px}
+  .wifi-icon{position:relative;width:17px;height:12px}
+  .wifi-icon::before,.wifi-icon::after{content:"";position:absolute;left:50%;transform:translateX(-50%);
+    border:1.7px solid currentColor;border-left-color:transparent;border-right-color:transparent;border-bottom:0;
+    border-radius:20px 20px 0 0}
+  .wifi-icon::before{top:1px;width:15px;height:7px}
+  .wifi-icon::after{top:5px;width:8px;height:4px}
+  .wifi-icon i{position:absolute;left:50%;bottom:0;width:3px;height:3px;border-radius:50%;background:currentColor;transform:translateX(-50%)}
+  .battery-icon{position:relative;width:25px;height:12px;border:1.4px solid currentColor;border-radius:3px}
+  .battery-icon::before{content:"";position:absolute;left:2px;top:2px;bottom:2px;width:16px;border-radius:1.5px;background:currentColor}
+  .battery-icon::after{content:"";position:absolute;right:-4px;top:3.2px;width:2px;height:4.8px;border-radius:2px;background:currentColor}
+  .notch{position:absolute;top:11px;left:50%;transform:translateX(-50%);
+    width:112px;height:31px;background:var(--notch);border-radius:18px;z-index:8}
+
+  /* ── top controls ── */
+  .topbar{position:absolute;top:62px;left:0;right:0;z-index:12;
+    display:flex;align-items:flex-start;justify-content:space-between;padding:0 26px}
+  .chip{width:42px;height:42px;border-radius:15px;
+    background:var(--control-bg);border:1px solid var(--control-border);
+    display:flex;align-items:center;justify-content:center;color:var(--ink);
+    backdrop-filter:blur(6px)}
+  .chip svg{width:18px;height:18px}
+  .chipslot{position:relative;width:42px;height:42px}
+  .chipslot .chip{position:absolute;inset:0}
+  .sheet-back{opacity:0;pointer-events:none}
+  .view-widget .sheet-back,.view-biodetail .sheet-back,.view-bio .sheet-back{opacity:1;pointer-events:auto}
+  .view-carousel .home-only,.view-widget .home-only,
+  .view-bio .home-only,.view-biodetail .home-only{opacity:0;pointer-events:none}
+
+  /* ── carousel stage ── */
+  .stage{position:absolute;top:250px;left:0;right:0;height:452px;z-index:5;
+    overflow:hidden;touch-action:pan-y}
+  .stage{display:none;pointer-events:none}
+  .view-carousel .stage{display:block;top:108px;height:636px;pointer-events:auto}
+  .track{position:absolute;inset:0}
+  .card{position:absolute;left:50%;top:50%;width:330px;height:636px;
+    margin-left:-165px;margin-top:-318px;
+    display:flex;flex-direction:column;align-items:center;justify-content:flex-start;
+    will-change:transform,opacity;transform-origin:50% 50%;cursor:pointer}
+  .card.anim{transition:transform .42s cubic-bezier(.32,.72,.28,1),opacity .42s ease,filter .42s ease}
+  .card canvas{position:absolute;top:42px;left:0;width:330px;height:552px;display:block}
+
+  /* ── capsule card: own timer on top, meta below ── */
+  .cap-timer{position:absolute;z-index:2;top:0;left:0;right:0;display:flex;flex-direction:column;align-items:center;gap:5px;height:66px;justify-content:center}
+  .cap-timer span{font-size:10px;letter-spacing:2.2px;text-transform:uppercase;color:var(--ink-faint)}
+  .cap-timer b{font-size:27px;font-weight:300;letter-spacing:-.8px;color:var(--ink);
+    font-variant-numeric:tabular-nums;line-height:1}
+  .cap-meta{position:absolute;z-index:2;bottom:0;left:0;right:0;display:flex;flex-direction:column;align-items:center;gap:6px;text-align:center}
+  .cap-effect{display:inline-flex;align-items:center;height:26px;padding:0 12px;border-radius:999px;
+    background:rgba(var(--accent),.16);color:var(--ink);font-size:11.5px;font-weight:600;letter-spacing:.2px}
+  .cap-name{font-size:22px;font-weight:500;letter-spacing:-.5px;color:var(--ink);line-height:1.05}
+  .cap-when{font-size:12px;color:var(--ink-mute);line-height:1.3}
+
+  /* ── language toggle ── */
+  .topright{display:flex;flex-direction:column;align-items:flex-end;gap:10px}
+  .settings-btn{position:relative}
+  .settings-btn svg{transition:transform .25s ease}
+  .settings-btn:active svg{transform:rotate(22deg) scale(.96)}
+  .lang,.theme-options{display:inline-flex;background:var(--control-bg);border:1px solid var(--control-border);
+    border-radius:13px;overflow:hidden;backdrop-filter:blur(6px)}
+  .lang button,.theme-options button{all:unset;padding:7px 11px;font-size:11px;font-weight:600;
+    letter-spacing:.6px;color:var(--ink-mute);transition:all .25s}
+  .lang button.on,.theme-options button.on{background:var(--control-bg-strong);color:var(--ink)}
+
+  .setting-row{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:10px 0}
+  .setting-row+.setting-row{border-top:1px solid rgba(120,126,136,.12)}
+  .setting-row span{font-size:13px;color:var(--ink);letter-spacing:.2px}
+
+  /* ── profile window (modal-like sheet, closed via ✕) ── */
+  .profile-close{opacity:0;pointer-events:none}
+  .view-profile .profile-close{opacity:1;pointer-events:auto}
+  .view-profile .profile-btn{opacity:0;pointer-events:none}
+  .profile-panel{position:absolute;inset:112px 18px 24px;z-index:8;opacity:0;pointer-events:none;
+    transform:translateY(14px);transition:opacity .38s ease,transform .38s cubic-bezier(.32,.72,.28,1)}
+  .view-profile .profile-panel{opacity:1;pointer-events:auto;transform:none}
+  .profile-hero{display:flex;align-items:center;gap:14px;margin-bottom:6px}
+  .avatar-lg{width:56px;height:56px;border-radius:50%;flex:none;
+    background:radial-gradient(120% 120% at 30% 20%,#9fe6c4,#9bdcff 55%,#a79aed);
+    color:#1c2b25;font-size:16px;font-weight:700;display:flex;align-items:center;justify-content:center;
+    box-shadow:0 8px 22px -8px rgba(120,180,220,.6)}
+  .profile-who strong{display:block;font-size:19px;font-weight:600;color:var(--ink)}
+  .plan-badge{display:inline-block;margin-top:5px;font-size:11px;font-weight:600;letter-spacing:.3px;
+    padding:4px 10px;border-radius:999px;color:var(--ink-mute);
+    background:var(--control-bg);border:1px solid var(--control-border)}
+  .pgroup-label{font-size:11px;letter-spacing:2.2px;text-transform:uppercase;color:var(--ink-faint);margin:20px 0 8px}
+  .prow{display:flex;align-items:center;justify-content:space-between;gap:14px;padding:9px 0}
+  .prow+.prow{border-top:1px solid rgba(120,126,136,.12)}
+  .prow span{font-size:13px;color:var(--ink-mute)}
+  .prow b{font-size:13px;font-weight:600;color:var(--ink);text-align:right}
+  .pmanage{all:unset;display:block;margin-top:12px;font-size:13px;font-weight:600;color:var(--ink);cursor:pointer}
+  .pmanage.danger{color:#b4552a}
+
+  /* ── view visibility ── */
+  .carousel-only{transition:opacity .45s ease}
+  .view-carousel .dashboard{opacity:0;pointer-events:none}
+  .view-widget .dashboard,.view-widget .stage{opacity:0;pointer-events:none}
+  .view-widget .carousel-only{opacity:0;pointer-events:none}
+  .view-bio .carousel-only,.view-bio .dashboard,
+  .view-biodetail .carousel-only,.view-biodetail .dashboard{opacity:0;pointer-events:none}
+  .view-profile .dashboard,.view-profile .stage,.view-profile .tabbar,.view-profile .carousel-only,
+  .view-profile .widget-detail,.view-profile .bio-panel,.view-profile .biod-panel,.view-profile .home-only{opacity:0;pointer-events:none}
+  /* ── tab bar (root navigation) ── */
+  .tabbar{position:absolute;left:50%;bottom:20px;transform:translateX(-50%);z-index:20;
+    display:flex;gap:4px;padding:6px;border-radius:999px;
+    background:var(--control-bg-strong);border:1px solid var(--control-border);
+    backdrop-filter:blur(14px);box-shadow:0 18px 40px -22px rgba(20,24,30,.5)}
+  .tab{all:unset;display:flex;align-items:center;justify-content:center;gap:0;width:38px;height:34px;
+    border-radius:999px;font-size:11px;font-weight:600;letter-spacing:.3px;color:var(--ink-mute);
+    overflow:hidden;transition:width .28s cubic-bezier(.32,.72,.28,1),background .25s,color .25s,transform .25s}
+  .tab svg{width:16px;height:16px;flex:none}
+  .tab span{display:block;max-width:0;opacity:0;white-space:nowrap;overflow:hidden;
+    transform:translateX(-4px);transition:max-width .28s cubic-bezier(.32,.72,.28,1),opacity .18s ease,transform .28s cubic-bezier(.32,.72,.28,1)}
+  .tab:hover,.tab:focus-visible,.tab.on{width:auto;min-width:38px;gap:7px;justify-content:flex-start;padding:0 12px}
+  .tab:hover span,.tab:focus-visible span,.tab.on span{max-width:92px;opacity:1;transform:none}
+  .tab.on{background:rgba(var(--accent),.16);color:var(--ink)}
+  .tab:active{transform:scale(.96)}
+
+  .homebar{position:absolute;bottom:10px;left:50%;transform:translateX(-50%);
+    width:134px;height:5px;border-radius:3px;background:var(--control-border);z-index:8}
+
+  /* ── export ── */
+  .export{position:fixed;top:26px;right:26px;width:44px;height:44px;
+    background:#fff;color:#141416;border:none;border-radius:16px;padding:0;
+    font-size:0;font-weight:600;z-index:50;letter-spacing:.2px;
+    box-shadow:0 8px 24px -16px rgba(0,0,0,.55)}
+  .export::after{content:"PNG";font-size:10px;letter-spacing:.8px}
+  .export:active{transform:scale(.97)}
+
+  /* ── prototype screen index (outside the phone) ── */
+  .screen-index{position:fixed;left:calc(50% + 250px);top:50%;z-index:40;
+    width:178px;transform:translateY(-50%);display:grid;gap:4px}
+  .screen-index__title{margin-bottom:10px;font-size:10px;letter-spacing:1.8px;text-transform:uppercase;color:var(--ink-faint)}
+  .screen-index button{all:unset;box-sizing:border-box;display:block;width:100%;padding:7px 10px;border-radius:10px;
+    color:var(--ink-mute);font-size:13px;line-height:1.22;cursor:pointer;transition:color .18s ease,background .18s ease}
+  .screen-index button:hover,.screen-index button:focus-visible{background:rgba(120,126,136,.10);color:var(--ink)}
+  .screen-index button.on{color:var(--ink);font-weight:650}
+  .screen-index button.on::before{content:"";display:inline-block;width:5px;height:5px;margin:0 8px 1px 0;border-radius:50%;background:rgb(var(--accent));vertical-align:middle}
+  @media (max-width:760px){.screen-index{display:none}}
+
+  /* ── low-fi presentation layer: structure and interactions only ── */
+  :root,:root[data-theme="light"],:root[data-theme="dark"]{
+    --accent:105,105,105;--accent-hex:#696969;--body-bg:#d9d9d9;
+    --bg-hi:#e7e7e7;--bg-lo:#e7e7e7;--ink:#202020;--ink-mute:#6f6f6f;--ink-faint:#9a9a9a;
+    --control-bg:rgba(255,255,255,.78);--control-bg-strong:#fff;--control-border:rgba(0,0,0,.13);
+    --capsule-base-top:#f6f6f6;--capsule-base-mid:#e9e9e9;--capsule-base-bot:#dedede;
+    --rim-left:#bcbcbc;--rim-mid:#dedede;--rim-right:#bcbcbc;--scrim:#e7e7e7;
+    --phone-shadow:0 0 0 1px #b9b9b9;--vignette:transparent
+  }
+  body{background:#d9d9d9}
+  .phone,:root[data-theme="light"] .phone{background:#e7e7e7;box-shadow:0 0 0 1px #b9b9b9}
+  .phone::after{display:none}
+  .widget,:root[data-theme="dark"] .widget{background:#fff;border:1px solid #c9c9c9;box-shadow:none;backdrop-filter:none}
+  .widget::after{border-color:transparent}
+  .biod-card,.detail-card,.subscription-card,.detail-note,.xlink{background:#f4f4f4!important;box-shadow:none!important}
+  .chip,.tabbar,.screen-index button.on{box-shadow:none!important}
+  .forecast-bars i,.forecast-bars i:nth-child(n+8){background:#aaa;filter:none;box-shadow:none}
+  .gscale .gfill,.gscale .gband,.detail-row .effect-track i,.formula-row .gscale .gfill{
+    background:#9a9a9a!important;filter:none!important;box-shadow:none!important;opacity:1!important}
+  .gscale .gnode{background:#3d3d3d;filter:none;box-shadow:0 0 0 3px #fff}
+  .effect-orb,.avatar-lg{filter:grayscale(1);box-shadow:none}
+  .card canvas,.trend-canvas{filter:grayscale(1) contrast(.78);opacity:.9}
+  .pack-day.on,.status-pill,.tab.on{background:#dedede!important;box-shadow:none!important;color:#202020!important}
+  .screen-index button.on::before{background:#202020}
+</style>
+</head>
+<body>
+  <div class="phone view-home" id="phone">
+    <div class="notch"></div>
+    <div class="status">
+      <span>9:41</span>
+      <div class="status-icons" aria-hidden="true">
+        <span class="cellular"><i></i><i></i><i></i><i></i></span>
+        <span class="wifi-icon"><i></i></span>
+        <span class="battery-icon"></span>
+      </div>
+    </div>
+
+    <div class="topbar">
+      <div class="chipslot">
+        <div class="chip home-only" id="sensorChip" title="Sensor" aria-label="sensor">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
+            <rect x="4" y="6" width="16" height="12" rx="6"/><circle cx="12" cy="12" r="1.4" fill="currentColor" stroke="none"/>
+          </svg>
+        </div>
+        <div class="chip sheet-back" id="sheetBack" title="Back" aria-label="back">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M15 6l-6 6 6 6"/></svg>
+        </div>
+      </div>
+      <div class="topright">
+        <div class="chipslot">
+          <div class="chip profile-btn" id="profileBtn" title="Profile" aria-label="profile">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
+              <circle cx="12" cy="8.4" r="3.4"/>
+              <path d="M5.6 19.4a6.4 6.4 0 0 1 12.8 0"/>
+            </svg>
+          </div>
+          <div class="chip profile-close" id="profileClose" title="Close" aria-label="close">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M6 6l12 12M18 6L6 18"/></svg>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="profile-panel" id="profilePanel">
+      <div class="detail-panel">
+        <div class="profile-hero">
+          <div class="avatar-lg">АБ</div>
+          <div class="profile-who">
+            <strong id="profileName">Alisa B.</strong>
+            <span class="plan-badge" id="profilePlan">Adaptive monthly</span>
+          </div>
+        </div>
+
+        <div class="pgroup-label" id="pgService">Subscription &amp; delivery</div>
+        <div class="biod-card">
+          <div class="prow"><span id="ppPlanLabel">Plan</span><b id="ppPlanValue">Adaptive monthly · $89/mo</b></div>
+          <div class="prow"><span id="ppRenewLabel">Renews</span><b id="ppRenewValue">July 24</b></div>
+          <div class="prow"><span id="ppAddrLabel">Address</span><b id="ppAddrValue">Moscow, Primernaya 1</b></div>
+          <button class="pmanage" type="button" id="ppManage">Manage plan &#8250;</button>
+        </div>
+        <div class="biod-card">
+          <div class="prow"><span id="ppPayLabel">Payment</span><b id="ppPayValue">Visa •••• 4242</b></div>
+          <div class="prow"><span id="ppLastLabel">Last charge</span><b id="ppLastValue">$89 · Jul 3</b></div>
+        </div>
+
+        <div class="pgroup-label" id="pgDevice">Device</div>
+        <div class="biod-card">
+          <div class="prow"><span id="ppSensorLabel">Impre sensor</span><b id="ppSensorValue">Connected</b></div>
+          <div class="prow"><span id="ppBattLabel">Battery</span><b id="ppBattValue">72% · ~9 days</b></div>
+          <div class="prow"><span id="ppWearLabel">Wear</span><b id="ppWearValue">Day 6 of 14</b></div>
+        </div>
+
+        <div class="pgroup-label" id="pgSettings">Settings</div>
+        <div class="biod-card">
+          <div class="setting-row">
+            <span id="themeLabel">Theme</span>
+            <div class="theme-options" id="themeOptions">
+              <button data-theme="light" class="on">Light</button>
+              <button data-theme="dark">Dark</button>
+            </div>
+          </div>
+          <div class="setting-row">
+            <span id="languageLabel">Language</span>
+            <div class="lang" id="lang">
+              <button data-l="en" class="on">EN</button>
+              <button data-l="ru">RU</button>
+            </div>
+          </div>
+        </div>
+
+        <div class="pgroup-label" id="pgAccount">Account</div>
+        <div class="biod-card">
+          <div class="prow"><span id="ppMailLabel">Email</span><b>alisa@example.com</b></div>
+          <button class="pmanage danger" type="button" id="ppLogout">Log out</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="dashboard carousel-only" id="dashboard">
+      <section class="widget hero-widget" id="stateWidget">
+        <div class="hero-top">
+          <div class="eyebrow" id="heroEyebrow">State · today</div>
+        </div>
+        <div class="state-score" id="stateScore">62<small>%</small></div>
+        <div class="state-sub" id="stateSub">7 of 9 biomarkers in personal range</div>
+        <div class="state-visual">
+          <div class="forecast-bars" aria-hidden="true">
+            <i style="height:28px"></i><i style="height:42px"></i><i style="height:56px"></i><i style="height:66px"></i>
+            <i style="height:61px"></i><i style="height:48px"></i><i style="height:36px"></i><i style="height:44px"></i><i style="height:32px"></i>
+          </div>
+        </div>
+        <div class="attn-label" id="attnLabel">Needs attention · 2</div>
+        <div id="attnRows"></div>
+        <div class="state-action" id="seeMarkers">
+          <span id="seeMarkersText">See biomarkers</span><i>&#8594;</i>
+        </div>
+      </section>
+    </div>
+
+    <div class="widget-detail" id="widgetDetail">
+      <div class="detail-panel">
+        <section class="detail-screen on" data-screen="capsule">
+          <div class="detail-kicker" id="capsuleKicker">Capsule</div>
+          <h2 class="detail-title" id="capsuleTitle">Balance</h2>
+          <div class="biod-card">
+            <div class="card-kicker" id="capsuleImpactLabel">Expected impact</div>
+            <div class="biod-about" id="capsuleImpact"></div>
+          </div>
+          <div class="detail-kicker" id="capsuleCompLabel" style="margin:22px 0 0">Composition</div>
+          <div class="detail-table" id="capsuleRows"></div>
+          <div class="biod-card">
+            <div class="card-kicker" id="capsuleReasonLabel">Why it is separate</div>
+            <div class="biod-about" id="capsuleReason"></div>
+          </div>
+        </section>
+
+        <section class="detail-screen" data-screen="supplement">
+          <div class="detail-kicker" id="suppKicker">Inside capsule</div>
+          <h2 class="detail-title" id="suppTitle" style="margin-bottom:4px">Magnesium</h2>
+          <div class="biod-value"><span id="suppValueNum">310</span><span id="suppUnit" class="u">mg</span></div>
+          <span class="status-pill" id="suppPill">In range</span>
+          <div class="scale-wrap">
+            <div class="gscale" id="suppScale"></div>
+            <div class="scale-labels"><span id="suppMin">150</span><span id="suppMax">420</span></div>
+          </div>
+          <div class="biod-card">
+            <div class="card-kicker" id="suppAboutLabel">About</div>
+            <div class="biod-about" id="suppAbout"></div>
+          </div>
+          <div class="biod-card">
+            <div class="card-kicker"><span id="suppTrendLabel">Trend</span><em id="suppPeriod"></em></div>
+            <div class="biod-delta" id="suppDelta"></div>
+            <canvas class="trend-canvas" id="suppTrendCanvas" width="600" height="256"></canvas>
+            <div class="trend-range"><span id="suppTrendFrom"></span><span id="suppTrendTo"></span></div>
+          </div>
+          <div class="xlink" id="suppBioLink">
+            <div><strong id="suppBioTitle">Related biomarker</strong><small id="suppBioSub"></small></div>
+            <i>&#8250;</i>
+          </div>
+        </section>
+
+        <section class="detail-screen" data-screen="system">
+          <div class="detail-kicker" id="systemKicker">Delivery</div>
+          <h2 class="detail-title" id="systemTitle">Next Pack</h2>
+          <div class="detail-grid">
+            <div class="detail-card"><span id="systemPackLabel">next pack</span><strong id="systemPackValue">5 days</strong></div>
+            <div class="detail-card"><span id="systemFormulaLabel">formula</span><strong id="systemFormulaValue">Adaptive</strong></div>
+          </div>
+          <div class="subscription-card">
+            <div class="subscription-head">
+              <div>
+                <span id="subscriptionLabel">Subscription</span>
+                <strong id="subscriptionPlan">Adaptive monthly</strong>
+              </div>
+              <div class="subscription-price" id="subscriptionPrice">$89/mo</div>
+            </div>
+            <div class="subscription-rows">
+              <div class="subscription-row">
+                <span id="subscriptionRenewLabel">Renews</span>
+                <b id="subscriptionRenewValue">July 24</b>
+              </div>
+              <div class="subscription-row">
+                <span id="subscriptionIncludesLabel">Includes</span>
+                <b id="subscriptionIncludesValue">30 daily packs + sensor sync</b>
+              </div>
+              <div class="subscription-row">
+                <span id="subscriptionAdjustLabel">Adjustment</span>
+                <b id="subscriptionAdjustValue">formula recalculates before shipping</b>
+              </div>
+            </div>
+            <div class="subscription-actions">
+              <button class="primary" type="button" id="subscriptionEdit">Edit plan</button>
+              <button type="button" id="subscriptionPause">Pause</button>
+            </div>
+          </div>
+          <div class="biod-card">
+            <div class="card-kicker"><span id="shipCalLabel">Shipping date</span><em id="shipMonth">July</em></div>
+            <div class="ship-cal" id="shipCal"></div>
+          </div>
+          <div class="detail-note" id="systemNote">The sensor syncs continuously and the next pack uses the latest adaptive formula.</div>
+        </section>
+
+        <section class="detail-screen" data-screen="sensor">
+          <div class="detail-kicker" id="sensorKicker">Body sensor</div>
+          <h2 class="detail-title" id="sensorDetailTitle">Sensor Active</h2>
+          <span class="status-pill" id="sensorStatusPill">Working normally</span>
+          <div class="detail-grid" style="margin-top:14px">
+            <div class="detail-card"><span id="sensorReadLabel">last sync</span><strong id="sensorReadValue">12 min</strong></div>
+            <div class="detail-card"><span id="sensorSignalLabel">signal</span><strong id="sensorSignalValue">Clear</strong></div>
+          </div>
+          <div class="biod-card">
+            <div class="card-kicker" id="sensorReadsLabel">Reads</div>
+            <div class="sensor-reads" id="sensorReads"></div>
+          </div>
+          <div class="detail-note" id="sensorNote">The sensor reads internal changes and keeps the formula connected to the current body state.</div>
+        </section>
+      </div>
+    </div>
+
+    <div class="bio-panel">
+      <div class="detail-panel">
+        <div class="detail-kicker" id="bioKicker">Sensor · live</div>
+        <h2 class="detail-title" id="bioTitle">Biomarkers</h2>
+        <div class="bio-list" id="bioList"></div>
+      </div>
+    </div>
+
+    <div class="biod-panel">
+      <div class="detail-panel">
+        <div class="detail-kicker" id="biodKicker">Impre sensor</div>
+        <h2 class="detail-title" id="biodTitle" style="margin-bottom:4px">Glucose</h2>
+        <div class="biod-value"><span id="biodValueNum">5.4</span><span id="biodUnit" class="u">mmol/L</span></div>
+        <span class="status-pill" id="biodPill">In range</span>
+        <div class="scale-wrap">
+          <div class="gscale" id="biodScale"></div>
+          <div class="scale-labels"><span id="biodMin">3.9</span><span id="biodMax">6.1</span></div>
+        </div>
+        <div class="biod-card">
+          <div class="card-kicker" id="biodAboutLabel">About</div>
+          <div class="biod-about" id="biodAbout"></div>
+        </div>
+        <div class="biod-card">
+          <div class="card-kicker"><span id="biodTrendLabel">Trend</span><em id="biodPeriod"></em></div>
+          <div class="biod-delta" id="biodDelta"></div>
+          <canvas class="trend-canvas" id="trendCanvas" width="600" height="256"></canvas>
+          <div class="trend-range"><span id="trendFrom"></span><span id="trendTo"></span></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="stage" id="stage">
+      <div class="track" id="track"></div>
+    </div>
+
+    <nav class="tabbar" id="tabbar" aria-label="root navigation">
+      <button class="tab on" data-tab="home">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12h4l2.5-6 4 12L16 12h5"/></svg>
+        <span id="tabHome">State</span>
+      </button>
+      <button class="tab" data-tab="formula">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><rect x="7.5" y="3.5" width="9" height="17" rx="4.5"/><path d="M7.5 12h9"/></svg>
+        <span id="tabFormula">Formula</span>
+      </button>
+    </nav>
+
+    <div class="homebar"></div>
+  </div>
+
+  <aside class="screen-index" aria-label="Prototype screens">
+    <div class="screen-index__title">Экраны</div>
+    <button type="button" data-prototype-screen="home">Состояние</button>
+    <button type="button" data-prototype-screen="bio">Все показатели</button>
+    <button type="button" data-prototype-screen="biodetail">Показатель: Витамин D</button>
+    <button type="button" data-prototype-screen="carousel">Формула</button>
+    <button type="button" data-prototype-screen="capsule">Капсула: Баланс</button>
+    <button type="button" data-prototype-screen="supplement">Компонент: Магний</button>
+    <button type="button" data-prototype-screen="sensor">Сенсор</button>
+    <button type="button" data-prototype-screen="profile">Профиль и подписка</button>
+  </aside>
+
+  <button class="export" id="exportBtn">Export PNG</button>
+
+<script>
+/* ────────────────────────────────────────────────────────────
+   Impre — home screen. Capsule = personalized vitamin complex.
+   Shell + living inner field (density/glow/layers) that reflects
+   the user's biomarker state and active formula.
+   ──────────────────────────────────────────────────────────── */
+
+const STATES = [
+  { key:'balanced',   score:62,
+    name:{en:'Balance', ru:'Баланс'},
+    formula:{en:'Base flow · magnesium, B-complex', ru:'Базовый поток · магний, B-комплекс'},
+    intake:{ h:9, m:0, time:'09:00',
+      ctx:{en:'after breakfast', ru:'после завтрака'},
+      effect:{en:'Stress ↓', ru:'Стресс ↓'},
+      impact:{en:'Lowers tension through the daytime load.',ru:'Снижает напряжение в дневной нагрузке.'},
+      impactSub:{en:'Forecast to your personal range: 12 days.',ru:'Прогноз до личного диапазона: 12 дней.'},
+      reason:{en:'Taken in the morning so magnesium and B-complex cover the working day.',ru:'Утренний приём: магний и B-комплекс закрывают рабочий день.'} },
+    dose:[
+      {key:'Mg', name:{en:'Magnesium',ru:'Магний'}, amount:'310', unit:{en:'mg',ru:'мг'}, status:{en:'in range',ru:'норма'}, level:.72},
+      {key:'B', name:{en:'B-complex',ru:'B-комплекс'}, amount:'1', unit:{en:'cap',ru:'капс.'}, status:{en:'daily',ru:'день'}, level:.58},
+      {key:'D3', name:{en:'Vitamin D3',ru:'Витамин D3'}, amount:'2000', unit:{en:'IU',ru:'МЕ'}, status:{en:'in range',ru:'норма'}, level:.84},
+      {key:'O3', name:{en:'Omega-3',ru:'Омега-3'}, amount:'900', unit:{en:'mg',ru:'мг'}, status:{en:'support',ru:'поддержка'}, level:.64}
+    ],
+    rgb:[92,214,162],  hex:'#5cd6a2',
+    field:{ count:15, sizeMin:30, sizeMax:52, speed:.16, gravity:-0.015, centerPull:.12, glow:.95 } },
+  { key:'focused',    score:71,
+    name:{en:'Focus', ru:'Фокус'},
+    formula:{en:'Focus · omega-3, L-theanine', ru:'Фокус · омега-3, L-теанин'},
+    intake:{ h:14, m:0, time:'14:00',
+      ctx:{en:'after lunch', ru:'после обеда'},
+      effect:{en:'Attention ↑', ru:'Внимание ↑'},
+      impact:{en:'Holds attention and clarity in the afternoon.',ru:'Держит внимание и ясность во второй половине дня.'},
+      impactSub:{en:'Forecast to a steady effect: 18 days.',ru:'Прогноз до устойчивого эффекта: 18 дней.'},
+      reason:{en:'Separated into a daytime dose so omega-3 and L-theanine do not overlap the evening part.',ru:'Вынесена в дневной приём, чтобы омега-3 и L-теанин не смешивались с вечерней частью.'} },
+    dose:[
+      {key:'O3', name:{en:'Omega-3',ru:'Омега-3'}, amount:'1000', unit:{en:'mg',ru:'мг'}, status:{en:'focus',ru:'фокус'}, level:.80},
+      {key:'Th', name:{en:'L-theanine',ru:'L-теанин'}, amount:'200', unit:{en:'mg',ru:'мг'}, status:{en:'calm',ru:'спокойно'}, level:.70},
+      {key:'B6', name:{en:'Vitamin B6',ru:'Витамин B6'}, amount:'10', unit:{en:'mg',ru:'мг'}, status:{en:'daily',ru:'день'}, level:.46},
+      {key:'Mg', name:{en:'Magnesium',ru:'Магний'}, amount:'180', unit:{en:'mg',ru:'мг'}, status:{en:'support',ru:'поддержка'}, level:.50}
+    ],
+    rgb:[152,142,228], hex:'#988ee4',
+    field:{ count:17, sizeMin:20, sizeMax:42, speed:.24, gravity:0.0,  centerPull:.82, glow:.98 } },
+  { key:'restorative',score:53,
+    name:{en:'Recovery', ru:'Восстановление'},
+    formula:{en:'Recovery · zinc, ashwagandha', ru:'Восстановление · цинк, ашваганда'},
+    intake:{ h:21, m:0, time:'21:00',
+      ctx:{en:'after dinner', ru:'после ужина'},
+      effect:{en:'Sleep ↑', ru:'Сон ↑'},
+      impact:{en:'Supports sleep and night recovery.',ru:'Поддерживает сон и ночное восстановление.'},
+      impactSub:{en:'Forecast to a steady effect: 24 days.',ru:'Прогноз до устойчивого эффекта: 24 дня.'},
+      reason:{en:'Kept in the evening so ashwagandha and zinc work while you rest.',ru:'Оставлена на вечер, чтобы ашваганда и цинк работали во время отдыха.'} },
+    dose:[
+      {key:'Zn', name:{en:'Zinc',ru:'Цинк'}, amount:'15', unit:{en:'mg',ru:'мг'}, status:{en:'in range',ru:'норма'}, level:.52},
+      {key:'Ash', name:{en:'Ashwagandha',ru:'Ашваганда'}, amount:'300', unit:{en:'mg',ru:'мг'}, status:{en:'recovery',ru:'сон'}, level:.68},
+      {key:'Mg', name:{en:'Magnesium',ru:'Магний'}, amount:'240', unit:{en:'mg',ru:'мг'}, status:{en:'support',ru:'поддержка'}, level:.58},
+      {key:'D3', name:{en:'Vitamin D3',ru:'Витамин D3'}, amount:'1200', unit:{en:'IU',ru:'МЕ'}, status:{en:'light',ru:'мягко'}, level:.42}
+    ],
+    rgb:[138,182,228], hex:'#8ab6e4',
+    field:{ count:12, sizeMin:34, sizeMax:58, speed:.10, gravity:0.16, centerPull:.16, glow:.78 } },
+];
+
+/* supplement key → related biomarker (single cross-link out of a component) */
+const SUPP_BIO={ Mg:'magnesium', D3:'vitd', O3:'crp', Ash:'cortisol', Th:'cortisol', Zn:'crp', B:'glucose', B6:'glucose' };
+
+const T = {
+  export:{en:'Export PNG', ru:'Экспорт PNG'},
+  hint:  {en:'Tap the capsule to open', ru:'Нажмите на капсулу'},
+  settings:{en:'Settings', ru:'Настройки'},
+  theme:{en:'Theme', ru:'Тема'},
+  language:{en:'Language', ru:'Язык'},
+  light:{en:'Light', ru:'Светлая'},
+  dark:{en:'Dark', ru:'Темная'},
+  heroEyebrow:{en:'Internal signal', ru:'Внутренний сигнал'},
+  heroBalance:{en:'Balance', ru:'Баланс'},
+  balanceScore:{en:'balance score', ru:'индекс баланса'},
+  formulaChecked:{en:'biomarkers checked', ru:'биомаркеры сверены'},
+  stateActive:{en:'Active', ru:'Активно'},
+  stateStable:{en:'Stable', ru:'Стабильно'},
+  stateSoft:{en:'Soft', ru:'Мягко'},
+  dailyBlend:{en:'Daily Blend', ru:'Дневной состав'},
+  dailyBlendSub:{en:'formula composition', ru:'состав формулы'},
+  doseForecast:{en:'Dose Forecast', ru:'Прогноз дозировок'},
+  doseForecastSub:{en:'next 30 days', ru:'следующие 30 дней'},
+  sensorActive:{en:'Sensor Active', ru:'Сенсор активен'},
+  sensorSub:{en:'last read · 12 min ago', ru:'последнее считывание · 12 мин назад'},
+  nextPack:{en:'Next Pack', ru:'Следующий набор'},
+  nextPackSub:{en:'adaptive formula ships in 5 days', ru:'адаптивная формула через 5 дней'},
+  tabHome:{en:'State', ru:'Состояние'},
+  tabBio:{en:'Biomarkers', ru:'Биомаркеры'},
+  tabFormula:{en:'Formula', ru:'Формула'},
+  stateKicker:{en:'State · today', ru:'Состояние · сегодня'},
+  stateSub:{en:'7 of 9 biomarkers in personal range', ru:'7 из 9 показателей в личном диапазоне'},
+  attnLabel:{en:'Needs attention', ru:'Требует внимания'},
+  seeMarkers:{en:'See biomarkers', ru:'Посмотреть показатели'},
+  capsuleKicker:{en:'Capsule · intake', ru:'Капсула · приём'},
+  capsuleImpactLabel:{en:'Expected impact', ru:'Ожидаемое влияние'},
+  capsuleCompLabel:{en:'Composition', ru:'Состав'},
+  capsuleReasonLabel:{en:'Why it is separate', ru:'Почему отдельно'},
+  capTimerLabel:{en:'until intake', ru:'до приёма'},
+  relatedBio:{en:'Related biomarker', ru:'Связанный биомаркер'},
+  sensorReadsLabel:{en:'Reads', ru:'Считывает'},
+  sensorNormal:{en:'Working normally', ru:'Работает штатно'},
+  sensorSync:{en:'last sync', ru:'синхронизация'},
+  shipCalLabel:{en:'Shipping date', ru:'Дата отправки'},
+  shipMonth:{en:'July', ru:'Июль'},
+  pgService:{en:'Subscription & delivery', ru:'Подписка и доставка'},
+  pgDevice:{en:'Device', ru:'Устройство'},
+  pgSettings:{en:'Settings', ru:'Настройки'},
+  pgAccount:{en:'Account', ru:'Аккаунт'},
+  ppPlan:{en:'Plan', ru:'План'},
+  ppRenew:{en:'Renews', ru:'Продление'},
+  ppAddr:{en:'Address', ru:'Адрес'},
+  ppPay:{en:'Payment', ru:'Оплата'},
+  ppLast:{en:'Last charge', ru:'Последнее списание'},
+  ppSensor:{en:'Impre sensor', ru:'Сенсор Impre'},
+  ppBatt:{en:'Battery', ru:'Батарея'},
+  ppWear:{en:'Wear', ru:'Носка'},
+  ppMail:{en:'Email', ru:'Почта'},
+  ppManage:{en:'Manage plan', ru:'Управлять планом'},
+  ppLogout:{en:'Log out', ru:'Выйти'},
+  bioKicker:{en:'Sensor · live', ru:'Сенсор · онлайн'},
+  sensorState:{en:'Sensor active', ru:'Сенсор активен'},
+  sensorMeta:{en:'Last scan 12 min ago · signal clear', ru:'Скан 12 мин назад · сигнал чистый'},
+  ovKicker:{en:'Overall state', ru:'Общее состояние'},
+  ovAcross:{en:'across all modes', ru:'по всем режимам'},
+  ovInRange:{en:'in range', ru:'в норме'},
+  ovBiomarkers:{en:'Biomarkers', ru:'Биомаркеры'},
+  bioTitle:{en:'Biomarkers', ru:'Биомаркеры'},
+  aboutLabel:{en:'About', ru:'О показателе'},
+  trendLabel:{en:'Trend', ru:'Динамика'},
+  stIn:{en:'In range', ru:'В норме'},
+  stHigh:{en:'Above range', ru:'Выше нормы'},
+  stLow:{en:'Below range', ru:'Ниже нормы'},
+  biodSource:{en:'Impre sensor · today', ru:'Сенсор Impre · сегодня'},
+  formulaToday:{en:'Today’s Intake', ru:'Приём сегодня'},
+  formulaState:{en:'formula', ru:'формула'},
+  personalFormula:{en:'Inside capsule', ru:'Внутри капсулы'},
+  insideTitle:{en:'What’s inside Balance', ru:'Что внутри Balance'},
+  forecastNote:{en:'These are the components inside the selected capsule state. Tap a component to open its detail.', ru:'Это компоненты выбранного состояния капсулы. Нажмите на компонент, чтобы открыть детали.'},
+  intakeNote:{en:'This is today’s practical intake, based on the active capsule and current sensor context.', ru:'Это практический приём на сегодня, рассчитанный по активной капсуле и текущему контексту сенсора.'},
+  overviewState:{en:'state', ru:'состояние'},
+  overviewNote:{en:'This is the overall body balance from recent biomarker readings. Capsules adapt to this state, but the score is not a capsule level.', ru:'Это общий баланс организма по последним биомаркерам. Капсулы адаптируются под это состояние, но индекс не является уровнем капсулы.'},
+  systemKicker:{en:'Delivery', ru:'Доставка'},
+  systemStatus:{en:'Next Pack', ru:'Следующий набор'},
+  systemPack:{en:'next pack', ru:'следующий набор'},
+  systemFormula:{en:'formula', ru:'формула'},
+  systemNote:{en:'The next pack is assembled from the latest adaptive formula and ships after the current cycle ends.', ru:'Следующий набор собирается по последней адаптивной формуле и отправляется после текущего цикла.'},
+  subscriptionLabel:{en:'Subscription', ru:'Подписка'},
+  subscriptionPlan:{en:'Adaptive monthly', ru:'Адаптивный месяц'},
+  subscriptionPrice:{en:'$89/mo', ru:'$89/мес'},
+  subscriptionRenew:{en:'Renews', ru:'Продление'},
+  subscriptionRenewValue:{en:'July 24', ru:'24 июля'},
+  subscriptionIncludes:{en:'Includes', ru:'Включено'},
+  subscriptionIncludesValue:{en:'30 daily packs + sensor sync', ru:'30 дневных пакетов + синхронизация сенсора'},
+  subscriptionAdjust:{en:'Adjustment', ru:'Коррекция'},
+  subscriptionAdjustValue:{en:'formula recalculates before shipping', ru:'формула пересчитывается перед отправкой'},
+  subscriptionEdit:{en:'Edit plan', ru:'Изменить план'},
+  subscriptionPause:{en:'Pause', ru:'Пауза'},
+  sensorKicker:{en:'Body sensor', ru:'Сенсор тела'},
+  sensorRead:{en:'last read', ru:'считывание'},
+  sensorSignal:{en:'signal', ru:'сигнал'},
+  sensorClear:{en:'Clear', ru:'Чистый'},
+  sensorNote:{en:'The sensor reads internal changes and keeps the formula connected to the current body state.', ru:'Сенсор считывает внутренние изменения и связывает формулу с текущим состоянием тела.'},
+  suppKicker:{en:'Inside capsule', ru:'Внутри капсулы'},
+  capsuleLevel:{en:'Level', ru:'Уровень'},
+  capsuleInside:{en:'Inside', ru:'Внутри'},
+};
+let lang = 'en';
+let theme = 'light';
+
+const BODY_STATE = {
+  score:78,
+  name:{en:'Balance', ru:'Баланс'},
+  signal:{en:'7 of 9 biomarkers in personal range', ru:'7 из 9 показателей в личном диапазоне'},
+  rgb:[92,214,162],
+  hex:'#5cd6a2'
+};
+
+/* ── biomarkers (sensor data, Hemoglobin-template screens) ── */
+const BIOMARKERS=[
+  { key:'glucose', name:{en:'Glucose',ru:'Глюкоза'}, unit:'mmol/L', dec:1,
+    value:5.4, min:3.9, max:6.1, sMin:3.0, sMax:7.0,
+    about:{en:'Main fuel for your cells and brain.',ru:'Основное топливо для клеток и мозга.'},
+    aboutSub:{en:'Steady levels mean meals and formula keep your energy even through the day.',ru:'Ровный уровень — значит питание и формула держат энергию стабильной весь день.'},
+    from:{en:'Jan 2026',ru:'янв 2026'}, to:{en:'Jun 2026',ru:'июн 2026'},
+    trend:[5.9,5.7,5.8,5.5,5.6,5.4,5.3,5.5,5.2,5.4,5.3,5.4] },
+  { key:'vitd', name:{en:'Vitamin D',ru:'Витамин D'}, unit:'ng/mL', dec:0,
+    value:38, min:40, max:60, sMin:15, sMax:75,
+    about:{en:'Supports immunity, bones and mood.',ru:'Поддерживает иммунитет, кости и настроение.'},
+    aboutSub:{en:'The formula keeps a daily D3 dose until you reach the optimal zone.',ru:'Формула держит дневную дозу D3, пока вы не выйдете в оптимальную зону.'},
+    from:{en:'Jan 2026',ru:'янв 2026'}, to:{en:'Jun 2026',ru:'июн 2026'},
+    trend:[24,26,25,28,30,31,33,34,36,35,37,38] },
+  { key:'ferritin', name:{en:'Ferritin',ru:'Ферритин'}, unit:'µg/L', dec:0,
+    value:84, min:30, max:150, sMin:0, sMax:180,
+    about:{en:'Iron stored for oxygen transport.',ru:'Запас железа для переноса кислорода.'},
+    aboutSub:{en:'Slow growth is expected while iron support is active.',ru:'Медленный рост ожидаем, пока активна поддержка железом.'},
+    from:{en:'Jan 2026',ru:'янв 2026'}, to:{en:'Jun 2026',ru:'июн 2026'},
+    trend:[52,55,60,58,63,66,70,72,75,78,81,84] },
+  { key:'magnesium', name:{en:'Magnesium',ru:'Магний'}, unit:'mmol/L', dec:2,
+    value:0.92, min:0.75, max:1.05, sMin:0.6, sMax:1.2,
+    about:{en:'Calms the nervous system, supports sleep and muscles.',ru:'Успокаивает нервную систему, поддерживает сон и мышцы.'},
+    aboutSub:{en:'Held in range by the base dose in every capsule state.',ru:'Удерживается в норме базовой дозой в каждом состоянии капсулы.'},
+    from:{en:'Jan 2026',ru:'янв 2026'}, to:{en:'Jun 2026',ru:'июн 2026'},
+    trend:[0.78,0.80,0.81,0.84,0.83,0.86,0.88,0.87,0.90,0.91,0.90,0.92] },
+  { key:'cortisol', name:{en:'Cortisol',ru:'Кортизол'}, unit:'µg/dL', dec:1,
+    value:19.1, min:6, max:18, sMin:2, sMax:24,
+    about:{en:'Stress hormone; rises under sustained load.',ru:'Гормон стресса, растёт при длительной нагрузке.'},
+    aboutSub:{en:'The formula shifted toward Restorative support to bring it down gently.',ru:'Формула сместилась к восстановлению, чтобы мягко снизить уровень.'},
+    from:{en:'Jan 2026',ru:'янв 2026'}, to:{en:'Jun 2026',ru:'июн 2026'},
+    trend:[12,13,12.5,14,13.5,15,16,15.5,17,18,18.6,19.1] },
+  { key:'crp', name:{en:'hs-CRP',ru:'hs-СРБ'}, unit:'mg/L', dec:1,
+    value:0.8, min:0, max:3, sMin:0, sMax:5,
+    about:{en:'A sensitive marker of inflammation.',ru:'Чувствительный маркер воспаления.'},
+    aboutSub:{en:'Low and falling — recovery routines are working.',ru:'Низкий и снижается — восстановление работает.'},
+    from:{en:'Jan 2026',ru:'янв 2026'}, to:{en:'Jun 2026',ru:'июн 2026'},
+    trend:[1.6,1.5,1.4,1.2,1.3,1.1,1.0,0.9,1.0,0.9,0.8,0.8] },
+  { key:'b12', name:{en:'Vitamin B12',ru:'Витамин B12'}, unit:'pg/mL', dec:0,
+    value:520, min:300, max:900, sMin:150, sMax:1100,
+    about:{en:'Supports energy metabolism and the nervous system.',ru:'Поддерживает энергетический обмен и нервную систему.'},
+    aboutSub:{en:'The current level is steady and does not need a formula adjustment.',ru:'Текущий уровень стабилен и не требует коррекции формулы.'},
+    from:{en:'Jan 2026',ru:'янв 2026'}, to:{en:'Jun 2026',ru:'июн 2026'},
+    trend:[430,445,452,465,470,482,490,498,505,510,516,520] },
+  { key:'hemoglobin', name:{en:'Hemoglobin',ru:'Гемоглобин'}, unit:'g/L', dec:0,
+    value:136, min:120, max:155, sMin:90, sMax:175,
+    about:{en:'Carries oxygen to tissues and muscles.',ru:'Переносит кислород к тканям и мышцам.'},
+    aboutSub:{en:'Stable in the personal range, supporting everyday energy.',ru:'Стабилен в личном диапазоне и поддерживает повседневную энергию.'},
+    from:{en:'Jan 2026',ru:'янв 2026'}, to:{en:'Jun 2026',ru:'июн 2026'},
+    trend:[130,131,132,130,133,134,135,134,136,135,136,136] },
+  { key:'tsh', name:{en:'TSH',ru:'ТТГ'}, unit:'mIU/L', dec:1,
+    value:1.8, min:0.4, max:4.0, sMin:0, sMax:5.5,
+    about:{en:'A marker of thyroid regulation and metabolic rhythm.',ru:'Показатель регуляции щитовидной железы и обменного ритма.'},
+    aboutSub:{en:'Within range, so no formula changes are needed here.',ru:'В пределах диапазона, поэтому изменения формулы не требуются.'},
+    from:{en:'Jan 2026',ru:'янв 2026'}, to:{en:'Jun 2026',ru:'июн 2026'},
+    trend:[2.1,2.0,2.0,1.9,2.0,1.9,1.8,1.9,1.8,1.8,1.9,1.8] },
+];
+
+const SUPPLEMENT_META={
+  Mg:{dec:0,min:150,max:420,sMin:0,sMax:500,
+    about:{en:'Calms the nervous system, supports sleep and muscles.',ru:'Успокаивает нервную систему, поддерживает сон и мышцы.'},
+    aboutSub:{en:'Adjusted against stress, sleep quality and magnesium-related sensor patterns.',ru:'Корректируется по стрессу, качеству сна и связанным паттернам сенсора.'},
+    trend:[.55,.58,.60,.63,.61,.68,.72,.70,.76,.78,.75,1]},
+  B:{dec:1,min:.5,max:2,sMin:0,sMax:3,
+    about:{en:'Supports daily energy metabolism and nervous-system load.',ru:'Поддерживает энергетический обмен и нагрузку на нервную систему.'},
+    aboutSub:{en:'Kept as a stable base layer while the capsule state changes.',ru:'Остается базовым слоем, пока состояние капсулы меняется.'},
+    trend:[.72,.75,.74,.78,.80,.82,.84,.86,.88,.9,.94,1]},
+  D3:{dec:0,min:800,max:4000,sMin:0,sMax:5000,
+    about:{en:'Supports immunity, bones and mood regulation.',ru:'Поддерживает иммунитет, кости и регуляцию настроения.'},
+    aboutSub:{en:'Dose stays higher until vitamin D readings settle in the optimal zone.',ru:'Доза держится выше, пока показатели D не входят в оптимальную зону.'},
+    trend:[.48,.50,.52,.58,.62,.66,.70,.74,.78,.82,.88,1]},
+  O3:{dec:0,min:500,max:1500,sMin:0,sMax:1800,
+    about:{en:'Supports focus, recovery and inflammatory balance.',ru:'Поддерживает фокус, восстановление и воспалительный баланс.'},
+    aboutSub:{en:'Used as a soft stabilizer across focus and recovery states.',ru:'Работает как мягкий стабилизатор в режимах фокуса и восстановления.'},
+    trend:[.62,.64,.66,.68,.70,.72,.76,.80,.84,.88,.92,1]},
+  B12:{dec:0,min:100,max:700,sMin:0,sMax:900,
+    about:{en:'Supports energy, cognitive clarity and blood-cell production.',ru:'Поддерживает энергию, ясность мышления и кроветворение.'},
+    aboutSub:{en:'Raised in active states when the formula detects fatigue patterns.',ru:'Повышается в активных состояниях при признаках усталости.'},
+    trend:[.42,.45,.50,.56,.62,.68,.72,.78,.84,.90,.96,1]},
+  Fe:{dec:0,min:8,max:27,sMin:0,sMax:35,
+    about:{en:'Supports oxygen transport and low-energy recovery.',ru:'Поддерживает перенос кислорода и восстановление при сниженной энергии.'},
+    aboutSub:{en:'Shown only when ferritin and energy patterns suggest support.',ru:'Появляется, когда ферритин и энергия требуют поддержки.'},
+    trend:[.45,.48,.52,.55,.59,.63,.68,.72,.78,.84,.92,1]},
+  Rh:{dec:0,min:100,max:300,sMin:0,sMax:420,
+    about:{en:'An adaptogenic support for active, high-load days.',ru:'Адаптогенная поддержка для активных дней с высокой нагрузкой.'},
+    aboutSub:{en:'Used carefully when the capsule shifts toward activation.',ru:'Добавляется аккуратно, когда капсула смещается к активации.'},
+    trend:[.30,.34,.38,.44,.50,.58,.66,.74,.82,.90,.96,1]},
+  C:{dec:0,min:250,max:1000,sMin:0,sMax:1200,
+    about:{en:'Supports immune response and antioxidant protection.',ru:'Поддерживает иммунный ответ и антиоксидантную защиту.'},
+    aboutSub:{en:'Usually follows recovery load and inflammation-related signals.',ru:'Обычно следует за нагрузкой восстановления и воспалительными сигналами.'},
+    trend:[.50,.55,.58,.62,.66,.72,.76,.80,.84,.88,.94,1]},
+  Zn:{dec:0,min:8,max:25,sMin:0,sMax:35,
+    about:{en:'Supports immunity, skin repair and recovery.',ru:'Поддерживает иммунитет, восстановление кожи и общий ресурс.'},
+    aboutSub:{en:'More visible in restorative formula states.',ru:'Сильнее проявляется в восстановительных состояниях формулы.'},
+    trend:[.62,.60,.64,.66,.68,.70,.72,.76,.80,.84,.90,1]},
+  Ash:{dec:0,min:150,max:500,sMin:0,sMax:650,
+    about:{en:'Supports calmer evenings and stress recovery.',ru:'Поддерживает более спокойный вечер и восстановление после стресса.'},
+    aboutSub:{en:'Appears when stress markers push the formula toward restoration.',ru:'Появляется, когда стрессовые маркеры смещают формулу к восстановлению.'},
+    trend:[.36,.40,.46,.52,.60,.66,.72,.78,.84,.90,.95,1]},
+  Th:{dec:0,min:100,max:300,sMin:0,sMax:420,
+    about:{en:'Supports calm focus without pushing stimulation.',ru:'Поддерживает спокойный фокус без лишней стимуляции.'},
+    aboutSub:{en:'Balanced with omega-3 in focus-oriented capsule states.',ru:'Балансируется с омега-3 в состояниях капсулы для фокуса.'},
+    trend:[.48,.52,.56,.60,.64,.68,.74,.78,.84,.90,.96,1]},
+  B6:{dec:0,min:2,max:25,sMin:0,sMax:35,
+    about:{en:'Supports neurotransmitter metabolism and daily energy.',ru:'Поддерживает обмен нейромедиаторов и дневную энергию.'},
+    aboutSub:{en:'Kept modest unless the active state needs more focus support.',ru:'Держится умеренно, если активному состоянию не нужен больший фокус.'},
+    trend:[.58,.60,.62,.64,.66,.68,.70,.72,.76,.80,.88,1]}
+};
+
+/* warm density ramp (Hemoglobin ref): cream → amber → rust → dark */
+function rampColor(t){
+  const stops=[[243,221,176],[237,167,94],[198,95,46],[122,48,19]];
+  const x=Math.max(0,Math.min(1,t))*(stops.length-1);
+  const i=Math.min(stops.length-2,Math.floor(x)), f=x-i;
+  const c=stops[i].map((v,k)=>Math.round(v+(stops[i+1][k]-v)*f));
+  return `rgb(${c[0]},${c[1]},${c[2]})`;
+}
+/* gradient scale: soft luminous zone + glow node */
+function gradScale(el,cfg){
+  const t=Math.max(0,Math.min(1,cfg.t))*100;
+  if(cfg.warm){
+    const b0=(cfg.band?cfg.band[0]:0)*100, b1=(cfg.band?cfg.band[1]:1)*100;
+    el.innerHTML=`<div class="gt"></div>`+
+      `<div class="gband" style="left:${b0.toFixed(1)}%;right:${(100-b1).toFixed(1)}%"></div>`+
+      `<div class="gnode" style="left:${t.toFixed(1)}%"></div>`;
+  }else{
+    el.innerHTML=`<div class="gt"></div><div class="gfill" style="width:${t.toFixed(1)}%"></div>`;
+  }
+}
+/* trend: blurred gradient columns with thin neutral line + nodes */
+function drawTrend(canvas,bm){
+  const ctx=canvas.getContext('2d');
+  const W=canvas.width,H=canvas.height;
+  ctx.clearRect(0,0,W,H);
+  const n=bm.trend.length, padL=52,padR=16,padT=18,padB=16;
+  const iw=W-padL-padR, ih=H-padT-padB;
+  const X=i=>padL+iw*i/(n-1);
+  const Y=v=>padT+ih*(1-Math.max(0,Math.min(1,(v-bm.sMin)/(bm.sMax-bm.sMin))));
+  // faint gridlines + y labels
+  ctx.strokeStyle='rgba(120,126,136,.12)'; ctx.lineWidth=1;
+  ctx.fillStyle='#9ba0a7'; ctx.font='500 18px -apple-system,Inter,sans-serif';
+  ctx.textAlign='right'; ctx.textBaseline='middle';
+  [[bm.sMax,padT],[(bm.sMin+bm.sMax)/2,padT+ih/2],[bm.sMin,padT+ih]].forEach(([v,yy])=>{
+    ctx.beginPath(); ctx.moveTo(padL,yy); ctx.lineTo(W-padR,yy); ctx.stroke();
+    ctx.fillText((+v).toFixed(bm.dec>1?1:0),padL-12,yy);
+  });
+  // blurred gradient columns
+  const base=padT+ih;
+  ctx.save();
+  ctx.filter='blur(8px)';
+  bm.trend.forEach((v,i)=>{
+    const x=X(i)-7;
+    const y=Y(v);
+    const h=Math.max(10,base-y);
+    const g=ctx.createLinearGradient(0,y,0,base);
+    if(i>n-3){
+      g.addColorStop(0,'rgba(246,127,218,.78)');
+      g.addColorStop(.55,'rgba(145,113,232,.62)');
+      g.addColorStop(1,'rgba(255,255,255,0)');
+    }else{
+      g.addColorStop(0,'rgba(150,220,255,.74)');
+      g.addColorStop(.55,'rgba(169,232,118,.66)');
+      g.addColorStop(1,'rgba(255,255,255,0)');
+    }
+    ctx.fillStyle=g;
+    roundRect(ctx,x,y,14,h,7); ctx.fill();
+  });
+  ctx.restore();
+  // line
+  ctx.beginPath();
+  ctx.moveTo(X(0),Y(bm.trend[0]));
+  for(let i=1;i<n;i++) ctx.lineTo(X(i),Y(bm.trend[i]));
+  ctx.strokeStyle='rgba(92,96,104,.34)'; ctx.lineWidth=1.4; ctx.lineJoin='round'; ctx.stroke();
+  // neutral nodes
+  ctx.fillStyle='rgba(255,255,255,.9)';
+  ctx.strokeStyle='rgba(120,126,136,.34)';
+  ctx.lineWidth=1.2;
+  bm.trend.forEach((v,i)=>{
+    ctx.beginPath(); ctx.arc(X(i),Y(v),3.2,0,6.283); ctx.fill(); ctx.stroke();
+  });
+  ctx.fillStyle='rgba(80,86,96,.64)';
+  ctx.beginPath(); ctx.arc(X(n-1),Y(bm.trend[n-1]),2,0,6.283); ctx.fill();
+}
+
+const CW = 330, CH = 552;                 // drawing space with glow breathing room
+const DW = 330, DH = 552;                 // full-size capsule inside its card
+const PILL = { x:80, y:66, w:170, h:420, r:85 };  // capsule inside card
+
+/* ── Living field renderer, clipped to the capsule shell ── */
+class Field {
+  constructor(state){
+    this.s = state;
+    this.canvas = document.createElement('canvas');
+    this.ctx = this.canvas.getContext('2d');
+    this.t = Math.random()*100;
+    this.centered = false;
+    this.resize();
+    this.seed();
+  }
+  resize(){
+    const dpr = Math.min(window.devicePixelRatio||1, 2.5);
+    this.dpr = dpr;
+    this.canvas.width = CW*dpr; this.canvas.height = CH*dpr;
+    this.canvas.style.width = DW+'px'; this.canvas.style.height = DH+'px';
+    this.ctx.setTransform(dpr,0,0,dpr,0,0);
+  }
+  seed(){
+    const f=this.s.field; this.p=[];
+    for(let i=0;i<f.count;i++){
+      this.p.push({
+        hx:.5+(Math.random()-.5)*.7,
+        by:Math.random(),
+        r:f.sizeMin+Math.random()*(f.sizeMax-f.sizeMin),
+        f1:.3+Math.random()*.9, f2:.3+Math.random()*.9,
+        p1:Math.random()*6.28, p2:Math.random()*6.28,
+        a:.5+Math.random()*.5
+      });
+    }
+  }
+  update(dt){
+    const f=this.s.field; this.t+=dt*(0.4+f.speed);
+    for(const p of this.p){
+      p.by += f.gravity*dt*0.35;
+      if(f.gravity<0 && p.by<-0.18){ p.by=1.18; p.hx=.5+(Math.random()-.5)*.7; }
+      if(f.gravity>0 && p.by> 1.18){ p.by=-0.18; p.hx=.5+(Math.random()-.5)*.7; }
+    }
+  }
+  pill(ctx,ox,oy){
+    const {x,y,w,h,r}=PILL;
+    ctx.beginPath();
+    ctx.moveTo(ox+x+r,oy+y);
+    ctx.arcTo(ox+x+w,oy+y, ox+x+w,oy+y+h, r);
+    ctx.arcTo(ox+x+w,oy+y+h, ox+x,oy+y+h, r);
+    ctx.arcTo(ox+x,oy+y+h, ox+x,oy+y, r);
+    ctx.arcTo(ox+x,oy+y, ox+x+w,oy+y, r);
+    ctx.closePath();
+  }
+  /* draw everything into ctx at offset (ox,oy); scaleGlow dims off-center cards */
+  draw(ctx,ox=0,oy=0,glowMul=1){
+    const s=this.s, f=s.field, [R,G,B]=s.rgb, cx=ox+PILL.x+PILL.w/2;
+    const t=this.t;
+    const styles=getComputedStyle(document.documentElement);
+    const css=name=>styles.getPropertyValue(name).trim();
+
+    // 1. capsule interior + inner field (clipped)
+    ctx.save();
+    this.pill(ctx,ox,oy); ctx.clip();
+
+    // frosted base a touch darker than bg for depth
+    const base=ctx.createLinearGradient(0,oy+PILL.y,0,oy+PILL.y+PILL.h);
+    base.addColorStop(0,css('--capsule-base-top'));
+    base.addColorStop(.5,css('--capsule-base-mid'));
+    base.addColorStop(1,css('--capsule-base-bot'));
+    ctx.fillStyle=base;
+    this.pill(ctx,ox,oy); ctx.fill();
+
+    // density blobs (additive) = the living formula content
+    ctx.globalCompositeOperation='lighter';
+    for(const p of this.p){
+      const sway=Math.sin(t*p.f1+p.p1)*0.055;
+      const bob =Math.cos(t*p.f2+p.p2)*0.045;
+      let nx=p.hx+sway + f.centerPull*(0.5-p.hx);
+      let ny=p.by+bob;
+      const px=ox+PILL.x+nx*PILL.w;
+      const py=oy+PILL.y+ny*PILL.h;
+      const rr=p.r*(1+0.5*f.centerPull*(1-Math.abs(nx-.5)*2));
+      const g=ctx.createRadialGradient(px,py,0,px,py,rr);
+      const a=p.a*f.glow*glowMul;
+      g.addColorStop(0,`rgba(${R},${G},${B},${0.42*a})`);
+      g.addColorStop(.45,`rgba(${R},${G},${B},${0.16*a})`);
+      g.addColorStop(1,`rgba(${R},${G},${B},0)`);
+      ctx.fillStyle=g;
+      ctx.beginPath();ctx.arc(px,py,rr,0,6.2832);ctx.fill();
+    }
+
+    // soft top highlight inside the shell (glass)
+    ctx.globalCompositeOperation='source-over';
+    const hi=ctx.createLinearGradient(0,oy+PILL.y,0,oy+PILL.y+PILL.h*0.4);
+    hi.addColorStop(0,'rgba(255,255,255,.10)');
+    hi.addColorStop(1,'rgba(255,255,255,0)');
+    ctx.fillStyle=hi;
+    ctx.fillRect(ox+PILL.x,oy+PILL.y,PILL.w,PILL.h*0.4);
+    ctx.restore();
+
+    // 2. shell rim
+    ctx.save();
+    this.pill(ctx,ox,oy);
+    const rim=ctx.createLinearGradient(ox+PILL.x,0,ox+PILL.x+PILL.w,0);
+    rim.addColorStop(0,css('--rim-left'));
+    rim.addColorStop(.5,css('--rim-mid'));
+    rim.addColorStop(1,css('--rim-right'));
+    ctx.strokeStyle=rim; ctx.lineWidth=1.2; ctx.stroke();
+    ctx.restore();
+  }
+}
+
+/* ── build cards: own timer on top, capsule, meta below ── */
+const track=document.getElementById('track');
+const fields = STATES.map((s,i)=>{
+  const f=new Field(s);
+  const card=document.createElement('div');
+  card.className='card';
+  card.dataset.capsule=s.key;
+
+  const timer=document.createElement('div');
+  timer.className='cap-timer';
+  timer.innerHTML='<span class="ct-label"></span><b class="ct-time">--:--:--</b>';
+
+  const meta=document.createElement('div');
+  meta.className='cap-meta';
+  meta.innerHTML='<span class="cap-effect"></span><b class="cap-name"></b><span class="cap-when"></span>';
+
+  card.append(timer,f.canvas,meta);
+  track.appendChild(card);
+  f.card=card;
+  return f;
+});
+
+/* seconds until the next occurrence of the capsule intake time */
+function secondsToIntake(intake){
+  const now=new Date();
+  const at=new Date(now);
+  at.setHours(intake.h,intake.m,0,0);
+  if(at<=now) at.setDate(at.getDate()+1);
+  return Math.max(0,Math.round((at-now)/1000));
+}
+function fmtCountdown(total){
+  const h=Math.floor(total/3600), m=Math.floor((total%3600)/60), s=total%60;
+  return [h,m,s].map(v=>String(v).padStart(2,'0')).join(':');
+}
+function renderCards(){
+  fields.forEach((f,i)=>{
+    const s=STATES[i], it=s.intake;
+    f.card.querySelector('.ct-label').textContent=T.capTimerLabel[lang];
+    f.card.querySelector('.cap-effect').textContent=it.effect[lang];
+    f.card.querySelector('.cap-name').textContent=s.name[lang];
+    f.card.querySelector('.cap-when').textContent=`${it.time} · ${it.ctx[lang]}`;
+  });
+  tickCountdowns();
+}
+function tickCountdowns(){
+  fields.forEach((f,i)=>{
+    f.card.querySelector('.ct-time').textContent=fmtCountdown(secondsToIntake(STATES[i].intake));
+  });
+}
+setInterval(()=>{ if(view==='carousel') tickCountdowns(); },1000);
+
+
+/* ── state / layout ── */
+let active=0, dragOffset=0, dragging=false, view='home';
+const phone=document.getElementById('phone');
+const stage=document.getElementById('stage');
+const dashboard=document.getElementById('dashboard');
+
+const CAROUSEL_VP={ spacing:198, sFall:0.32, oFall:0.45, blurMax:2.2, sMin:0.66 };
+const VP = {
+  home:CAROUSEL_VP, carousel:CAROUSEL_VP, widget:CAROUSEL_VP,
+  bio:CAROUSEL_VP, biodetail:CAROUSEL_VP, profile:CAROUSEL_VP,
+};
+
+function layout(animate){
+  const vp=VP[view];
+  fields.forEach((f,i)=>{
+    const pos=(i-active)*vp.spacing+dragOffset;
+    const norm=pos/vp.spacing;
+    const s=Math.max(vp.sMin, 1-Math.abs(norm)*vp.sFall);
+    const op=Math.max(0, 1-Math.abs(norm)*vp.oFall);
+    const blur=Math.min(vp.blurMax, Math.abs(norm)*3);
+    f.card.classList.toggle('anim', animate);
+    f.card.style.transform=`translate(${pos}px,0) scale(${s})`;
+    f.card.style.opacity=op.toFixed(3);
+    f.card.style.filter=`blur(${blur.toFixed(2)}px)`;
+    f.card.style.zIndex=String(20-Math.round(Math.abs(norm)*10));
+    f.centered=(i===active);
+  });
+}
+
+function applyState(i){
+  const s=STATES[i];
+  document.documentElement.style.setProperty('--accent', BODY_STATE.rgb.join(','));
+  document.documentElement.style.setProperty('--accent-hex', BODY_STATE.hex);
+  renderStateWidget();
+  renderCards();
+  renderWidgetDetails(s);
+}
+
+/* ── state screen: overall status + biomarkers that need attention ── */
+function attentionList(){ return BIOMARKERS.filter(b=>statusOf(b)!=='in'); }
+function renderStateWidget(){
+  document.getElementById('heroEyebrow').textContent=T.stateKicker[lang];
+  const inRange=BIOMARKERS.filter(b=>statusOf(b)==='in').length;
+  const score=Math.round(inRange/BIOMARKERS.length*100);
+  document.getElementById('stateScore').innerHTML=`${score}<small>%</small>`;
+  document.getElementById('stateSub').textContent=lang==='ru'
+    ? `${inRange} из ${BIOMARKERS.length} показателей в личном диапазоне`
+    : `${inRange} of ${BIOMARKERS.length} biomarkers in personal range`;
+  const attn=attentionList();
+  document.getElementById('attnLabel').textContent=`${T.attnLabel[lang]} · ${attn.length}`;
+  const rows=document.getElementById('attnRows');
+  rows.innerHTML=attn.map(b=>{
+    const st=statusOf(b);
+    return `<div class="attn-row" data-bio="${b.key}">
+      <div class="aname">${b.name[lang]}<i>${st==='high'?'&#8593;':'&#8595;'}</i><small>${stText(st)}</small></div>
+      <div class="gscale mini" data-attn-scale="${b.key}"></div>
+      <div class="aval">${fmtVal(b)}</div>
+      <span class="open-arrow">&#8250;</span>
+    </div>`;
+  }).join('');
+  rows.querySelectorAll('.gscale').forEach(el=>{
+    const b=BIOMARKERS.find(x=>x.key===el.dataset.attnScale);
+    gradScale(el,{warm:true,
+      t:(b.value-b.sMin)/(b.sMax-b.sMin),
+      band:[(b.min-b.sMin)/(b.sMax-b.sMin),(b.max-b.sMin)/(b.sMax-b.sMin)]});
+  });
+  rows.querySelectorAll('.attn-row').forEach(el=>{
+    el.onclick=()=>openBio(el.dataset.bio,'home');
+  });
+  document.getElementById('seeMarkersText').textContent=T.seeMarkers[lang];
+}
+
+function fmtDose(d){
+  return `${d.amount} ${d.unit[lang]}`;
+}
+function doseValue(d){ return Number(String(d.amount).replace(',','.')) || 0; }
+function fmtSuppValue(item,v=doseValue(item)){
+  const dec=SUPPLEMENT_META[item.key]?.dec ?? 0;
+  const raw=(+v).toFixed(dec).replace(/\.0$/,'');
+  return raw.replace('.', lang==='ru'?',':'.');
+}
+function currentDose(key){
+  const s=STATES[active];
+  return s.dose.find(d=>d.key===key) || s.dose[0];
+}
+function supplementModel(d){
+  const meta=SUPPLEMENT_META[d.key] || {
+    dec:0,min:0,max:Math.max(doseValue(d)*1.4,1),sMin:0,sMax:Math.max(doseValue(d)*1.8,1),
+    about:{en:d.name.en,ru:d.name.ru},
+    aboutSub:{en:'Adjusted with the active capsule state.',ru:'Корректируется вместе с активным состоянием капсулы.'},
+    trend:[.55,.58,.60,.64,.68,.72,.76,.80,.84,.88,.94,1]
+  };
+  const value=doseValue(d);
+  return {
+    key:d.key,name:d.name,unit:d.unit[lang],dec:meta.dec,
+    value,min:meta.min,max:meta.max,sMin:meta.sMin,sMax:meta.sMax,
+    about:meta.about,aboutSub:meta.aboutSub,
+    from:{en:'Jan 2026',ru:'янв 2026'}, to:{en:'Jun 2026',ru:'июн 2026'},
+    trend:meta.trend.map(k=>+(value*k).toFixed(meta.dec))
+  };
+}
+
+let activeSupp='Mg';
+function openSupplement(key, from){
+  if(from) widgetBackTarget=from;
+  activeSupp=key;
+  renderSupplementDetail();
+  openWidget('supplement', widgetBackTarget);
+}
+function bindSupplementList(id, source){
+  const list=document.getElementById(id);
+  list.addEventListener('click',e=>{
+    const row=e.target.closest('[data-supp]');
+    if(!row || !list.contains(row)) return;
+    e.preventDefault();
+    e.stopPropagation();
+    e.stopImmediatePropagation();
+    openSupplement(row.dataset.supp, typeof source==='function'?source():source);
+  }, true);
+}
+/* ── capsule detail: impact, composition, why it is separate ── */
+function openCapsule(index){
+  if(index>=0 && index<STATES.length){
+    active=index; dragOffset=0;
+    applyState(active); layout(true);
+  }
+  renderCapsuleDetail();
+  openWidget('capsule','carousel');
+}
+function renderCapsuleDetail(){
+  const s=STATES[active], it=s.intake;
+  document.getElementById('capsuleKicker').textContent=`${T.capsuleKicker[lang]} · ${it.time}`;
+  document.getElementById('capsuleTitle').textContent=s.name[lang];
+  document.getElementById('capsuleImpactLabel').textContent=T.capsuleImpactLabel[lang];
+  document.getElementById('capsuleImpact').innerHTML=`${it.impact[lang]}<small>${it.impactSub[lang]}</small>`;
+  document.getElementById('capsuleCompLabel').textContent=T.capsuleCompLabel[lang];
+  document.getElementById('capsuleReasonLabel').textContent=T.capsuleReasonLabel[lang];
+  document.getElementById('capsuleReason').innerHTML=`${it.reason[lang]}<small>${it.time} · ${it.ctx[lang]}</small>`;
+  const rows=document.getElementById('capsuleRows');
+  rows.innerHTML=s.dose.map(d=>`
+    <div class="detail-row" data-supp="${d.key}">
+      <span>${d.key}<small>${d.name[lang]}</small></span>
+      <div class="gscale mini" data-level="${d.level}"></div>
+      <b>${fmtDose(d)}<small>${d.status[lang]}</small></b>
+      <i class="open-arrow">›</i>
+    </div>
+  `).join('');
+  rows.querySelectorAll('.gscale').forEach(el=>gradScale(el,{t:+el.dataset.level}));
+}
+function renderSupplementDetail(){
+  const d=currentDose(activeSupp);
+  activeSupp=d.key;
+  const m=supplementModel(d);
+  const status=d.status[lang];
+  document.getElementById('suppKicker').textContent=`${T.suppKicker[lang]} · ${STATES[active].name[lang]}`;
+  document.getElementById('suppTitle').textContent=d.name[lang];
+  document.getElementById('suppValueNum').textContent=fmtSuppValue(d,m.value);
+  document.getElementById('suppUnit').textContent=m.unit;
+  document.getElementById('suppPill').textContent=status;
+  gradScale(document.getElementById('suppScale'),{warm:true,
+    t:(m.value-m.sMin)/(m.sMax-m.sMin),
+    band:[(m.min-m.sMin)/(m.sMax-m.sMin),(m.max-m.sMin)/(m.sMax-m.sMin)]});
+  document.getElementById('suppMin').textContent=fmtSuppValue(d,m.min);
+  document.getElementById('suppMax').textContent=fmtSuppValue(d,m.max);
+  document.getElementById('suppAboutLabel').textContent=T.aboutLabel[lang];
+  document.getElementById('suppAbout').innerHTML=`${m.about[lang]}<small>${m.aboutSub[lang]}</small>`;
+  document.getElementById('suppTrendLabel').textContent=T.trendLabel[lang];
+  document.getElementById('suppPeriod').textContent=`${m.from[lang]} – ${m.to[lang]}`;
+  const delta=m.trend[m.trend.length-1]-m.trend[0], up=delta>=0;
+  document.getElementById('suppDelta').innerHTML=
+    `<i${up?'':' class="down"'}>${up?'▲':'▼'}</i>${fmtSuppValue(d,Math.abs(delta))} ${m.unit}`;
+  document.getElementById('suppTrendFrom').textContent=m.from[lang];
+  document.getElementById('suppTrendTo').textContent=m.to[lang];
+  const tc=document.getElementById('suppTrendCanvas');
+  const dpr=Math.min(window.devicePixelRatio||1,2.5);
+  tc.style.width='100%'; tc.style.height='150px';
+  tc.width=Math.round(tc.clientWidth*dpr);
+  tc.height=Math.round(tc.clientHeight*dpr);
+  drawTrend(tc,m);
+  /* the only way out of a component: its related biomarker */
+  const link=document.getElementById('suppBioLink');
+  const bioKey=SUPP_BIO[d.key];
+  const bio=bioKey && BIOMARKERS.find(x=>x.key===bioKey);
+  link.style.display=bio?'':'none';
+  if(bio){
+    document.getElementById('suppBioTitle').textContent=`${T.relatedBio[lang]} · ${bio.name[lang]}`;
+    document.getElementById('suppBioSub').textContent=`${fmtVal(bio)} ${bio.unit} · ${stText(statusOf(bio))}`;
+    link.onclick=()=>openBio(bio.key,'supplement');
+  }
+}
+
+/* ── biomarkers rendering ── */
+let activeBio='glucose';
+function statusOf(b){ return b.value>b.max?'high':b.value<b.min?'low':'in'; }
+function stText(st){ return st==='in'?T.stIn[lang]:st==='high'?T.stHigh[lang]:T.stLow[lang]; }
+function fmtVal(b,v=b.value){ return (+v).toFixed(b.dec).replace('.', lang==='ru'?',':'.'); }
+function renderBioList(){
+  document.getElementById('bioKicker').textContent=T.bioKicker[lang];
+  document.getElementById('bioTitle').textContent=T.bioTitle[lang];
+  const list=document.getElementById('bioList');
+  list.innerHTML=BIOMARKERS.map(b=>{
+    const st=statusOf(b);
+    return `<div class="bio-item" data-bio="${b.key}">
+      <div class="bname">${b.name[lang]}<small>${b.unit}</small></div>
+      <div class="gscale mini" data-bio-scale="${b.key}"></div>
+      <div class="bval">${fmtVal(b)}<small class="${st!=='in'?'warn':''}">${stText(st)}</small></div>
+      <span class="open-arrow">&#8250;</span>
+    </div>`;
+  }).join('');
+  list.querySelectorAll('.gscale').forEach(el=>{
+    const b=BIOMARKERS.find(x=>x.key===el.dataset.bioScale);
+    gradScale(el,{warm:true,
+      t:(b.value-b.sMin)/(b.sMax-b.sMin),
+      band:[(b.min-b.sMin)/(b.sMax-b.sMin),(b.max-b.sMin)/(b.sMax-b.sMin)]});
+  });
+  list.querySelectorAll('.bio-item').forEach(el=>el.onclick=()=>openBio(el.dataset.bio,'bio'));
+}
+let bioBackTarget='bio';
+function openBio(key, from){
+  activeBio=key;
+  if(from) bioBackTarget=from;
+  setView('biodetail');
+  requestAnimationFrame(renderBioDetail);
+}
+function renderBioDetail(){
+  const b=BIOMARKERS.find(x=>x.key===activeBio);
+  const st=statusOf(b);
+  document.getElementById('biodKicker').textContent=T.biodSource[lang];
+  document.getElementById('biodTitle').textContent=b.name[lang];
+  document.getElementById('biodValueNum').textContent=fmtVal(b);
+  document.getElementById('biodUnit').textContent=b.unit;
+  const pill=document.getElementById('biodPill');
+  pill.textContent=stText(st);
+  pill.classList.toggle('warn', st!=='in');
+  gradScale(document.getElementById('biodScale'),{warm:true,
+    t:(b.value-b.sMin)/(b.sMax-b.sMin),
+    band:[(b.min-b.sMin)/(b.sMax-b.sMin),(b.max-b.sMin)/(b.sMax-b.sMin)]});
+  document.getElementById('biodMin').textContent=fmtVal(b,b.min);
+  document.getElementById('biodMax').textContent=fmtVal(b,b.max);
+  document.getElementById('biodAboutLabel').textContent=T.aboutLabel[lang];
+  document.getElementById('biodAbout').innerHTML=`${b.about[lang]}<small>${b.aboutSub[lang]}</small>`;
+  document.getElementById('biodTrendLabel').textContent=T.trendLabel[lang];
+  document.getElementById('biodPeriod').textContent=`${b.from[lang]} – ${b.to[lang]}`;
+  const d=b.trend[b.trend.length-1]-b.trend[0], up=d>=0;
+  document.getElementById('biodDelta').innerHTML=
+    `<i${up?'':' class="down"'}>${up?'▲':'▼'}</i>${fmtVal(b,Math.abs(d))} ${b.unit}`;
+  document.getElementById('trendFrom').textContent=b.from[lang];
+  document.getElementById('trendTo').textContent=b.to[lang];
+  const tc=document.getElementById('trendCanvas');
+  const dpr=Math.min(window.devicePixelRatio||1,2.5);
+  tc.style.width='100%'; tc.style.height='150px';
+  tc.width=Math.round(tc.clientWidth*dpr);
+  tc.height=Math.round(tc.clientHeight*dpr);
+  drawTrend(tc,b);
+}
+
+function renderWidgetDetails(s){
+  renderCapsuleDetail();
+  if(lastWidgetScreen==='supplement') renderSupplementDetail();
+  document.getElementById('systemKicker').textContent=T.systemKicker[lang];
+  document.getElementById('systemTitle').textContent=T.systemStatus[lang];
+  document.getElementById('systemPackLabel').textContent=T.systemPack[lang];
+  document.getElementById('systemPackValue').textContent=lang==='ru'?'5 дней':'5 days';
+  document.getElementById('systemFormulaLabel').textContent=T.systemFormula[lang];
+  document.getElementById('systemFormulaValue').textContent=T.stateActive[lang];
+  document.getElementById('subscriptionLabel').textContent=T.subscriptionLabel[lang];
+  document.getElementById('subscriptionPlan').textContent=T.subscriptionPlan[lang];
+  document.getElementById('subscriptionPrice').textContent=T.subscriptionPrice[lang];
+  document.getElementById('subscriptionRenewLabel').textContent=T.subscriptionRenew[lang];
+  document.getElementById('subscriptionRenewValue').textContent=T.subscriptionRenewValue[lang];
+  document.getElementById('subscriptionIncludesLabel').textContent=T.subscriptionIncludes[lang];
+  document.getElementById('subscriptionIncludesValue').textContent=T.subscriptionIncludesValue[lang];
+  document.getElementById('subscriptionAdjustLabel').textContent=T.subscriptionAdjust[lang];
+  document.getElementById('subscriptionAdjustValue').textContent=T.subscriptionAdjustValue[lang];
+  document.getElementById('subscriptionEdit').textContent=T.subscriptionEdit[lang];
+  document.getElementById('subscriptionPause').textContent=T.subscriptionPause[lang];
+  document.getElementById('systemNote').textContent=T.systemNote[lang];
+  document.getElementById('sensorKicker').textContent=T.sensorKicker[lang];
+  document.getElementById('sensorDetailTitle').textContent=T.sensorActive[lang];
+  document.getElementById('sensorStatusPill').textContent=T.sensorNormal[lang];
+  document.getElementById('sensorReadLabel').textContent=T.sensorSync[lang];
+  document.getElementById('sensorReadValue').textContent=lang==='ru'?'12 мин':'12 min';
+  document.getElementById('sensorSignalLabel').textContent=T.sensorSignal[lang];
+  document.getElementById('sensorSignalValue').textContent=T.sensorClear[lang];
+  document.getElementById('sensorReadsLabel').textContent=T.sensorReadsLabel[lang];
+  document.getElementById('sensorReads').innerHTML=BIOMARKERS.map(b=>`<em>${b.name[lang]}</em>`).join('');
+  document.getElementById('sensorNote').textContent=T.sensorNote[lang];
+  /* next-shipment calendar (July, ships on 24) */
+  document.getElementById('shipCalLabel').textContent=T.shipCalLabel[lang];
+  document.getElementById('shipMonth').textContent=T.shipMonth[lang];
+  const cal=document.getElementById('shipCal');
+  let cells='<span class="blank"></span><span class="blank"></span>';
+  for(let d=1;d<=31;d++) cells+=`<span class="${d===24?'ship':''}">${d}</span>`;
+  cal.innerHTML=cells;
+}
+
+function go(i){
+  active=Math.max(0,Math.min(STATES.length-1,i));
+  dragOffset=0;
+  layout(true);
+  applyState(active);
+}
+
+function setView(v){
+  view=v;
+  if(v==='bio') renderBioList();
+  if(v==='carousel') renderCards();
+  phone.classList.remove('view-home','view-carousel','view-widget','view-bio','view-biodetail','view-profile');
+  phone.classList.add('view-'+v);
+  layout(true);
+  syncTabs();
+  syncScreenIndex();
+}
+
+let lastWidgetScreen='overview';
+let widgetBackTarget='home';
+function openWidget(screen, from){
+  if(from) widgetBackTarget=from;
+  else if(screen!=='supplement') widgetBackTarget='home';
+  lastWidgetScreen=screen;
+  document.querySelectorAll('.detail-screen').forEach(el=>el.classList.toggle('on', el.dataset.screen===screen));
+  setView('widget');
+}
+
+/* tab bar: 2 sections — State / Formula */
+function syncTabs(){
+  const map={home:'home', bio:'home', biodetail:(bioBackTarget==='supplement'?'formula':'home'),
+    carousel:'formula',
+    widget:(lastWidgetScreen==='capsule'||lastWidgetScreen==='supplement'?'formula':'home')};
+  const on=map[view]||'home';
+  document.querySelectorAll('#tabbar .tab').forEach(t=>t.classList.toggle('on', t.dataset.tab===on));
+}
+document.querySelectorAll('#tabbar .tab').forEach(t=>{
+  t.onclick=()=>{
+    const k=t.dataset.tab;
+    if(k==='home') setView('home');
+    else setView('carousel');   // Formula = carousel of the three capsules
+  };
+});
+
+/* External index is only a presentation aid: it is not part of the app UI. */
+function syncScreenIndex(){
+  let current=view;
+  if(view==='widget') current=lastWidgetScreen;
+  document.querySelectorAll('[data-prototype-screen]').forEach(button=>{
+    button.classList.toggle('on',button.dataset.prototypeScreen===current);
+  });
+}
+document.querySelectorAll('[data-prototype-screen]').forEach(button=>{
+  button.addEventListener('click',()=>{
+    const screen=button.dataset.prototypeScreen;
+    if(screen==='home') setView('home');
+    else if(screen==='bio') setView('bio');
+    else if(screen==='biodetail') openBio('vitd','home');
+    else if(screen==='carousel') setView('carousel');
+    else if(screen==='capsule') openCapsule(0);
+    else if(screen==='supplement') openSupplement('Mg','carousel');
+    else if(screen==='sensor') openWidget('sensor','home');
+    else if(screen==='profile') openProfile();
+  });
+});
+
+/* ── language ── */
+function setLang(l){
+  lang=l;
+  try{ localStorage.setItem('impre-lang',l); }catch(_){}
+  document.querySelectorAll('#lang button').forEach(b=>b.classList.toggle('on', b.dataset.l===l));
+  document.getElementById('exportBtn').textContent=T.export[l];
+  document.getElementById('themeLabel').textContent=T.theme[l];
+  document.getElementById('languageLabel').textContent=T.language[l];
+  applyProfileLang(l);
+  document.querySelector('#themeOptions button[data-theme="light"]').textContent=T.light[l];
+  document.querySelector('#themeOptions button[data-theme="dark"]').textContent=T.dark[l];
+  document.getElementById('tabHome').textContent=T.tabHome[l];
+  document.getElementById('tabFormula').textContent=T.tabFormula[l];
+  renderBioList();
+  if(view==='biodetail') renderBioDetail();
+  applyState(active);
+  syncTabs();
+}
+document.querySelectorAll('#lang button').forEach(b=>{
+  b.onclick=()=>setLang(b.dataset.l);
+});
+
+/* ── settings ── */
+function setTheme(next){
+  theme=next;
+  try{ localStorage.setItem('impre-theme',next); }catch(_){}
+  document.documentElement.dataset.theme=next;
+  document.querySelectorAll('#themeOptions button').forEach(b=>b.classList.toggle('on', b.dataset.theme===next));
+}
+document.querySelectorAll('#themeOptions button').forEach(b=>{
+  b.onclick=()=>{ setTheme(b.dataset.theme); try{ localStorage.setItem('impre-theme',b.dataset.theme); }catch(_){} };
+});
+
+/* ── profile window ── */
+function applyProfileLang(l){
+  const set=(id,v)=>{const e=document.getElementById(id); if(e) e.textContent=v;};
+  set('pgService',T.pgService[l]); set('pgDevice',T.pgDevice[l]);
+  set('pgSettings',T.pgSettings[l]); set('pgAccount',T.pgAccount[l]);
+  set('ppPlanLabel',T.ppPlan[l]); set('ppRenewLabel',T.ppRenew[l]); set('ppAddrLabel',T.ppAddr[l]);
+  set('ppPayLabel',T.ppPay[l]); set('ppLastLabel',T.ppLast[l]);
+  set('ppSensorLabel',T.ppSensor[l]); set('ppBattLabel',T.ppBatt[l]); set('ppWearLabel',T.ppWear[l]);
+  set('ppMailLabel',T.ppMail[l]);
+  set('ppManage',T.ppManage[l]+' ›'); set('ppLogout',T.ppLogout[l]);
+  set('themeLabel',T.theme[l]); set('languageLabel',T.language[l]);
+}
+let profileReturn='home';
+function openProfile(){
+  if(view!=='profile') profileReturn=view;
+  setView('profile');
+}
+function closeProfile(){ setView(profileReturn); }
+document.getElementById('profileBtn').onclick=openProfile;
+document.getElementById('profileClose').onclick=closeProfile;
+
+/* ── drag ── */
+let startX=0, lastX=0, moved=0;
+stage.addEventListener('pointerdown',e=>{
+  dragging=true; moved=0; startX=lastX=e.clientX;
+  stage.classList.add('drag'); stage.setPointerCapture(e.pointerId);
+});
+stage.addEventListener('pointermove',e=>{
+  if(!dragging)return;
+  const dx=e.clientX-lastX; lastX=e.clientX; moved+=Math.abs(dx);
+  dragOffset+=dx;
+  const max=VP[view].spacing*0.55;
+  dragOffset=clamp(dragOffset,-max,max);
+  layout(false);
+});
+function endDrag(e){
+  if(!dragging)return; dragging=false; stage.classList.remove('drag');
+  if(moved<6){
+    // tap: side → switch neighbour, centre → open capsule details
+    const rect=stage.getBoundingClientRect();
+    const rel=(e.clientX-rect.left)-rect.width/2;
+    if(rel<-104 && active>0) return go(active-1);
+    if(rel> 104 && active<STATES.length-1) return go(active+1);
+    dragOffset=0; layout(true);
+    if(view==='carousel') openCapsule(active);
+    return;
+  }
+  const origOffset=dragOffset;
+  const shift=Math.round(-origOffset/(VP[view].spacing*0.5));
+  const step=shift>0?1:shift<0?-1:0;
+  go(active+Math.max(-1,Math.min(1,step)));
+}
+stage.addEventListener('pointerup',endDrag);
+stage.addEventListener('pointercancel',endDrag);
+
+function bindBack(id,targetView){
+  const el=document.getElementById(id);
+  const goBack=e=>{ e.preventDefault(); e.stopPropagation(); dragOffset=0; setView(targetView); };
+  el.addEventListener('pointerdown',goBack);
+  el.addEventListener('click',goBack);
+}
+function widgetGoBack(){
+  if(lastWidgetScreen==='supplement') openWidget('capsule', 'carousel');
+  else setView(widgetBackTarget);
+}
+/* single top-left back for all sheets (шторки) */
+document.getElementById('sheetBack').addEventListener('click',e=>{
+  e.preventDefault(); e.stopPropagation();
+  if(view==='bio') setView('home');
+  else if(view==='biodetail'){
+    if(bioBackTarget==='supplement') openWidget('supplement','carousel');
+    else setView(bioBackTarget==='home'?'home':'bio');
+  }
+  else if(view==='widget') widgetGoBack();
+});
+document.getElementById('sensorChip').addEventListener('click',e=>{
+  e.stopPropagation();
+  openWidget('sensor','home');
+});
+document.getElementById('seeMarkers').addEventListener('click',()=>setView('bio'));
+document.getElementById('ppManage').addEventListener('click',()=>openWidget('system','profile'));
+bindSupplementList('capsuleRows','carousel');
+
+/* ────────────────────────────────────────────────────────────
+   Export: compose the whole screen into a 390×844 PNG.
+   ──────────────────────────────────────────────────────────── */
+document.getElementById('exportBtn').onclick=()=>{
+  const W=390,H=844,dpr=2;
+  const c=document.createElement('canvas');
+  c.width=W*dpr; c.height=H*dpr;
+  const x=c.getContext('2d'); x.setTransform(dpr,0,0,dpr,0,0);
+  const s=STATES[active];
+  const nm=s.name[lang], fm=s.formula[lang];
+  const evw=(view==='carousel')?'carousel':'home';
+
+  const isLight=theme==='light';
+  const ink=isLight?'#222327':'#f3f2ef';
+  const mute=isLight?'#777b82':'#9a9ba0';
+  const faint=isLight?'#9ba0a7':'#6b6c72';
+  const tickMajor=isLight?'rgba(48,53,60,.20)':'rgba(255,255,255,.16)';
+  const tickMinor=isLight?'rgba(48,53,60,.10)':'rgba(255,255,255,.09)';
+
+  // background
+  const bg=x.createRadialGradient(W/2,100,20,W/2,120,H*0.9);
+  if(isLight){
+    bg.addColorStop(0,'#e4e7eb'); bg.addColorStop(1,'#e4e7eb');
+  }else{
+    bg.addColorStop(0,'#484a4f'); bg.addColorStop(.6,'#2d2f34'); bg.addColorStop(1,'#26272b');
+  }
+  x.fillStyle=bg; roundRect(x,0,0,W,H,52); x.fill();
+  x.save(); roundRect(x,0,0,W,H,52); x.clip();
+
+  // root tab bar (all exported views)
+  const drawTab=(act)=>{
+    const items=[[T.tabHome[lang],'home'],[T.tabFormula[lang],'formula']];
+    x.font='600 11px -apple-system,Inter,sans-serif'; x.textBaseline='middle';
+    const padX=13, gap=4, ih=32;
+    const ws=items.map(([t])=>Math.ceil(x.measureText(t).width)+padX*2);
+    const total=ws.reduce((a,b)=>a+b,0)+gap*(items.length-1)+12;
+    const bx=195-total/2, by=844-20-ih-12;
+    x.fillStyle=isLight?'rgba(255,255,255,.9)':'rgba(255,255,255,.12)';
+    roundRect(x,bx,by,total,ih+12,(ih+12)/2); x.fill();
+    x.strokeStyle=isLight?'rgba(30,34,40,.08)':'rgba(255,255,255,.09)'; x.lineWidth=1;
+    roundRect(x,bx,by,total,ih+12,(ih+12)/2); x.stroke();
+    let cx0=bx+6;
+    items.forEach(([t,k],i)=>{
+      if(k===act){ x.fillStyle=`rgba(${s.rgb.join(',')},.16)`; roundRect(x,cx0,by+6,ws[i],ih,ih/2); x.fill(); }
+      x.fillStyle=k===act?ink:mute; x.textAlign='center';
+      x.fillText(t,cx0+ws[i]/2,by+6+ih/2+.5);
+      cx0+=ws[i]+gap;
+    });
+    x.textBaseline='alphabetic';
+  };
+  // accent gradient bar for exported formula rows
+  const dotRow=(px0,py,w,n,t)=>{
+    const h=6, yy=py-h/2;
+    x.fillStyle=isLight?'rgba(120,126,136,.15)':'rgba(255,255,255,.12)';
+    roundRect(x,px0,yy,w,h,h/2); x.fill();
+    const fw=Math.max(h,w*Math.max(0,Math.min(1,t)));
+    const g=x.createLinearGradient(px0,0,px0+fw,0);
+    g.addColorStop(0,`rgba(${s.rgb.join(',')},.42)`); g.addColorStop(1,s.hex);
+    x.fillStyle=g; roundRect(x,px0,yy,fw,h,h/2); x.fill();
+  };
+
+  if(evw==='home'){
+    const widgetFill=isLight?'#fff':'rgba(255,255,255,.07)';
+    const widgetStroke=isLight?'rgba(255,255,255,0)':'rgba(255,255,255,.11)';
+    const drawWidget=(px,py,pw,ph,pr)=>{
+      if(isLight){
+        x.fillStyle=widgetFill;
+      }else{
+        const g=x.createLinearGradient(px,py,px+pw,py+ph);
+        g.addColorStop(0,widgetFill);
+        g.addColorStop(1,'rgba(255,255,255,.035)');
+        x.fillStyle=g;
+      }
+      roundRect(x,px,py,pw,ph,pr); x.fill();
+      x.strokeStyle=widgetStroke; x.lineWidth=1; roundRect(x,px,py,pw,ph,pr); x.stroke();
+    };
+    /* one full-height state widget */
+    drawWidget(18,112,354,636,54);
+    x.fillStyle=faint; x.font='11px -apple-system,Inter,sans-serif'; x.textAlign='left';
+    x.fillText(T.stateKicker[lang].toUpperCase(),46,152);
+    x.fillStyle=ink; x.font='250 78px -apple-system,Inter,sans-serif';
+    x.fillText(`${BODY_STATE.score}%`,46,232);
+    x.fillStyle=mute; x.font='13px -apple-system,Inter,sans-serif';
+    x.fillText(BODY_STATE.signal[lang],46,262);
+    [[70,330],[104,306],[138,290],[172,300],[206,318],[240,336],[274,322],[308,344]].forEach(([px,py],i)=>{
+      const g=x.createLinearGradient(px,py,px,py+60);
+      g.addColorStop(0, i>5?'rgba(133,90,232,.86)':'rgba(143,219,255,.84)');
+      g.addColorStop(1, i>5?'rgba(247,109,210,.72)':'rgba(174,231,126,.9)');
+      x.fillStyle=g; roundRect(x,px-6,py,13,360-py+20,7); x.fill();
+    });
+    const attn=attentionList();
+    x.fillStyle=faint; x.font='10.5px -apple-system,Inter,sans-serif';
+    x.fillText(`${T.attnLabel[lang].toUpperCase()} · ${attn.length}`,46,470);
+    attn.slice(0,2).forEach((b,idx)=>{
+      const y=510+idx*54;
+      x.fillStyle=ink; x.font='600 14px -apple-system,Inter,sans-serif'; x.textAlign='left';
+      x.fillText(b.name[lang],46,y);
+      x.fillStyle=faint; x.font='11px -apple-system,Inter,sans-serif'; x.fillText(b.unit,46,y+16);
+      dotRow(196,y-2,84,14,(b.value-b.sMin)/(b.sMax-b.sMin));
+      x.textAlign='right'; x.fillStyle=ink; x.font='600 14px -apple-system,Inter,sans-serif';
+      x.fillText(fmtVal(b),344,y);
+      x.fillStyle='#b4552a'; x.font='11px -apple-system,Inter,sans-serif';
+      x.fillText(stText(statusOf(b)),344,y+16);
+    });
+    x.fillStyle=isLight?'rgba(120,126,136,.09)':'rgba(255,255,255,.09)';
+    roundRect(x,46,668,300,48,24); x.fill();
+    x.fillStyle=ink; x.font='600 13.5px -apple-system,Inter,sans-serif'; x.textAlign='left';
+    x.fillText(T.seeMarkers[lang],66,697);
+    x.fillStyle=faint; x.font='17px -apple-system,Inter,sans-serif'; x.textAlign='right'; x.fillText('→',326,697);
+
+    drawTab('home');
+    x.restore();
+    finishExport(c,s);
+    return;
+  }
+
+  // formula carousel: every capsule card carries its own timer + meta
+  const vp=VP[evw];
+const CARD_W=330, CARD_H=552, CANVAS_TOP=150;
+  const drawCapsuleCard=(idx,ox,scale,glow)=>{
+    if(idx<0||idx>=fields.length)return;
+    const st=STATES[idx], it=st.intake;
+    const tmp=document.createElement('canvas'); tmp.width=CW; tmp.height=CH;
+    fields[idx].draw(tmp.getContext('2d'),0,0,glow);
+    const w=CARD_W*scale, h=CARD_H*scale;
+    const cy=CANVAS_TOP+CARD_H/2;
+    const centre=(idx===active);
+    x.globalAlpha=centre?1:.45;
+    x.drawImage(tmp, ox-w/2, cy-h/2, w, h);
+    if(centre){
+      x.textAlign='center';
+      x.fillStyle=faint; x.font='10px -apple-system,Inter,sans-serif';
+      x.fillText(T.capTimerLabel[lang].toUpperCase(),ox,152);
+      x.fillStyle=ink; x.font='300 27px -apple-system,Inter,sans-serif';
+      x.fillText(fmtCountdown(secondsToIntake(it)),ox,184);
+      const my=CANVAS_TOP+CARD_H-16;
+      const eff=it.effect[lang];
+      x.font='600 11.5px -apple-system,Inter,sans-serif';
+      const ew=x.measureText(eff).width+24;
+      x.fillStyle=`rgba(${BODY_STATE.rgb.join(',')},.16)`;
+      roundRect(x,ox-ew/2,my-18,ew,26,13); x.fill();
+      x.fillStyle=ink; x.fillText(eff,ox,my);
+      x.font='500 22px -apple-system,Inter,sans-serif';
+      x.fillText(st.name[lang],ox,my+38);
+      x.fillStyle=mute; x.font='12px -apple-system,Inter,sans-serif';
+      x.fillText(`${it.time} · ${it.ctx[lang]}`,ox,my+60);
+    }
+    x.globalAlpha=1;
+  };
+  const nOff=vp.spacing, nS=Math.max(vp.sMin,1-vp.sFall);
+  drawCapsuleCard(active-1, 195-nOff, nS, .5);
+  drawCapsuleCard(active+1, 195+nOff, nS, .5);
+  drawCapsuleCard(active, 195, 1, 1);
+
+  drawTab('formula');
+  x.restore();
+  finishExport(c,s);
+};
+function finishExport(c,s){
+  c.toBlob(b=>{
+    const a=document.createElement('a');
+    a.download=`impre-${s.key}.png`; a.href=URL.createObjectURL(b); a.click();
+    setTimeout(()=>URL.revokeObjectURL(a.href),1000);
+  },'image/png');
+};
+
+  /* ── persistence ── */
+  (function persist(){
+    try{
+      const l=localStorage.getItem('impre-lang'); if(l) lang=l;
+      const t=localStorage.getItem('impre-theme'); if(t) theme=t;
+    }catch(_){}
+  })();
+
+  /* ── utils ── */
+  function roundRect(ctx,x,y,w,h,r){
+    ctx.beginPath();
+    ctx.moveTo(x+r,y); ctx.arcTo(x+w,y,x+w,y+h,r);
+    ctx.arcTo(x+w,y+h,x,y+h,r);
+    ctx.arcTo(x,y+h,x,y,r);
+    ctx.arcTo(x,y,x+w,y,r);
+    ctx.closePath();
+  }
+  function clamp(v,lo,hi){ return v<lo? lo+(v-lo)*.3 : v>hi? hi+(v-hi)*.3 : v; }
+  function measureText(x,t){
+    x.save(); x.font='11px -apple-system,Inter,sans-serif';
+    const w=x.measureText(t.split('').join(' ')).width; x.restore();
+    return w;
+  }
+
+  /* ── animation loop ── */
+  let prev=performance.now();
+  function frame(now){
+    const dt=Math.min(.05,(now-prev)/1000); prev=now;
+    if(view!=='carousel'){
+      /* skip expensive card rendering when the stage is hidden */
+      fields.forEach(f=>{ f.update(dt); f.centered=(f===fields[active]); });
+    }else{
+      fields.forEach(f=>{
+        f.update(dt);
+        const ctx=f.ctx;
+        ctx.clearRect(0,0,CW,CH);
+        f.draw(ctx,0,0, f.centered?1:0.62);
+      });
+    }
+    requestAnimationFrame(frame);
+  }
+  requestAnimationFrame(frame);
+
+  /* ── init ── */
+  setTheme(theme);
+  setView('home');
+  setLang(lang);
+</script>
+</body>
+</html>
