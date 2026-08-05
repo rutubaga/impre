@@ -24,6 +24,18 @@
     --notch:#0c0c0e;
     --phone-shadow:0 40px 120px -30px rgba(0,0,0,.85), inset 0 0 0 1px rgba(255,255,255,.04);
     --vignette:rgba(0,0,0,.22);
+    /* язык поверхностей главного экрана: заливки почти нет,
+       вся форма держится рассеянной внутренней тенью (Border.svg) */
+    --surface:rgba(255,255,255,.045);
+    --glow-s:inset 0 0 18px 6px rgba(255,255,255,.07);
+    --glow-m:inset 0 0 26px 10px rgba(255,255,255,.08);
+    --glow-l:inset 0 0 40px 16px rgba(255,255,255,.09);
+    --solid:rgba(255,255,255,.14);
+    /* обычная плашка контента: ровная заливка, без свечения.
+       свечение оставляем акцентам — их на экране единицы */
+    --card:rgba(255,255,255,.06);
+    /* мелкие контролы внутри плашки: белое на белом не читается */
+    --control-soft:rgba(255,255,255,.10);
     --capsule-base-top:rgba(255,255,255,.05);
     --capsule-base-mid:rgba(20,21,24,.28);
     --capsule-base-bot:rgba(12,13,15,.42);
@@ -49,6 +61,13 @@
     --notch:#111215;
     --phone-shadow:0 36px 110px -42px rgba(32,36,44,.55), inset 0 0 0 1px rgba(255,255,255,.82);
     --vignette:rgba(120,126,136,.12);
+    --surface:rgba(255,255,255,.01);
+    --glow-s:inset 0 0 18px 7px #fff;
+    --glow-m:inset 0 0 26px 12px #fff;
+    --glow-l:inset 0 0 40px 18px #fff;
+    --solid:#fff;
+    --card:#fff;
+    --control-soft:rgba(120,126,136,.10);
     --capsule-base-top:rgba(255,255,255,.72);
     --capsule-base-mid:rgba(230,234,238,.46);
     --capsule-base-bot:rgba(210,216,224,.58);
@@ -90,38 +109,66 @@
     transition:opacity .45s ease;scrollbar-width:none}
   .dashboard::-webkit-scrollbar{width:0;height:0}
   .widget{position:relative;overflow:hidden;border-radius:46px;
-    background:#fff;
+    background:var(--surface);
     border:0;
     box-shadow:none;
-    backdrop-filter:blur(18px)}
-  .widget::after{content:"";position:absolute;inset:0;border-radius:inherit;pointer-events:none;
-    border:1px solid rgba(255,255,255,.72)}
-  :root[data-theme="dark"] .widget{
-    background:linear-gradient(145deg,rgba(255,255,255,.095),rgba(255,255,255,.04));
-    border-color:rgba(255,255,255,.11);
-    box-shadow:0 30px 90px -54px rgba(0,0,0,.9), inset 0 1px 0 rgba(255,255,255,.08)}
-  .hero-widget{flex:none;min-height:458px;padding:30px 28px 24px;border-radius:54px;
-    display:flex;flex-direction:column;z-index:1}
-  .hero-widget::after{border-color:rgba(255,255,255,.9)}
-  .sensor-summary-grid{position:relative;z-index:1;display:grid;grid-template-columns:1fr 1fr;gap:12px}
-  .sensor-summary{min-height:138px;padding:18px;border-radius:36px;text-align:left;cursor:pointer}
-  .sensor-summary:active{opacity:.68}
-  .sensor-summary-head{display:flex;align-items:center;justify-content:space-between;color:var(--ink-faint);font-size:11px;letter-spacing:1.5px;text-transform:uppercase}
-  .sensor-summary-icon{display:grid;place-items:center;width:28px;height:28px;border-radius:50%;background:rgba(var(--accent),.16);color:var(--ink);font-size:16px;letter-spacing:0}
-  .sensor-summary-value{display:block;margin-top:23px;font-size:29px;font-weight:300;letter-spacing:-1px;color:var(--ink);line-height:1}
-  .sensor-summary-value small{font-size:13px;font-weight:500;letter-spacing:0;color:var(--ink-mute)}
-  .sensor-summary-note{display:block;margin-top:7px;font-size:12px;color:var(--ink-mute)}
+    backdrop-filter:none}
+  .widget::after{display:none}
+  /* по Border.svg: заливка белая всего на 1 %, вся белизна — inner shadow
+     (Figma: blur 40 / spread 18 / white). Тень кладём поверх канваса
+     отдельным слоем, иначе её перекрывает клякса. */
+  .hero-widget{flex:none;min-height:462px;padding:30px 22px 26px;border-radius:134px;
+    display:flex;flex-direction:column;z-index:1;
+    background:var(--surface);box-shadow:none;backdrop-filter:none}
+  .hero-widget::after{content:"";display:block;position:absolute;inset:0;z-index:2;
+    border:0;border-radius:inherit;pointer-events:none;
+    box-shadow:var(--glow-l)}
+  .hero-widget .hero-top{margin-top:14px;text-align:center;position:relative;z-index:3}
+  /* сетка плашек по макету: левая 169×179 r54 сплошная,
+     правые 169×75 r36 полупрозрачные, зазор 14 */
+  /* ровная сетка: правая колонка 75+12+75 = 162, левая ровно столько же */
+  /* оптическая поправка: у главной плашки край размытый, у нижних — резкий,
+     поэтому при равной ширине нижние читались шире. Поджимаем на 6 px. */
+  .blood-profile-grid{position:relative;z-index:1;display:grid;grid-template-columns:1fr 1fr;
+    grid-template-rows:75px 75px;gap:12px;align-items:stretch;margin:0 6px}
+  /* правые плашки — полное скругление и та же логика, что у главной плашки:
+     заливки нет, белизна только от рассеянной внутренней тени */
+  .blood-profile-card{min-height:0;padding:0 26px;border-radius:999px;
+    text-align:left;cursor:pointer;
+    display:flex;flex-direction:column;justify-content:center;gap:6px;
+    background:var(--surface);
+    /* тень на самом элементе, а не оверлеем: иначе она ложится поверх текста */
+    box-shadow:var(--glow-m)}
+  .blood-profile-card::after{display:none}
+  .blood-profile-card:active{opacity:.68}
+  /* по Button.svg: угол = 84.5 при боксе 169×179, т.е. 50 % ширины и 47 % высоты —
+     почти пилюля с коротким прямым участком, кривизна непрерывная (ios squircle) */
+  .blood-profile-card--primary{grid-row:1 / span 2;padding:26px 26px 24px;justify-content:flex-start;
+    gap:0;border-radius:50% / 47%;corner-shape:squircle;background:var(--solid);box-shadow:none}
+  .blood-profile-label{display:block;color:var(--ink-faint);font-size:10.5px;letter-spacing:1.45px;text-transform:uppercase;line-height:1.25}
+  .blood-profile-value{display:block;margin:0;font-size:25px;font-weight:300;letter-spacing:-1.1px;color:var(--ink);line-height:1;white-space:nowrap}
+  .blood-profile-card--primary .blood-profile-value{margin-top:auto;font-size:30px}
+  .blood-profile-value.is-status{font-size:20px;letter-spacing:-.6px}
+  .blood-profile-value small{font-size:11px;font-weight:500;letter-spacing:0;color:var(--ink-mute)}
+  .blood-profile-note{display:block;margin-top:8px;font-size:11px;line-height:1.2;color:var(--ink-mute)}
   .hero-top,.hero-metrics,.widget-head,.widget-body{position:relative;z-index:1}
   .eyebrow{font-size:11px;text-transform:uppercase;letter-spacing:2.6px;color:var(--ink-faint)}
   .hero-title{margin-top:10px;font-size:38px;line-height:.98;font-weight:300;letter-spacing:-1.2px;color:var(--ink)}
   .hero-title span{display:block;color:var(--ink-mute)}
 
   /* ── state widget (Состояние) ── */
-  .state-score{position:relative;z-index:1;margin-top:14px;font-size:78px;line-height:.92;font-weight:250;
+  .state-score{position:absolute;z-index:3;left:0;right:0;top:50%;transform:translateY(-50%);
+    display:flex;align-items:baseline;justify-content:center;pointer-events:none;
+    font-size:78px;line-height:.92;font-weight:200;
     letter-spacing:-3.4px;color:var(--ink);font-variant-numeric:tabular-nums}
-  .state-score small{font-size:26px;font-weight:300;color:var(--ink-mute);letter-spacing:0;margin-left:4px}
+  .state-score small{font-size:26px;font-weight:300;color:var(--ink-mute);letter-spacing:0;margin-left:2px}
   .state-sub{position:relative;z-index:1;margin-top:10px;font-size:13.5px;line-height:1.35;color:var(--ink-mute)}
-  .state-visual{position:relative;flex:1;min-height:225px;margin:8px 0 0;z-index:1}
+  .state-visual{position:relative;flex:1;min-height:360px;margin:6px 0 0;z-index:1;cursor:pointer}
+  /* затухание должно завершиться ВНУТРИ канваса, иначе на его границе виден
+     ровный обрез — радиусы маски чуть больше половины бокса, не больше */
+  .state-blob{position:absolute;inset:0;width:100%;height:100%;display:block;
+    -webkit-mask-image:radial-gradient(58% 54% at 50% 50%,#000 0 46%,rgba(0,0,0,.72) 68%,rgba(0,0,0,.28) 85%,transparent 100%);
+    mask-image:radial-gradient(58% 54% at 50% 50%,#000 0 46%,rgba(0,0,0,.72) 68%,rgba(0,0,0,.28) 85%,transparent 100%)}
   .state-map{position:relative;width:292px;height:225px;max-width:100%;margin:-10px auto 0}
   .state-aura{position:absolute;inset:0;width:100%;height:100%;overflow:visible;pointer-events:none}
   .state-aura .aura-blur{fill:none;stroke:#34e7df;stroke-width:26;stroke-linecap:round;stroke-linejoin:round;opacity:.32;filter:blur(14px)}
@@ -163,6 +210,9 @@
     background:rgba(120,126,136,.09);font-size:13.5px;font-weight:600;color:var(--ink)}
   .state-action:active{background:rgba(120,126,136,.15)}
   .state-action i{font-style:normal;font-size:17px;color:var(--ink-faint)}
+  /* биовозраст — минималистичной строкой, в стиле «STATE · TODAY» */
+  .state-bioage{position:absolute;z-index:3;left:0;right:0;bottom:44px;text-align:center;
+    font-size:11px;letter-spacing:2.6px;text-transform:uppercase;color:var(--ink-faint)}
 
   .balance-visual{position:absolute;left:24px;right:24px;top:116px;height:96px;z-index:1}
   .forecast-bars{position:absolute;left:10px;right:10px;bottom:12px;height:72px;display:flex;align-items:flex-end;gap:12px;z-index:2}
@@ -246,34 +296,39 @@
   .pack-price small{font-size:11px;font-weight:600;color:var(--ink-faint);letter-spacing:0;margin-left:2px}
   .pack-row{position:absolute;left:22px;right:22px;bottom:22px;display:flex;align-items:center;gap:8px}
   .pack-day{position:relative;width:38px;height:38px;border-radius:50%;display:flex;align-items:center;justify-content:center;
-    background:#fff;border:1px solid rgba(120,126,136,.16);font-size:13px;font-weight:700;color:var(--ink)}
-  .pack-day.muted{color:rgba(120,126,136,.28)}
-  .pack-day.on{background:rgba(150,230,240,.54);border-color:transparent;box-shadow:0 0 22px rgba(126,220,235,.32)}
+    background:var(--control-soft);box-shadow:none;border:0;font-size:12px;font-weight:600;color:var(--ink)}
+  .pack-day.muted{color:var(--ink-faint)}
+  .pack-day.on{background:var(--ink);box-shadow:none;color:var(--body-bg)}
   .pack-actions{margin-left:auto;display:flex;align-items:center;gap:8px}
-  .pack-all{border:0;border-radius:18px;background:rgba(120,126,136,.10);height:38px;padding:0 16px;
-    font-size:11px;font-weight:700;color:var(--ink)}
+  .pack-all{border:0;border-radius:999px;background:var(--control-soft);box-shadow:none;height:38px;padding:0 18px;
+    font-size:10px;font-weight:600;letter-spacing:1.4px;text-transform:uppercase;color:var(--ink)}
 
   .widget-detail,.bio-panel,.biod-panel{position:absolute;inset:112px 18px 96px;z-index:6;opacity:0;pointer-events:none;
     transform:translateX(18px);transition:opacity .42s ease,transform .42s cubic-bezier(.32,.72,.28,1)}
   .view-widget .widget-detail{opacity:1;pointer-events:auto;transform:none}
   .view-bio .bio-panel{opacity:1;pointer-events:auto;transform:none}
   .view-biodetail .biod-panel{opacity:1;pointer-events:auto;transform:none}
-  .detail-panel{position:absolute;inset:0;border-radius:44px;background:#fff;padding:24px;
-    overflow-y:auto;overflow-x:hidden;-webkit-overflow-scrolling:touch;overscroll-behavior:contain}
+  /* шторки без белой подложки: карточки лежат прямо на фоне, как на главной */
+  .detail-panel{position:absolute;inset:0;border-radius:0;background:transparent;padding:22px 8px 24px;
+    overflow-y:auto;overflow-x:hidden;-webkit-overflow-scrolling:touch;overscroll-behavior:contain;
+    /* низ шторки растворяется, чтобы плашка не обрывалась резким краем */
+    -webkit-mask-image:linear-gradient(to bottom,#000 calc(100% - 30px),transparent);
+    mask-image:linear-gradient(to bottom,#000 calc(100% - 30px),transparent)}
   .detail-panel.intake-mode{background:transparent;padding:12px 0 24px;border-radius:0}
   .detail-panel::-webkit-scrollbar{width:0;height:0}
-  :root[data-theme="dark"] .detail-panel{background:linear-gradient(145deg,rgba(255,255,255,.095),rgba(255,255,255,.04))}
-  :root[data-theme="dark"] .detail-panel.intake-mode{background:transparent}
-  .detail-back{all:unset;position:sticky;top:0;z-index:4;width:42px;height:42px;border-radius:16px;background:var(--control-bg);
-    border:1px solid var(--control-border);display:flex;align-items:center;justify-content:center;color:var(--ink);margin-bottom:22px;touch-action:manipulation}
+  .detail-back{all:unset;position:sticky;top:0;z-index:4;width:42px;height:42px;border-radius:50%;
+    background:var(--surface);box-shadow:var(--glow-s);border:0;
+    display:flex;align-items:center;justify-content:center;color:var(--ink);margin-bottom:22px;touch-action:manipulation}
   .detail-back svg{width:18px;height:18px}
   .detail-screen{display:none}
   .detail-screen.on{display:block}
   .detail-screen.intake-screen .detail-kicker,
   .detail-screen.intake-screen .detail-title{display:none}
-  .detail-kicker{font-size:11px;letter-spacing:2.2px;text-transform:uppercase;color:var(--ink-faint);margin-bottom:8px}
-  .detail-title{font-size:34px;line-height:.98;font-weight:400;letter-spacing:-1px;color:var(--ink);margin-bottom:22px}
-  .detail-table{display:grid;gap:0}
+  .detail-kicker{font-size:11px;letter-spacing:2.6px;text-transform:uppercase;color:var(--ink-faint);margin-bottom:12px}
+  .detail-title{font-size:34px;line-height:.98;font-weight:300;letter-spacing:-1.2px;color:var(--ink);margin-bottom:26px}
+  /* список — одна мягкая плашка в языке главной, без разделительных линий */
+  .detail-table{display:grid;gap:0;padding:6px 22px;border-radius:44px;corner-shape:squircle;
+    background:var(--card);box-shadow:none}
   .detail-row{display:grid;grid-template-columns:60px 1fr auto 14px;gap:12px;align-items:center;padding:15px 0}
   .detail-row[data-supp]{cursor:pointer}
   .detail-row[data-supp]:active{background:rgba(120,126,136,.06)}
@@ -281,27 +336,31 @@
   .detail-row b{color:var(--ink);font-size:14px}
   .detail-row small{display:block;color:var(--ink-faint);font-size:11px;margin-top:3px}
   .open-arrow{font-size:20px;line-height:1;color:var(--ink-faint);transform:translateY(-1px)}
-  .detail-note{margin-top:20px;border-radius:28px;background:rgba(120,126,136,.10);padding:18px;
+  .detail-note{margin-top:20px;border-radius:36px;corner-shape:squircle;
+    background:var(--card);box-shadow:none;padding:20px 22px;
     color:var(--ink-mute);font-size:14px;line-height:1.35}
   .detail-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px}
-  .detail-card{border-radius:28px;background:rgba(120,126,136,.10);padding:18px;min-height:112px}
+  .detail-card{border-radius:36px;corner-shape:squircle;
+    background:var(--card);box-shadow:none;padding:20px;min-height:112px}
   .detail-card strong{display:block;color:var(--ink);font-size:24px;font-weight:400;margin-top:18px}
-  .detail-card span{color:var(--ink-faint);font-size:12px}
-  [data-screen="system"] .detail-card{min-height:82px;padding:16px 18px;border-radius:26px}
+  .detail-card span{color:var(--ink-faint);font-size:10px;letter-spacing:1.5px;text-transform:uppercase}
+  [data-screen="system"] .detail-card{min-height:82px;padding:16px 20px;border-radius:34px}
   [data-screen="system"] .detail-card strong{font-size:21px;margin-top:12px}
-  .subscription-card{margin-top:14px;border-radius:32px;background:rgba(120,126,136,.09);padding:22px 18px 20px}
+  .subscription-card{margin-top:14px;border-radius:40px;corner-shape:squircle;
+    background:var(--card);box-shadow:none;padding:24px 22px 20px}
   .subscription-head{display:flex;align-items:flex-start;justify-content:space-between;gap:16px;margin-bottom:20px}
   .subscription-head span,.subscription-row span{display:block;color:var(--ink-faint);font-size:10.5px;letter-spacing:1.6px;text-transform:uppercase}
   .subscription-head strong{display:block;margin-top:8px;color:var(--ink);font-size:22px;font-weight:500;letter-spacing:-.5px}
   .subscription-price{color:var(--ink);font-size:20px;font-weight:600;white-space:nowrap}
   .subscription-rows{display:grid;gap:0}
-  .subscription-row{display:flex;align-items:flex-start;justify-content:space-between;gap:16px;padding:16px 0;border-top:1px solid rgba(120,126,136,.13)}
+  .subscription-row{display:flex;align-items:flex-start;justify-content:space-between;gap:16px;padding:14px 0;border-top:0}
   .subscription-row:last-child{padding-bottom:6px}
   .subscription-row b{color:var(--ink);font-size:13px;font-weight:600;text-align:right;max-width:150px}
   .subscription-actions{display:flex;gap:8px;margin-top:16px}
-  .subscription-actions button{border:0;border-radius:999px;background:rgba(120,126,136,.10);height:34px;padding:0 14px;
-    color:var(--ink);font-size:12px;font-weight:600}
-  .subscription-actions button.primary{background:rgba(var(--accent),.16)}
+  /* второстепенное действие — та же мягкая плашка, главное — плотная тёмная пилюля */
+  .subscription-actions button{border:0;border-radius:999px;background:var(--control-soft);box-shadow:none;
+    height:38px;padding:0 18px;color:var(--ink);font-size:11px;font-weight:600;letter-spacing:1.4px;text-transform:uppercase}
+  .subscription-actions button.primary{background:var(--ink);box-shadow:none;color:var(--body-bg)}
 
   /* ── gradient scales ── */
   .gscale{position:relative;height:18px;border-radius:999px;overflow:visible}
@@ -322,23 +381,26 @@
   .scale-wrap{margin:8px 0 2px}
   .scale-labels{display:flex;justify-content:space-between;margin-top:7px;
     font-size:11px;color:var(--ink-faint);font-variant-numeric:tabular-nums}
-  .status-pill{display:inline-flex;align-items:center;gap:6px;padding:7px 13px;border-radius:999px;
-    background:var(--control-bg-strong);border:1px solid var(--control-border);
-    font-size:12px;font-weight:600;color:var(--ink)}
+  .status-pill{display:inline-flex;align-items:center;gap:6px;padding:9px 16px;border-radius:999px;
+    background:var(--card);box-shadow:none;border:0;
+    font-size:10.5px;font-weight:600;letter-spacing:1.4px;text-transform:uppercase;color:var(--ink)}
   .status-pill.warn{color:#b4552a}
 
   /* ── biomarkers list (same row language as formula) ── */
-  .bio-list{display:grid;margin-top:4px}
+  .bio-list{display:grid;margin-top:16px;padding:6px 22px;border-radius:44px;corner-shape:squircle;
+    background:var(--card);box-shadow:none}
   .bio-title-row{display:flex;align-items:center;justify-content:space-between;gap:12px}
   .bio-title-row .detail-title{margin-bottom:0}
-  .bio-search-toggle{display:grid;place-items:center;flex:0 0 46px;width:46px;height:46px;border:0;border-radius:18px;
-    background:rgba(120,126,136,.09);color:var(--ink);cursor:pointer}
-  .bio-search-toggle svg{width:20px;height:20px}
+  /* лупа без плашки: рядом с заголовком третий белый круг выглядел перегруженно */
+  .bio-search-toggle{display:grid;place-items:center;flex:0 0 34px;width:34px;height:34px;border:0;border-radius:50%;
+    background:transparent;box-shadow:none;color:var(--ink-faint);cursor:pointer;transition:color .2s}
+  .bio-search-toggle:active,.bio-search-toggle.on{color:var(--ink)}
+  .bio-search-toggle svg{width:19px;height:19px}
   .bio-search-wrap{display:grid;grid-template-rows:0fr;opacity:0;margin-top:0;transition:grid-template-rows .24s ease,opacity .18s ease,margin .24s ease}
   .bio-search-wrap.on{grid-template-rows:1fr;opacity:1;margin-top:14px}
   .bio-search-inner{min-height:0;overflow:hidden}
-  .bio-search{display:block;width:100%;height:44px;padding:0 16px;border:1px solid rgba(120,126,136,.14);border-radius:18px;
-    outline:0;background:rgba(120,126,136,.07);font:500 14px/1 inherit;color:var(--ink)}
+  .bio-search{display:block;width:100%;height:48px;padding:0 22px;border:0;border-radius:999px;
+    outline:0;background:var(--card);box-shadow:none;font:500 14px/1 inherit;color:var(--ink)}
   .bio-search::placeholder{color:var(--ink-faint)}
   .bio-empty{padding:28px 0;color:var(--ink-faint);font-size:14px;text-align:center}
   .bio-item{display:grid;grid-template-columns:104px 1fr auto 14px;align-items:center;gap:12px;
@@ -355,7 +417,8 @@
   .biod-value{font-size:52px;font-weight:250;letter-spacing:-1.5px;line-height:1;color:var(--ink);
     font-variant-numeric:tabular-nums;margin:6px 0 12px}
   .biod-value .u{font-size:18px;font-weight:400;color:var(--ink-mute);letter-spacing:0;margin-left:4px}
-  .biod-card{margin-top:14px;border-radius:28px;background:rgba(120,126,136,.09);padding:16px 18px}
+  .biod-card{margin-top:14px;border-radius:38px;corner-shape:squircle;
+    background:var(--card);box-shadow:none;padding:20px 22px}
   .biod-card .card-kicker{font-size:10px;letter-spacing:1.8px;text-transform:uppercase;color:var(--ink-faint);
     display:flex;justify-content:space-between;align-items:baseline}
   .biod-card .card-kicker em{font-style:normal;letter-spacing:.2px;text-transform:none;font-size:11px}
@@ -368,9 +431,10 @@
   .trend-range{display:flex;justify-content:space-between;font-size:10.5px;color:var(--ink-faint);margin-top:5px}
 
   /* ── cross-link: component → related biomarker ── */
+  /* связанный показатель — акцент не цветом, а плотной белой заливкой */
   .xlink{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-top:14px;
-    padding:16px 18px;border-radius:28px;background:rgba(var(--accent),.12);cursor:pointer}
-  .xlink:active{background:rgba(var(--accent),.2)}
+    padding:20px 22px;border-radius:38px;corner-shape:squircle;background:var(--solid);cursor:pointer}
+  .xlink:active{opacity:.7}
   .xlink div{min-width:0}
   .xlink strong{display:block;font-size:13.5px;font-weight:600;color:var(--ink)}
   .xlink small{display:block;margin-top:4px;font-size:11.5px;color:var(--ink-mute)}
@@ -378,16 +442,15 @@
 
   /* ── sensor: what it reads ── */
   .sensor-reads{display:flex;flex-wrap:wrap;gap:7px;margin-top:11px}
-  .sensor-reads em{font-style:normal;font-size:12px;font-weight:600;color:var(--ink);
-    padding:7px 12px;border-radius:999px;background:rgba(120,126,136,.10)}
+  .sensor-reads em{font-style:normal;font-size:10.5px;font-weight:600;letter-spacing:1.3px;text-transform:uppercase;color:var(--ink);
+    padding:9px 15px;border-radius:999px;background:var(--control-soft);box-shadow:none}
 
   /* ── next shipment calendar (profile → delivery) ── */
   .ship-cal{display:grid;grid-template-columns:repeat(7,1fr);gap:6px;margin-top:12px}
   .ship-cal span{aspect-ratio:1;display:flex;align-items:center;justify-content:center;border-radius:50%;
     font-size:11.5px;color:var(--ink-mute);font-variant-numeric:tabular-nums}
   .ship-cal span.blank{visibility:hidden}
-  .ship-cal span.ship{background:rgba(var(--accent),.22);color:var(--ink);font-weight:700;
-    box-shadow:0 0 18px rgba(var(--accent),.35)}
+  .ship-cal span.ship{background:var(--ink);color:var(--body-bg);font-weight:700}
 
   /* ── status bar ── */
   .status{position:absolute;top:0;left:0;right:0;height:54px;z-index:7;
@@ -416,10 +479,10 @@
   /* ── top controls ── */
   .topbar{position:absolute;top:62px;left:0;right:0;z-index:12;
     display:flex;align-items:flex-start;justify-content:space-between;padding:0 26px}
-  .chip{width:42px;height:42px;border-radius:15px;
-    background:var(--control-bg);border:1px solid var(--control-border);
+  .chip{width:42px;height:42px;border-radius:50%;
+    background:var(--card);box-shadow:none;border:0;
     display:flex;align-items:center;justify-content:center;color:var(--ink);
-    backdrop-filter:blur(6px)}
+    backdrop-filter:none}
   .chip svg{width:18px;height:18px}
   .chipslot{position:relative;width:42px;height:42px}
   .chipslot .chip{position:absolute;inset:0}
@@ -440,6 +503,7 @@
     will-change:transform,opacity;transform-origin:50% 50%;cursor:pointer}
   .card.anim{transition:transform .42s cubic-bezier(.32,.72,.28,1),opacity .42s ease,filter .42s ease}
   .card canvas{position:absolute;top:42px;left:0;width:330px;height:552px;display:block}
+  .card canvas.lava-canvas{top:26px;left:50%;width:300px;height:500px;transform:translateX(-50%)}
 
   /* ── capsule card: own timer on top, meta below ── */
   .cap-timer{position:absolute;z-index:2;top:0;left:0;right:0;display:flex;flex-direction:column;align-items:center;gap:5px;height:66px;justify-content:center}
@@ -452,12 +516,23 @@
   .add-capsule-card{justify-content:flex-start;border:0;background:transparent;padding:0;font:inherit;color:inherit}
   .add-capsule-top{position:absolute;z-index:2;top:12px;left:0;right:0;text-align:center;font-size:10px;letter-spacing:2.2px;
     text-transform:uppercase;color:var(--ink-faint)}
-  .add-capsule-plus{position:absolute;z-index:3;top:282px;left:131px;width:68px;height:68px;display:grid;place-items:center;border-radius:50%;
-    background:rgba(var(--accent),.16);color:var(--ink);font-size:40px;font-weight:250;line-height:1}
-  .add-capsule-card .cap-meta{gap:6px}
+  .add-capsule-plus{position:absolute;z-index:3;top:294px;left:141px;width:48px;height:48px;display:grid;place-items:center;border-radius:50%;
+    background:var(--card);box-shadow:none;color:var(--ink);font-size:26px;font-weight:200;line-height:1}
+  /* подпись серой капсулы — минималистичная, в стиле «STATE · TODAY» */
+  .add-capsule-card .cap-meta{gap:0}
+  /* пустой таймер: тот же каркас, но приглушённый — приёма ещё нет */
+  .add-capsule-card .cap-timer b{color:var(--ink-faint);font-variant-numeric:tabular-nums}
+  .add-capsule-top{display:none}
+  /* в карусели у соседей видно только форму капсулы: без таймеров и подписей */
+  .card .cap-timer,.card .cap-meta,.card .add-capsule-plus{opacity:0;transition:opacity .3s ease}
+  .card.is-centre .cap-timer,.card.is-centre .cap-meta,.card.is-centre .add-capsule-plus{opacity:1}
+  .add-capsule-name{font-size:11px;font-weight:400;letter-spacing:2.6px;text-transform:uppercase;
+    color:var(--ink-faint);line-height:1.2}
+  .add-capsule-sub{display:none}
 
   .store-list{display:grid;gap:10px;margin-top:18px}
-  .store-item{display:flex;align-items:center;gap:14px;padding:15px 16px;border-radius:28px;background:rgba(120,126,136,.09)}
+  .store-item{display:flex;align-items:center;gap:14px;padding:16px 22px;border-radius:999px;
+    background:var(--card);box-shadow:none}
   .store-item i{width:38px;height:38px;border-radius:50%;background:radial-gradient(circle,#cbff9f 0 22%,#6feac4 48%,#a8c9f3 100%);flex:0 0 auto}
   .store-item b{display:block;font-size:15px;font-weight:600}.store-item small{display:block;margin-top:3px;font-size:12px;color:var(--ink-faint)}
   .store-item em{margin-left:auto;font-style:normal;font-size:17px;color:var(--ink-faint)}
@@ -467,14 +542,14 @@
   .settings-btn{position:relative}
   .settings-btn svg{transition:transform .25s ease}
   .settings-btn:active svg{transform:rotate(22deg) scale(.96)}
-  .lang,.theme-options{display:inline-flex;background:var(--control-bg);border:1px solid var(--control-border);
-    border-radius:13px;overflow:hidden;backdrop-filter:blur(6px)}
-  .lang button,.theme-options button{all:unset;padding:7px 11px;font-size:11px;font-weight:600;
-    letter-spacing:.6px;color:var(--ink-mute);transition:all .25s}
-  .lang button.on,.theme-options button.on{background:var(--control-bg-strong);color:var(--ink)}
+  .lang,.theme-options{display:inline-flex;background:var(--control-soft);border:0;box-shadow:none;
+    border-radius:999px;padding:4px;overflow:hidden;backdrop-filter:none}
+  .lang button,.theme-options button{all:unset;padding:6px 12px;border-radius:999px;font-size:9.5px;font-weight:600;
+    letter-spacing:1.4px;text-transform:uppercase;color:var(--ink-faint);transition:all .25s}
+  .lang button.on,.theme-options button.on{background:var(--solid);color:var(--ink)}
 
-  .setting-row{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:10px 0}
-  .setting-row+.setting-row{border-top:1px solid rgba(120,126,136,.12)}
+  .setting-row{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:12px 0}
+  .setting-row+.setting-row{border-top:0}
   .setting-row span{font-size:13px;color:var(--ink);letter-spacing:.2px}
 
   /* ── profile window (modal-like sheet, closed via ✕) ── */
@@ -484,54 +559,74 @@
   .profile-panel{position:absolute;inset:112px 18px 24px;z-index:8;opacity:0;pointer-events:none;
     transform:translateY(14px);transition:opacity .38s ease,transform .38s cubic-bezier(.32,.72,.28,1)}
   .view-profile .profile-panel{opacity:1;pointer-events:auto;transform:none}
-  .profile-hero{display:flex;align-items:center;gap:14px;margin-bottom:6px}
+  .profile-hero{display:flex;align-items:center;gap:16px;margin-bottom:8px}
   .avatar-lg{width:56px;height:56px;border-radius:50%;flex:none;
     background:radial-gradient(120% 120% at 30% 20%,#9fe6c4,#9bdcff 55%,#a79aed);
     color:#1c2b25;font-size:16px;font-weight:700;display:flex;align-items:center;justify-content:center;
-    box-shadow:0 8px 22px -8px rgba(120,180,220,.6)}
+    box-shadow:none}
   .profile-who strong{display:block;font-size:19px;font-weight:600;color:var(--ink)}
-  .plan-badge{display:inline-block;margin-top:5px;font-size:11px;font-weight:600;letter-spacing:.3px;
-    padding:4px 10px;border-radius:999px;color:var(--ink-mute);
-    background:var(--control-bg);border:1px solid var(--control-border)}
+  .plan-badge{display:inline-block;margin-top:5px;font-size:9.5px;font-weight:600;letter-spacing:1.5px;text-transform:uppercase;
+    padding:0;color:var(--ink-faint);background:transparent;border:0}
   .pgroup-label{font-size:11px;letter-spacing:2.2px;text-transform:uppercase;color:var(--ink-faint);margin:20px 0 8px}
-  .prow{display:flex;align-items:center;justify-content:space-between;gap:14px;padding:9px 0}
-  .prow+.prow{border-top:1px solid rgba(120,126,136,.12)}
+  .prow{display:flex;align-items:center;justify-content:space-between;gap:14px;padding:12px 0}
+  .prow+.prow{border-top:0}
   .prow span{font-size:13px;color:var(--ink-mute)}
   .prow b{font-size:13px;font-weight:600;color:var(--ink);text-align:right}
   .pmanage{all:unset;display:block;margin-top:12px;font-size:13px;font-weight:600;color:var(--ink);cursor:pointer}
   .pmanage.danger{color:#b4552a}
   .profile-data-grid{display:grid;grid-template-columns:1.05fr 1fr;grid-template-areas:"body age" "body routine" "limits goals";grid-auto-rows:94px;gap:10px}
-  .profile-data-card{position:relative;min-height:0;padding:15px;border:0;border-radius:28px;background:rgba(255,255,255,.72);
+  /* та же пара форм, что на главной: невысокие блоки — овалы,
+     большой — squircle с непрерывной кривизной */
+  .profile-data-card{position:relative;min-height:0;padding:0 26px;border:0;border-radius:999px;
+    background:var(--card);box-shadow:none;
+    display:flex;flex-direction:column;justify-content:center;gap:6px;
     color:var(--ink);text-align:left;cursor:pointer;overflow:hidden}
-  .profile-data-card[data-profile-card="baseline"]{grid-area:body;padding:18px;background:linear-gradient(145deg,rgba(var(--accent),.33),rgba(var(--accent),.12))}
-  .profile-data-card[data-profile-card="age"]{grid-area:age;border-radius:999px;padding-left:18px}
-  .profile-data-card[data-profile-card="routine"]{grid-area:routine;border-radius:999px;padding-left:18px}
-  .profile-data-card[data-profile-card="limits"]{grid-area:limits;border-radius:28px}
-  .profile-data-card[data-profile-card="goals"]{grid-area:goals;border-radius:28px}
-  .profile-data-card::after{content:"›";position:absolute;right:14px;top:13px;color:var(--ink-faint);font-size:18px}
+  .profile-data-card[data-profile-card="baseline"]{grid-area:body;padding:24px 26px;
+    justify-content:flex-start;border-radius:50% / 40%;corner-shape:squircle}
+  .profile-data-card[data-profile-card="age"]{grid-area:age}
+  .profile-data-card[data-profile-card="routine"]{grid-area:routine}
+  .profile-data-card[data-profile-card="limits"]{grid-area:limits}
+  .profile-data-card[data-profile-card="goals"]{grid-area:goals}
+  .profile-data-card::after{display:none}
   .profile-data-card span{display:block;font-size:10px;letter-spacing:1.5px;text-transform:uppercase;color:var(--ink-faint)}
-  .profile-data-card b{display:block;max-width:128px;margin-top:15px;font-size:14px;line-height:1.2;font-weight:600}
-  .profile-measures{display:grid;gap:10px;margin-top:28px}.profile-measures b{margin:0!important;max-width:none;font-size:28px!important;line-height:1!important;font-weight:300;letter-spacing:-1.1px}.profile-measures small{margin-left:3px;font-size:12px;font-weight:600;letter-spacing:0;color:var(--ink-mute)}
+  .profile-data-card b{display:block;margin:0;font-size:19px;line-height:1.1;font-weight:400;letter-spacing:-.4px}
+  .profile-measures{display:grid;gap:6px;margin-top:auto}
+  .profile-measures b{font-size:26px;line-height:1;font-weight:300;letter-spacing:-1.1px}
+  .profile-measures small{margin-left:4px;font-size:12px;font-weight:500;letter-spacing:0;color:var(--ink-mute)}
   .profile-data-card[data-profile-card="age"] b,.profile-data-card[data-profile-card="routine"] b{margin-top:9px}
   .profile-data-card:active{opacity:.7}
-  .profile-panel .biod-card{border-radius:42px;padding:20px;background:rgba(255,255,255,.64)}
+  /* оптическая компенсация: у овалов края «уходят», у широких плашек —
+     резкие, поэтому при равной ширине они читались шире сетки. Поджимаем на 5 px */
+  .profile-panel .biod-card{border-radius:44px;corner-shape:squircle;padding:20px 26px;margin-left:5px;margin-right:5px;
+    background:var(--card);box-shadow:none}
   .profile-shipment{margin-top:10px}
-  .profile-pack-widget{all:unset;box-sizing:border-box;position:relative;display:block;width:100%;height:142px;padding:20px 22px;border-radius:42px;background:rgba(255,255,255,.64);color:var(--ink);cursor:pointer}
-  .profile-pack-widget .system-item{display:flex}.profile-pack-widget .pack-row{position:absolute;left:22px;right:22px;bottom:18px}
+  /* без абсолютного позиционирования: заголовок сверху, дни снизу, ровный шаг */
+  .profile-pack-widget{all:unset;box-sizing:border-box;position:relative;display:flex;flex-direction:column;gap:18px;
+    width:calc(100% - 10px);margin:16px 5px 0;padding:22px 26px 20px;
+    border-radius:44px;corner-shape:squircle;background:var(--card);box-shadow:none;color:var(--ink);cursor:pointer}
+  .profile-pack-widget .system-item{display:flex;align-items:flex-start}
+  .profile-pack-widget .pack-row{position:static;left:auto;right:auto;bottom:auto;display:flex;align-items:center;gap:7px}
+  .profile-pack-widget .pack-day{width:32px;height:32px;font-size:11px}
+  /* «смотреть все» — текстом, а не ещё одной плашкой в ряду кружков */
+  .profile-pack-widget .pack-all{background:transparent;box-shadow:none;height:auto;padding:0;
+    color:var(--ink-mute);font-size:9.5px;letter-spacing:1.4px}
   .profile-pack-widget .pack-all{pointer-events:none}
-  .profile-editor{position:absolute;inset:0;z-index:12;padding:24px;border-radius:44px;background:#fff;overflow-y:auto;opacity:0;pointer-events:none;transform:translateX(18px);transition:opacity .28s ease,transform .28s ease}
+  /* редактор кладётся поверх списка профиля, поэтому нужен плотный фон —
+     ровно цвет корпуса, чтобы плашки читались так же, как на главной */
+  .profile-editor{position:absolute;inset:-14px -18px;z-index:12;padding:14px 26px 24px;border-radius:0;background:var(--scrim);overflow-y:auto;opacity:0;pointer-events:none;transform:translateX(18px);transition:opacity .28s ease,transform .28s ease}
   .profile-editor.on{opacity:1;pointer-events:auto;transform:none}
-  :root[data-theme="dark"] .profile-editor{background:linear-gradient(145deg,rgba(255,255,255,.095),rgba(255,255,255,.04))}
-  .profile-editor-back{all:unset;display:grid;place-items:center;width:42px;height:42px;margin-bottom:24px;border-radius:16px;background:var(--control-bg);border:1px solid var(--control-border);cursor:pointer}
+  .phone:not(.view-profile) .profile-editor{pointer-events:none}
+  .profile-editor::-webkit-scrollbar{width:0;height:0}
+  .profile-editor-back{all:unset;display:grid;place-items:center;width:42px;height:42px;margin-bottom:24px;border-radius:50%;background:var(--card);box-shadow:none;border:0;cursor:pointer}
   .profile-editor-kicker{font-size:11px;letter-spacing:2.2px;text-transform:uppercase;color:var(--ink-faint)}
   .profile-editor h2{margin:9px 0 22px;font-size:34px;line-height:1;font-weight:350;letter-spacing:-1.4px}
-  .profile-field{display:block;padding:13px 0}.profile-field+.profile-field{border-top:1px solid rgba(120,126,136,.12)}
-  .profile-field span{display:block;margin-bottom:7px;font-size:12px;color:var(--ink-mute)}
-  .profile-field input{width:100%;height:36px;border:0;border-radius:10px;background:rgba(120,126,136,.08);padding:0 11px;font:500 15px "Arial Narrow",Arial,sans-serif;color:var(--ink);outline:none}
-  .profile-editor-save{width:100%;height:50px;margin-top:18px;border:0;border-radius:999px;background:var(--ink);color:#fff;font:600 15px "Arial Narrow",Arial,sans-serif;cursor:pointer}
+  .profile-field{display:block;padding:11px 0}.profile-field+.profile-field{border-top:0}
+  .profile-field span{display:block;margin-bottom:8px;font-size:10px;letter-spacing:1.5px;text-transform:uppercase;color:var(--ink-faint)}
+  .profile-field input{width:100%;height:48px;border:0;border-radius:999px;background:var(--control-soft);box-shadow:none;padding:0 22px;font:500 15px "Arial Narrow",Arial,sans-serif;color:var(--ink);outline:none}
+  .profile-editor-save{width:100%;height:52px;margin-top:22px;border:0;border-radius:999px;background:var(--ink);color:var(--body-bg);font:600 11px "Arial Narrow",Arial,sans-serif;letter-spacing:1.8px;text-transform:uppercase;cursor:pointer}
   .profile-month-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:15px}.profile-month-head span{font-size:13px;color:var(--ink-mute)}
   .profile-month-cal{display:grid;grid-template-columns:repeat(7,1fr);gap:8px;padding:8px 0}.profile-month-cal span{aspect-ratio:1;display:grid;place-items:center;border-radius:50%;font-size:13px;color:var(--ink-mute)}
-  .profile-month-cal .blank{visibility:hidden}.profile-month-cal .ship{background:rgba(var(--accent),.2);box-shadow:0 0 18px rgba(var(--accent),.35);color:var(--ink);font-weight:700}
+  .profile-month-cal .blank{visibility:hidden}.profile-month-cal .ship{background:var(--ink);color:var(--body-bg);font-weight:700}
 
   /* ── view visibility ── */
   .carousel-only{transition:opacity .45s ease}
@@ -543,19 +638,23 @@
   .view-profile .dashboard,.view-profile .stage,.view-profile .tabbar,.view-profile .carousel-only,
   .view-profile .widget-detail,.view-profile .bio-panel,.view-profile .biod-panel,.view-profile .home-only{opacity:0;pointer-events:none}
   /* ── tab bar (root navigation) ── */
+  /* язык плашек главного экрана: почти прозрачная заливка + рассеянная
+     внутренняя белая тень, без обводки и без падающей тени */
   .tabbar{position:absolute;left:50%;bottom:20px;transform:translateX(-50%);z-index:20;
-    display:flex;gap:4px;padding:6px;border-radius:999px;
-    background:var(--control-bg-strong);border:1px solid var(--control-border);
-    backdrop-filter:blur(14px);box-shadow:0 18px 40px -22px rgba(20,24,30,.5)}
-  .tab{all:unset;display:flex;align-items:center;justify-content:center;gap:0;width:38px;height:34px;
-    border-radius:999px;font-size:11px;font-weight:600;letter-spacing:.3px;color:var(--ink-mute);
+    display:flex;gap:2px;padding:7px;border-radius:999px;
+    background:var(--surface);border:0;
+    box-shadow:var(--glow-m)}
+  .tab{all:unset;display:flex;align-items:center;justify-content:center;gap:0;width:40px;height:38px;
+    border-radius:999px;font-size:9px;font-weight:600;letter-spacing:1.6px;text-transform:uppercase;
+    color:var(--ink-mute);
     overflow:hidden;transition:width .28s cubic-bezier(.32,.72,.28,1),background .25s,color .25s,transform .25s}
   .tab svg{width:16px;height:16px;flex:none}
   .tab span{display:block;max-width:0;opacity:0;white-space:nowrap;overflow:hidden;
     transform:translateX(-4px);transition:max-width .28s cubic-bezier(.32,.72,.28,1),opacity .18s ease,transform .28s cubic-bezier(.32,.72,.28,1)}
-  .tab:hover,.tab:focus-visible,.tab.on{width:auto;min-width:38px;gap:7px;justify-content:flex-start;padding:0 12px}
-  .tab:hover span,.tab:focus-visible span,.tab.on span{max-width:92px;opacity:1;transform:none}
-  .tab.on{background:rgba(var(--accent),.16);color:var(--ink)}
+  .tab:hover,.tab:focus-visible,.tab.on{width:auto;min-width:40px;gap:8px;justify-content:flex-start;padding:0 15px 0 13px}
+  .tab:hover span,.tab:focus-visible span,.tab.on span{max-width:98px;opacity:1;transform:none}
+  /* активная — сплошная белая пилюля, как главная плашка слева внизу */
+  .tab.on{background:var(--solid);color:var(--ink)}
   .tab:active{transform:scale(.96)}
 
   .homebar{position:absolute;bottom:10px;left:50%;transform:translateX(-50%);
@@ -692,31 +791,26 @@
         <div class="hero-top">
           <div class="eyebrow" id="heroEyebrow">State · today</div>
         </div>
-        <div class="state-score" id="stateScore">62<small>%</small></div>
-        <div class="state-visual">
-          <div class="state-map" id="stateMap" aria-label="State map">
-            <svg class="state-aura" viewBox="0 0 292 225" aria-hidden="true">
-              <path class="aura-blur" d="M93 54 C113 35 128 25 146 27 C167 29 185 38 199 56 C222 74 237 102 228 124 C218 150 198 169 184 184 C151 197 113 183 78 146 C62 112 73 77 93 54Z" />
-              <path class="aura-line" d="M93 54 C113 35 128 25 146 27 C167 29 185 38 199 56 C222 74 237 102 228 124 C218 150 198 169 184 184 C151 197 113 183 78 146 C62 112 73 77 93 54Z" />
-              <path class="aura-line" d="M93 54 C119 76 172 77 199 56 M78 146 C112 125 189 127 228 124" />
-            </svg>
-            <div class="state-core"><strong id="stateMapLabel">State</strong><small id="stateMapStatus">Stable</small></div>
-          </div>
+        <div class="state-visual" id="seeMarkers">
+          <canvas class="state-blob" id="stateBlob" aria-label="State"></canvas>
         </div>
-        <div class="state-action" id="seeMarkers">
-          <span id="seeMarkersText">See biomarkers</span><i>&#8594;</i>
-        </div>
+        <!-- текст вынесен из визуала, чтобы лечь ПОВЕРХ внутреннего свечения -->
+        <div class="state-score" id="stateScore">78<small>%</small></div>
+        <div class="state-bioage" id="stateBioage">Bio age 32</div>
       </section>
-      <div class="sensor-summary-grid">
-        <button class="widget sensor-summary" type="button" id="heartSummary">
-          <span class="sensor-summary-head"><span id="heartLabel">Heart rate</span><i class="sensor-summary-icon">♡</i></span>
-          <strong class="sensor-summary-value">72 <small id="heartUnit">bpm</small></strong>
-          <span class="sensor-summary-note" id="heartNote">At rest</span>
+      <div class="blood-profile-grid">
+        <button class="widget blood-profile-card blood-profile-card--primary" type="button" id="hormoneSummary">
+          <span class="blood-profile-label" id="hormoneLabel">Hormonal response</span>
+          <strong class="blood-profile-value" id="hormoneValue">18 <small>days</small></strong>
+          <span class="blood-profile-note" id="hormoneNote">To personal range</span>
         </button>
-        <button class="widget sensor-summary" type="button" id="sleepSummary">
-          <span class="sensor-summary-head"><span id="sleepLabel">Sleep</span><i class="sensor-summary-icon">◔</i></span>
-          <strong class="sensor-summary-value" id="sleepValue">7ч 40м</strong>
-          <span class="sensor-summary-note" id="sleepNote">Good recovery</span>
+        <button class="widget blood-profile-card" type="button" id="nutrientSummary">
+          <span class="blood-profile-label" id="nutrientLabel">Nutrients</span>
+          <strong class="blood-profile-value" id="nutrientValue">12 <small>days</small></strong>
+        </button>
+        <button class="widget blood-profile-card" type="button" id="metabolismSummary">
+          <span class="blood-profile-label" id="metabolismLabel">Metabolism</span>
+          <strong class="blood-profile-value is-status" id="metabolismValue">Stable</strong>
         </button>
       </div>
     </div>
@@ -908,6 +1002,23 @@
    ──────────────────────────────────────────────────────────── */
 
 const STATES = [
+  { key:'restorative',score:53,
+    name:{en:'Recovery', ru:'Восстановление'},
+    formula:{en:'Recovery · zinc, ashwagandha', ru:'Восстановление · цинк, ашваганда'},
+    intake:{ h:21, m:0, time:'21:00',
+      ctx:{en:'after dinner', ru:'после ужина'},
+      effect:{en:'Sleep ↑', ru:'Сон ↑'},
+      impact:{en:'Supports sleep and night recovery.',ru:'Поддерживает сон и ночное восстановление.'},
+      impactSub:{en:'Forecast to a steady effect: 24 days.',ru:'Прогноз до устойчивого эффекта: 24 дня.'},
+      reason:{en:'Kept in the evening so ashwagandha and zinc work while you rest.',ru:'Оставлена на вечер, чтобы ашваганда и цинк работали во время отдыха.'} },
+    dose:[
+      {key:'Zn', name:{en:'Zinc',ru:'Цинк'}, amount:'15', unit:{en:'mg',ru:'мг'}, status:{en:'in range',ru:'норма'}, level:.52},
+      {key:'Ash', name:{en:'Ashwagandha',ru:'Ашваганда'}, amount:'300', unit:{en:'mg',ru:'мг'}, status:{en:'recovery',ru:'сон'}, level:.68},
+      {key:'Mg', name:{en:'Magnesium',ru:'Магний'}, amount:'240', unit:{en:'mg',ru:'мг'}, status:{en:'support',ru:'поддержка'}, level:.58},
+      {key:'D3', name:{en:'Vitamin D3',ru:'Витамин D3'}, amount:'1200', unit:{en:'IU',ru:'МЕ'}, status:{en:'light',ru:'мягко'}, level:.42}
+    ],
+    rgb:[138,182,228], hex:'#8ab6e4',
+    field:{ count:12, sizeMin:34, sizeMax:58, speed:.10, gravity:0.16, centerPull:.16, glow:.78 } },
   { key:'balanced',   score:62,
     name:{en:'Balance', ru:'Баланс'},
     formula:{en:'Base flow · magnesium, B-complex', ru:'Базовый поток · магний, B-комплекс'},
@@ -942,23 +1053,6 @@ const STATES = [
     ],
     rgb:[152,142,228], hex:'#988ee4',
     field:{ count:17, sizeMin:20, sizeMax:42, speed:.24, gravity:0.0,  centerPull:.82, glow:.98 } },
-  { key:'restorative',score:53,
-    name:{en:'Recovery', ru:'Восстановление'},
-    formula:{en:'Recovery · zinc, ashwagandha', ru:'Восстановление · цинк, ашваганда'},
-    intake:{ h:21, m:0, time:'21:00',
-      ctx:{en:'after dinner', ru:'после ужина'},
-      effect:{en:'Sleep ↑', ru:'Сон ↑'},
-      impact:{en:'Supports sleep and night recovery.',ru:'Поддерживает сон и ночное восстановление.'},
-      impactSub:{en:'Forecast to a steady effect: 24 days.',ru:'Прогноз до устойчивого эффекта: 24 дня.'},
-      reason:{en:'Kept in the evening so ashwagandha and zinc work while you rest.',ru:'Оставлена на вечер, чтобы ашваганда и цинк работали во время отдыха.'} },
-    dose:[
-      {key:'Zn', name:{en:'Zinc',ru:'Цинк'}, amount:'15', unit:{en:'mg',ru:'мг'}, status:{en:'in range',ru:'норма'}, level:.52},
-      {key:'Ash', name:{en:'Ashwagandha',ru:'Ашваганда'}, amount:'300', unit:{en:'mg',ru:'мг'}, status:{en:'recovery',ru:'сон'}, level:.68},
-      {key:'Mg', name:{en:'Magnesium',ru:'Магний'}, amount:'240', unit:{en:'mg',ru:'мг'}, status:{en:'support',ru:'поддержка'}, level:.58},
-      {key:'D3', name:{en:'Vitamin D3',ru:'Витамин D3'}, amount:'1200', unit:{en:'IU',ru:'МЕ'}, status:{en:'light',ru:'мягко'}, level:.42}
-    ],
-    rgb:[138,182,228], hex:'#8ab6e4',
-    field:{ count:12, sizeMin:34, sizeMax:58, speed:.10, gravity:0.16, centerPull:.16, glow:.78 } },
 ];
 
 /* supplement key → related biomarker (single cross-link out of a component) */
@@ -1382,6 +1476,485 @@ class Field {
   }
 }
 
+/* ────────────────────────────────────────────────────────────
+   Лавовая капсула (порт lava-capsule): SDF-капсула, метаболы через
+   smin, преломление стекла, псевдо-SSS, объёмный ореол, ACES.
+   Три прохода: сцена → FBO, separable blur, композит.
+   Композит отдаёт ПРОЗРАЧНЫЙ фон — капсула ложится прямо на экран.
+   ──────────────────────────────────────────────────────────── */
+const LC_MAX=10;
+const LC_VERT=`#version 300 es
+in vec2 aPos; void main(){ gl_Position=vec4(aPos,0.0,1.0); }`;
+const LC_FRAG=`#version 300 es
+precision highp float;
+out vec4 outColor;
+#define MAX ${LC_MAX}
+uniform vec2 uRes; uniform float uTime;
+uniform vec4 uBlobs[MAX]; uniform vec3 uBlobCol[MAX]; uniform int uCount;
+uniform float uK,uColorK,uCapH,uCapR,uWall,uInset;
+uniform vec3 uBg0,uBg1,uGlass,uMedium,uLightCol;
+uniform float uMediumDens,uIOR,uGlassAmt,uGlow,uGlowR,uEmit,uShimmer,uShimScale,uHalo,uLiqSpec;
+uniform vec2 uRot; uniform float uDist,uFov;
+float sdCap(vec3 p,float h,float r){ p.y-=clamp(p.y,-h,h); return length(p)-r; }
+float smin(float a,float b,float k){ float h=clamp(0.5+0.5*(b-a)/k,0.0,1.0); return mix(b,a,h)-k*h*(1.0-h); }
+float smax(float a,float b,float k){ return -smin(-a,-b,k); }
+float mapLiquid(vec3 p, out vec3 col){
+  float d=1e5; col=uMedium; bool first=true;
+  for(int i=0;i<MAX;i++){
+    if(i>=uCount) break;
+    vec4 b=uBlobs[i];
+    float di=length(p-b.xyz)-b.w;
+    if(first){ d=di; col=uBlobCol[i]; first=false; }
+    else{
+      float h=clamp(0.5+0.5*(di-d)/uK,0.0,1.0);
+      float hc=clamp(0.5+0.5*(di-d)/(uK*uColorK),0.0,1.0);
+      d=mix(di,d,h)-uK*h*(1.0-h);
+      col=mix(uBlobCol[i],col,hc);
+    }
+  }
+  float dc=sdCap(p,uCapH,max(uCapR-uWall-uInset,0.01));
+  d=smax(d,dc,uK*0.55);
+  return d;
+}
+float mapLiquidD(vec3 p){ vec3 c; return mapLiquid(p,c); }
+vec3 rayHalo(vec3 ro,vec3 rd,float tEnd){
+  vec3 acc=vec3(0.0);
+  for(int i=0;i<MAX;i++){
+    if(i>=uCount) break;
+    vec4 b=uBlobs[i];
+    vec3 pc=b.xyz-ro;
+    float tc=dot(pc,rd);
+    float h=max(length(pc-rd*tc), b.w*uGlowR);
+    float integral=(atan((tEnd-tc)/h)-atan(-tc/h))/h;
+    acc+=uBlobCol[i]*integral*b.w*b.w;
+  }
+  return acc;
+}
+float innerExit(vec3 ro,vec3 rd){
+  float R=uCapR-uWall, H=uCapH+R;
+  float a=dot(rd.xz,rd.xz), t=8.0;
+  if(a>1e-6){
+    float b=dot(ro.xz,rd.xz), c=dot(ro.xz,ro.xz)-R*R;
+    float disc=b*b-a*c;
+    if(disc>0.0) t=(-b+sqrt(disc))/a;
+  }
+  if(abs(rd.y)>1e-6){ float ty=((rd.y>0.0?H:-H)-ro.y)/rd.y; t=min(t,ty); }
+  return max(t,0.0);
+}
+vec3 liquidNormal(vec3 p){
+  vec2 e=vec2(1.0,-1.0)*0.0015;
+  return normalize(e.xyy*mapLiquidD(p+e.xyy)+e.yyx*mapLiquidD(p+e.yyx)+
+                   e.yxy*mapLiquidD(p+e.yxy)+e.xxx*mapLiquidD(p+e.xxx));
+}
+vec3 shellNormal(vec3 p){
+  /* эпсилон крупнее: на стыке цилиндра и купола clamp даёт излом нормали,
+     из-за которого по капсуле шла горизонтальная полоса */
+  vec2 e=vec2(1.0,-1.0)*0.006;
+  return normalize(e.xyy*sdCap(p+e.xyy,uCapH,uCapR)+e.yyx*sdCap(p+e.yyx,uCapH,uCapR)+
+                   e.yxy*sdCap(p+e.yxy,uCapH,uCapR)+e.xxx*sdCap(p+e.xxx,uCapH,uCapR));
+}
+vec3 background(vec2 uv,vec3 rd){
+  float g=smoothstep(-0.9,0.9,rd.y*1.2);
+  vec3 c=mix(uBg1,uBg0,g);
+  c+=uMedium*exp(-dot(uv,uv)*2.2)*uHalo;
+  return c;
+}
+float hash(vec2 p){ return fract(sin(dot(p,vec2(127.1,311.7)))*43758.5453); }
+float hash13(vec3 p){ p=fract(p*0.1031); p+=dot(p,p.yzx+33.33); return fract((p.x+p.y)*p.z); }
+float vnoise(vec3 p){
+  vec3 i=floor(p), f=fract(p); f=f*f*(3.0-2.0*f);
+  return mix(mix(mix(hash13(i+vec3(0,0,0)),hash13(i+vec3(1,0,0)),f.x),
+                 mix(hash13(i+vec3(0,1,0)),hash13(i+vec3(1,1,0)),f.x),f.y),
+             mix(mix(hash13(i+vec3(0,0,1)),hash13(i+vec3(1,0,1)),f.x),
+                 mix(hash13(i+vec3(0,1,1)),hash13(i+vec3(1,1,1)),f.x),f.y),f.z);
+}
+float thickness(vec3 p,vec3 rd){
+  float t=0.02;
+  for(int i=0;i<24;i++){
+    float d=mapLiquidD(p+rd*t);
+    if(d>0.0) break;
+    t+=max(-d,0.02);
+    if(t>1.6) break;
+  }
+  return t;
+}
+void main(){
+  vec2 uv=(gl_FragCoord.xy-0.5*uRes)/uRes.y;
+  float cy=cos(uRot.x), sy=sin(uRot.x), cp=cos(uRot.y), sp=sin(uRot.y);
+  vec3 ro=vec3(sy*cp,sp,cy*cp)*uDist;
+  vec3 f=normalize(-ro);
+  vec3 r=normalize(cross(vec3(0.0,1.0,0.0),f));
+  vec3 u=cross(f,r);
+  vec3 rd=normalize(uv.x*r+uv.y*u+uFov*f);
+  vec3 col=vec3(0.0), glow=vec3(0.0);
+  float t=0.0; bool hitShell=false; float dmin=1e5;
+  for(int i=0;i<96;i++){
+    vec3 p=ro+rd*t;
+    float d=sdCap(p,uCapH,uCapR);
+    dmin=min(dmin,d);
+    if(d<0.0008){ hitShell=true; break; }
+    t+=d;
+    if(t>14.0) break;
+  }
+  if(hitShell){
+    vec3 p=ro+rd*t;
+    vec3 n=shellNormal(p);
+    float fres=pow(1.0-clamp(dot(-rd,n),0.0,1.0),4.0);
+    vec3 lightDir=normalize(vec3(0.55,0.75,0.45));
+    vec3 rrd=refract(rd,n,1.0/uIOR);
+    if(length(rrd)<0.001) rrd=reflect(rd,n);
+    float jit=hash(gl_FragCoord.xy+fract(uTime)*71.3);
+    vec3 ip=p+rrd*(uWall+0.01);
+    float it=jit*0.02;
+    bool hitLiquid=false; vec3 lcol=uMedium;
+    for(int i=0;i<110;i++){
+      vec3 q=ip+rrd*it; vec3 c;
+      float d=mapLiquid(q,c);
+      if(d<0.0012){ hitLiquid=true; lcol=c; break; }
+      it+=max(d,0.004);
+      if(sdCap(q,uCapH,uCapR)>0.02) break;
+      if(it>9.0) break;
+    }
+    float tEnd=hitLiquid?it:innerExit(ip,rrd);
+    glow=rayHalo(ip,rrd,tEnd)*uGlow*(0.25+0.75*uMediumDens);
+    if(hitLiquid) glow*=0.5;
+    vec3 through=uMedium*tEnd*0.10*max(uMediumDens-1.0,0.0);
+    vec3 inner;
+    if(hitLiquid){
+      vec3 q=ip+rrd*it;
+      vec3 ln=liquidNormal(q);
+      float dif=clamp(dot(ln,lightDir),0.0,1.0);
+      float bac=clamp(dot(ln,-lightDir),0.0,1.0);
+      float lfres=pow(1.0-clamp(dot(-rrd,ln),0.0,1.0),3.0);
+      float th=thickness(q,rrd);
+      float sss=exp(-th*1.9);
+      vec3 base=lcol;
+      inner=base*(0.16+0.55*dif)*uLightCol;
+      inner+=base*base*sss*0.95*uEmit;
+      inner+=base*bac*0.16;
+      inner+=uLightCol*pow(clamp(dot(reflect(rrd,ln),lightDir),0.0,1.0),60.0)*0.28*uLiqSpec;
+      inner+=base*lfres*0.28;
+      if(uShimmer>0.001){
+        vec3 spv=q*uShimScale+vec3(0.0,uTime*0.25,uTime*0.13);
+        float nz=vnoise(spv)*0.65+vnoise(spv*2.3+17.0)*0.35;
+        float spark=smoothstep(0.58,0.92,nz);
+        float weight=0.45+0.55*(sss*0.5+lfres);
+        inner+=mix(base,uLightCol,0.55)*spark*weight*uShimmer;
+      }
+    } else {
+      inner=mix(background(uv*0.9,rrd)*0.55,uMedium,clamp(uMediumDens,0.0,1.0));
+    }
+    inner+=through; inner+=glow;
+    vec3 refl=background(uv,reflect(rd,n))*0.6+uLightCol*pow(clamp(dot(reflect(rd,n),lightDir),0.0,1.0),90.0)*0.9;
+    col=mix(inner*uGlass,refl,fres*0.75*uGlassAmt);
+    col+=uGlass*pow(fres,1.2)*0.35*uGlassAmt;
+    col+=uLightCol*pow(clamp(dot(n,lightDir),0.0,1.0),24.0)*0.35*uGlassAmt;
+  }
+  float px=(uDist/uFov)/uRes.y*1.6;
+  float cov=hitShell?1.0:smoothstep(px,0.0,dmin);
+  outColor=vec4(col*cov,cov);
+}`;
+const LC_BLUR=`#version 300 es
+precision highp float;
+out vec4 outColor;
+uniform sampler2D uTex; uniform vec2 uTexel,uDstTexel,uDir; uniform float uRadius;
+void main(){
+  vec2 uv=gl_FragCoord.xy*uDstTexel;
+  if(uRadius<0.01){ outColor=texture(uTex,uv); return; }
+  const float o[5]=float[5](0.0,1.4117647,3.2941176,5.1764705,7.0588234);
+  const float w[5]=float[5](0.1964825,0.2969069,0.0944703,0.0103813,0.0002999);
+  vec4 acc=texture(uTex,uv)*w[0];
+  float wsum=w[0];
+  for(int i=1;i<5;i++){
+    vec2 off=uDir*uTexel*(o[i]*uRadius*0.25);
+    acc+=texture(uTex,uv+off)*w[i];
+    acc+=texture(uTex,uv-off)*w[i];
+    wsum+=2.0*w[i];
+  }
+  outColor=acc/wsum;
+}`;
+/* композит: как в оригинале, но фон прозрачный — alpha = покрытие */
+const LC_COMP=`#version 300 es
+precision highp float;
+out vec4 outColor;
+uniform sampler2D uScene,uBlur;
+uniform vec2 uRes; uniform float uTime,uBlurMix,uExposure,uGrain,uVign,uShade;
+float hash(vec2 p){ return fract(sin(dot(p,vec2(127.1,311.7)))*43758.5453); }
+void main(){
+  vec2 uv=gl_FragCoord.xy/uRes;
+  vec2 c=(gl_FragCoord.xy-0.5*uRes)/uRes.y;
+  vec4 s=texture(uScene,uv);
+  vec4 b=texture(uBlur,uv);
+  vec3 sharp=s.a>0.001?s.rgb/s.a:vec3(0.0);
+  vec3 blurred=b.a>0.001?b.rgb/b.a:sharp;
+  vec3 col=mix(sharp,blurred,uBlurMix);
+  float edge=s.a*(1.0-s.a)*4.0;
+  col*=1.0-edge*uShade;
+  col*=uExposure;
+  col=(col*(2.51*col+0.03))/(col*(2.43*col+0.59)+0.14);
+  col*=clamp(1.0-uVign*dot(c,c)*0.9,0.0,1.0);
+  col+=(hash(gl_FragCoord.xy+fract(uTime))-0.5)*uGrain;
+  col=pow(clamp(col,0.0,1.0),vec3(1.0/2.2));
+  outColor=vec4(col, clamp(max(s.a,b.a*uBlurMix),0.0,1.0));
+}`;
+
+const LC_PARAMS={
+  capH:.62, capR:.42, wall:.035, inset:.06,
+  count:6, viscosity:.22, colorMix:.4, mediumDens:1.35,
+  speed:.5, amp:.55, wobble:.35,
+  blur:16, edgeShade:.3,
+  bg0:'#eef1f4', bg1:'#c9ced6', glass:'#ffffff', light:'#ffffff',
+  ior:1.12, glassAmt:.3, emit:1.15, shimmer:.35, shimScale:30,
+  glow:.8, glowR:1.4, halo:0, exposure:1.05, grain:.02, vign:.12,
+  liqSpec:1, blurMix:.5,
+};
+/* пресет голубой капсулы (таблетки/голубая.json), но капли без бликов и шиммера */
+const LC_BLUE={
+  params:{
+    capH:.76, capR:.52, wall:.083, inset:0,   /* капсула длиннее и шире */
+    count:9, viscosity:.26, colorMix:.35, mediumDens:3,
+    speed:.91, amp:.55, wobble:.35,
+    blur:34, blurMix:.92, edgeShade:0,        /* капли размыты как клякса на главной */
+    bg0:'#eef1f4', bg1:'#c9ced6', glass:'#ffffff', light:'#ffffff',
+    ior:1.35, glassAmt:.99, emit:2,           /* свечение как у кляксы на главной */
+    shimmer:0, shimScale:30, liqSpec:0,       /* без шиммера и без бликов */
+    glow:.8, glowR:1.4, halo:0, exposure:1.12, grain:.02, vign:0,   /* без тени по краю */
+  },
+  /* палитра голубая и светящаяся, как клякса, но насыщенная —
+     совсем светлые тона терялись на сером фоне */
+  medium:'#3f9ce0',
+  offsetY:34,                                  /* капсула ниже в карточке */
+  blobs:[
+    /* среди капель есть яркие «ядра» — как светящиеся сгустки в кляксе на главной */
+    {color:'#7ff2ff', radius:.15, pos:{x:0,y:-0.5,z:0}, phase:4.250190489175879, rate:1.3918390654896216},
+    {color:'#2b9ef0', radius:.17, pos:{x:0,y:-0.25,z:0}, phase:1.2688210098541282, rate:1.1516889984098635},
+    {color:'#b6f6ff', radius:.19, pos:{x:0,y:0,z:0}, phase:4.625828330618441, rate:0.6823654384374302},
+    {color:'#1e8ae0', radius:.15, pos:{x:0,y:0.25,z:0}, phase:1.2399021281314642, rate:0.8497420799888453},
+    {color:'#3aa8f0', radius:.17, pos:{x:0,y:0.5,z:0}, phase:0.8184590355757679, rate:0.8410155010577649},
+    {color:'#5cf0ff', radius:.19, pos:{x:0,y:0.75,z:0}, phase:2.280773857412303, rate:0.8629863920248826},
+    {color:'#56b8f5', radius:.15, pos:{x:0,y:1,z:0}, phase:1.5335447202555865, rate:1.1834685673395038},
+    {color:'#9beeff', radius:.17, pos:{x:0,y:1.25,z:0}, phase:1.0218987838038769, rate:0.6383576997485607},
+    /* капля, лежащая на дне: не участвует в движении, растекается по нижней стенке */
+    {color:'#2b9ef0', radius:.24, pos:{x:0,y:-0.82,z:0}, phase:0, rate:1, static:true},
+  ]
+};
+
+/* остальные капсулы — тот же стиль стекла и мягкости, но свой сценарий движения
+   и своя палитра со светящимися ядрами */
+function lcPreset(medium, colors, motion, tweak){
+  const src=LC_BLUE.blobs.filter(b=>!b.static);
+  return {
+    params:Object.assign({},LC_BLUE.params,{motion,count:src.length},tweak||{}),
+    medium, offsetY:LC_BLUE.offsetY,
+    blobs:src.map((b,i)=>({
+      color:colors[i%colors.length], radius:b.radius,
+      /* для кругового движения якоря раскидываем по высоте, а не лесенкой */
+      pos:{x:0, y:-0.6+ (i/(src.length-1))*1.2, z:0},
+      phase:b.phase, rate:b.rate
+    }))
+  };
+}
+const LC_GREEN=lcPreset('#3fb98a',
+  ['#a8ffd0','#2bcf8a','#7ff2c8','#41ff9e','#5ce8b0','#b6ffd9','#35c99a','#7ff2c8'],
+  'breathe', {orbitR:.72});
+const LC_VIOLET=lcPreset('#7f6fd8',
+  ['#ceb8ff','#6a5ce0','#b9a8ff','#a08cff','#d9ceff','#7f6ff0','#9b86ff','#c3aeff'],
+  /* спираль сама по себе читается быстрее лампы — сбавляем ход */
+  'spiral', {orbitR:.62, speed:.42});
+/* «дополнить формулу» — та же капсула, но нейтральная: это ещё не твоя формула */
+const LC_GREY=lcPreset('#a8b0b9',
+  ['#dfe3e7','#9aa3ad','#cdd3d9','#b3bac2','#d6dbe0','#a2aab3','#c2c8cf','#b8bfc7'],
+  'breathe', {orbitR:.6, speed:.34, emit:1.15, glow:.5});
+const LC_VIEW={ yaw:0, pitch:.06, fov:1.9, margin:1.28 };
+function lcHex2rgb(h){ const v=parseInt(String(h).replace('#',''),16);
+  return [s2lin(((v>>16)&255)/255), s2lin(((v>>8)&255)/255), s2lin((v&255)/255)]; }
+/* палитра капель строится от цвета состояния: светлее/темнее одного тона */
+function lcShade(hex,k){
+  const v=parseInt(hex.slice(1),16);
+  const ch=(sh)=>{ const c=(v>>sh)&255; return Math.max(0,Math.min(255,Math.round(k<1?c*k:c+(255-c)*(k-1)))); };
+  return '#'+[ch(16),ch(8),ch(0)].map(x=>x.toString(16).padStart(2,'0')).join('');
+}
+function lcPalette(hex){ return [lcShade(hex,1.18),hex,lcShade(hex,1.34),lcShade(hex,.86),lcShade(hex,1.06),hex,lcShade(hex,1.24),lcShade(hex,.94)]; }
+
+class LavaCapsule{
+  constructor(canvas, hex, preset){
+    this.canvas=canvas;
+    this.setColor(hex);
+    /* пресет может переопределить и параметры сцены, и сами капли */
+    this.P=preset?Object.assign({},LC_PARAMS,preset.params):LC_PARAMS;
+    this.preset=preset||null;
+    if(preset&&preset.medium) this.medium=preset.medium;
+    const gl=this.gl=canvas.getContext('webgl2',{antialias:false,alpha:true,premultipliedAlpha:false});
+    if(!gl) throw new Error('no webgl2');
+    const sh=(t,src)=>{ const s=gl.createShader(t); gl.shaderSource(s,src); gl.compileShader(s);
+      if(!gl.getShaderParameter(s,gl.COMPILE_STATUS)) throw new Error(gl.getShaderInfoLog(s)); return s; };
+    const link=(fs)=>{ const p=gl.createProgram();
+      gl.attachShader(p,sh(gl.VERTEX_SHADER,LC_VERT)); gl.attachShader(p,sh(gl.FRAGMENT_SHADER,fs));
+      gl.linkProgram(p);
+      if(!gl.getProgramParameter(p,gl.LINK_STATUS)) throw new Error(gl.getProgramInfoLog(p));
+      return p; };
+    this.prog=link(LC_FRAG); this.blurProg=link(LC_BLUR); this.compProg=link(LC_COMP);
+    gl.bindVertexArray(gl.createVertexArray());
+    gl.bindBuffer(gl.ARRAY_BUFFER,gl.createBuffer());
+    gl.bufferData(gl.ARRAY_BUFFER,new Float32Array([-1,-1,3,-1,-1,3]),gl.STATIC_DRAW);
+    [this.prog,this.blurProg,this.compProg].forEach(p=>{
+      const l=gl.getAttribLocation(p,'aPos');
+      if(l>=0){ gl.enableVertexAttribArray(l); gl.vertexAttribPointer(l,2,gl.FLOAT,false,0,0); }
+    });
+    this.U=new Map();
+    const mk=()=>{ const tex=gl.createTexture();
+      gl.bindTexture(gl.TEXTURE_2D,tex);
+      gl.texParameteri(gl.TEXTURE_2D,gl.TEXTURE_MIN_FILTER,gl.LINEAR);
+      gl.texParameteri(gl.TEXTURE_2D,gl.TEXTURE_MAG_FILTER,gl.LINEAR);
+      gl.texParameteri(gl.TEXTURE_2D,gl.TEXTURE_WRAP_S,gl.CLAMP_TO_EDGE);
+      gl.texParameteri(gl.TEXTURE_2D,gl.TEXTURE_WRAP_T,gl.CLAMP_TO_EDGE);
+      const fbo=gl.createFramebuffer();
+      gl.bindFramebuffer(gl.FRAMEBUFFER,fbo);
+      gl.framebufferTexture2D(gl.FRAMEBUFFER,gl.COLOR_ATTACHMENT0,gl.TEXTURE_2D,tex,0);
+      gl.bindFramebuffer(gl.FRAMEBUFFER,null);
+      return {tex,fbo,w:0,h:0}; };
+    const hf=gl.getExtension('EXT_color_buffer_half_float');
+    this.IFMT=hf?gl.RGBA16F:gl.RGBA8;
+    this.ITYPE=hf?gl.HALF_FLOAT:gl.UNSIGNED_BYTE;
+    this.rtScene=mk(); this.rtA=mk(); this.rtB=mk();
+    this.blobData=new Float32Array(LC_MAX*4);
+    this.colData=new Float32Array(LC_MAX*3);
+    this.blobs=preset&&preset.blobs
+      ? preset.blobs.map(b=>({radius:b.radius,pos:{x:b.pos.x,y:b.pos.y,z:b.pos.z},phase:b.phase,rate:b.rate,color:b.color,static:!!b.static}))
+      : Array.from({length:LC_MAX},(_,i)=>({
+          radius:.15+(i%3)*.02,
+          pos:{x:0,y:-.5+(i/4)*1.0,z:0},
+          phase:(i*2.399)%(Math.PI*2),
+          rate:.6+((i*0.37)%1)*.8,
+        }));
+  }
+  setColor(hex){ this.palette=lcPalette(hex); this.medium=hex; }
+  /* обесцвечивание для соседей в карусели: цвет уводим к светло-серому
+     по яркости — капсула остаётся читаемой, но «выключенной» */
+  grey(c){ const g=this.greyK||0; if(g<=0) return c;
+    const l=c[0]*.30+c[1]*.59+c[2]*.11, t=l*.26+.36;
+    return [c[0]+(t-c[0])*g, c[1]+(t-c[1])*g, c[2]+(t-c[2])*g]; }
+  loc(prog,n){ const k=prog===this.prog?'a':prog===this.blurProg?'b':'c';
+    const key=k+n;
+    if(!this.U.has(key)) this.U.set(key,this.gl.getUniformLocation(prog,n));
+    return this.U.get(key); }
+  size(rt,w,h){ if(rt.w===w&&rt.h===h) return; rt.w=w; rt.h=h;
+    this.gl.bindTexture(this.gl.TEXTURE_2D,rt.tex);
+    this.gl.texImage2D(this.gl.TEXTURE_2D,0,this.IFMT,w,h,0,this.gl.RGBA,this.ITYPE,null); }
+  draw(t){
+    const {gl,canvas}=this, P=this.P;
+    const dpr=Math.min(window.devicePixelRatio||1,2);
+    const W=Math.round(canvas.clientWidth*dpr), H=Math.round(canvas.clientHeight*dpr);
+    if(!W||!H) return;
+    if(canvas.width!==W||canvas.height!==H){ canvas.width=W; canvas.height=H; }
+    const aspect=W/H;
+    const halfY=(P.capH+P.capR)*LC_VIEW.margin, halfX=P.capR*LC_VIEW.margin;
+    const dist=Math.max(2*LC_VIEW.fov*halfY,(2*LC_VIEW.fov*halfX)/Math.max(aspect,.01));
+    const inner=Math.max(P.capR-P.wall-P.inset,.02), spanY=P.capH+inner;
+    for(let i=0;i<P.count;i++){
+      const b=this.blobs[i];
+      const p=t*P.speed*b.rate+b.phase;
+      const r=b.radius*(1+Math.sin(p*1.9)*.08);
+      const rise=Math.sin(p);
+      let x,y,z;
+      const mo=P.motion||'lamp', orbitR=P.orbitR??.65;
+      if(b.static){                    /* лежит на дне: только лёгкое дыхание радиуса */
+        x=b.pos.x; z=b.pos.z; y=b.pos.y;
+      }else if(mo==='breathe'){        /* расходятся к стенкам и сходятся обратно */
+        const open=.5+.5*Math.sin(p*.6), a=b.phase+i*1.7;
+        const rr=inner*orbitR*open;
+        x=b.pos.x+Math.cos(a)*rr;
+        z=b.pos.z+Math.sin(a)*rr;
+        y=b.pos.y+Math.sin(p*.8+b.phase)*P.amp*spanY*.25;
+      }else if(mo==='spiral'){         /* кружат и непрерывно всплывают */
+        const spread=.55+.45*Math.sin(b.phase*2.3), rr=inner*orbitR*spread;
+        x=b.pos.x+Math.cos(p*1.1)*rr;
+        z=b.pos.z+Math.sin(p*1.1)*rr;
+        const phase01=(t*P.speed*.22*b.rate+b.phase/(Math.PI*2))%2;
+        y=(Math.abs(phase01-1)*2-1)*spanY*P.amp;
+      }else{                           /* lamp: подъём, залипание, падение */
+        x=b.pos.x+Math.sin(p*.73+b.phase)*P.wobble*inner*.45;
+        z=b.pos.z+Math.cos(p*.61+b.phase*1.7)*P.wobble*inner*.45;
+        y=b.pos.y+Math.sign(rise)*Math.pow(Math.abs(rise),.65)*P.amp*spanY*.55;
+      }
+      const lim=inner-r*.25, limY=spanY-r*.25;
+      x=Math.max(-lim,Math.min(lim,x)); z=Math.max(-lim,Math.min(lim,z));
+      y=Math.max(-limY,Math.min(limY,y));
+      this.blobData.set([x,y,z,r],i*4);
+      this.colData.set(this.grey(lcHex2rgb(b.color||this.palette[i%this.palette.length])),i*3);
+    }
+    const hw=Math.max(1,W>>1), hh=Math.max(1,H>>1);
+    this.size(this.rtScene,W,H); this.size(this.rtA,hw,hh); this.size(this.rtB,hw,hh);
+
+    gl.useProgram(this.prog);
+    gl.bindFramebuffer(gl.FRAMEBUFFER,this.rtScene.fbo);
+    gl.viewport(0,0,W,H);
+    gl.clearColor(0,0,0,0); gl.clear(gl.COLOR_BUFFER_BIT);
+    const U=n=>this.loc(this.prog,n);
+    gl.uniform2f(U('uRes'),W,H); gl.uniform1f(U('uTime'),t);
+    gl.uniform4fv(U('uBlobs'),this.blobData);
+    gl.uniform3fv(U('uBlobCol'),this.colData);
+    gl.uniform1i(U('uCount'),P.count);
+    gl.uniform1f(U('uK'),P.viscosity); gl.uniform1f(U('uColorK'),P.colorMix);
+    gl.uniform1f(U('uCapH'),P.capH); gl.uniform1f(U('uCapR'),P.capR);
+    gl.uniform1f(U('uWall'),P.wall); gl.uniform1f(U('uInset'),P.inset);
+    gl.uniform3fv(U('uBg0'),lcHex2rgb(P.bg0)); gl.uniform3fv(U('uBg1'),lcHex2rgb(P.bg1));
+    gl.uniform3fv(U('uGlass'),lcHex2rgb(P.glass)); gl.uniform3fv(U('uMedium'),this.grey(lcHex2rgb(this.medium)));
+    gl.uniform3fv(U('uLightCol'),lcHex2rgb(P.light));
+    gl.uniform1f(U('uMediumDens'),P.mediumDens);
+    gl.uniform1f(U('uIOR'),P.ior); gl.uniform1f(U('uGlassAmt'),P.glassAmt);
+    gl.uniform1f(U('uEmit'),P.emit); gl.uniform1f(U('uShimmer'),P.shimmer);
+    gl.uniform1f(U('uShimScale'),P.shimScale); gl.uniform1f(U('uLiqSpec'),P.liqSpec??1);
+    gl.uniform1f(U('uGlow'),P.glow);
+    gl.uniform1f(U('uGlowR'),P.glowR); gl.uniform1f(U('uHalo'),P.halo);
+    gl.uniform2f(U('uRot'),LC_VIEW.yaw,LC_VIEW.pitch);
+    gl.uniform1f(U('uDist'),dist); gl.uniform1f(U('uFov'),LC_VIEW.fov);
+    gl.drawArrays(gl.TRIANGLES,0,3);
+
+    const radius=P.blur*dpr*.5;
+    gl.useProgram(this.blurProg);
+    gl.uniform1i(this.loc(this.blurProg,'uTex'),0);
+    gl.activeTexture(gl.TEXTURE0);
+    gl.viewport(0,0,hw,hh);
+    const pass=(src,dst,dx,dy,r)=>{
+      gl.bindFramebuffer(gl.FRAMEBUFFER,dst.fbo);
+      gl.bindTexture(gl.TEXTURE_2D,src.tex);
+      gl.uniform2f(this.loc(this.blurProg,'uTexel'),1/src.w,1/src.h);
+      gl.uniform2f(this.loc(this.blurProg,'uDstTexel'),1/dst.w,1/dst.h);
+      gl.uniform2f(this.loc(this.blurProg,'uDir'),dx,dy);
+      gl.uniform1f(this.loc(this.blurProg,'uRadius'),r);
+      gl.drawArrays(gl.TRIANGLES,0,3);
+    };
+    /* большой радиус за один проход даёт кольца: 9 отсчётов размазываются
+       на десятки текселей. Дробим на несколько проходов по ≤12. */
+    let left=radius, src=this.rtScene;
+    for(let i=0;i<4 && left>0.4;i++){
+      const r=Math.min(left,12);
+      pass(src,this.rtA,1,0,r);
+      pass(this.rtA,this.rtB,0,1,r);
+      src=this.rtB;
+      left-=r;
+    }
+
+    gl.useProgram(this.compProg);
+    gl.bindFramebuffer(gl.FRAMEBUFFER,null);
+    gl.viewport(0,0,W,H);
+    gl.clearColor(0,0,0,0); gl.clear(gl.COLOR_BUFFER_BIT);
+    gl.activeTexture(gl.TEXTURE0); gl.bindTexture(gl.TEXTURE_2D,this.rtScene.tex);
+    gl.uniform1i(this.loc(this.compProg,'uScene'),0);
+    gl.activeTexture(gl.TEXTURE1); gl.bindTexture(gl.TEXTURE_2D,this.rtB.tex);
+    gl.uniform1i(this.loc(this.compProg,'uBlur'),1);
+    gl.uniform2f(this.loc(this.compProg,'uRes'),W,H);
+    gl.uniform1f(this.loc(this.compProg,'uTime'),t);
+    gl.uniform1f(this.loc(this.compProg,'uBlurMix'),P.blurMix??.5);
+    gl.uniform1f(this.loc(this.compProg,'uExposure'),P.exposure);
+    gl.uniform1f(this.loc(this.compProg,'uGrain'),P.grain);
+    gl.uniform1f(this.loc(this.compProg,'uVign'),P.vign);
+    gl.uniform1f(this.loc(this.compProg,'uShade'),P.edgeShade);
+    gl.drawArrays(gl.TRIANGLES,0,3);
+  }
+}
+
 /* ── build cards: own timer on top, capsule, meta below ── */
 const track=document.getElementById('track');
 const fields = STATES.map((s,i)=>{
@@ -1398,7 +1971,20 @@ const fields = STATES.map((s,i)=>{
   meta.className='cap-meta';
   meta.innerHTML='<b class="cap-name"></b><span class="cap-when"></span>';
 
-  card.append(timer,f.canvas,meta);
+  /* лавовая капсула вместо плоского поля; при отсутствии WebGL2 остаётся Field */
+  let visual=f.canvas;
+  try{
+    const lc=document.createElement('canvas');
+    lc.className='lava-canvas';
+    /* голубая — пресет из таблетки/голубая.json, остальные в том же стиле,
+       но со своим сценарием: Баланс «дышит», Фокус идёт спиралью */
+    const preset=s.key==='restorative'?LC_BLUE:s.key==='balanced'?LC_GREEN:LC_VIOLET;
+    f.lava=new LavaCapsule(lc,s.hex,preset);
+    if(preset&&preset.offsetY) lc.style.top=(26+preset.offsetY)+'px';
+    visual=lc;
+  }catch(_){ f.lava=null; }
+
+  card.append(timer,visual,meta);
   track.appendChild(card);
   f.card=card;
   return f;
@@ -1408,11 +1994,21 @@ addCapsuleCard.type='button';
 addCapsuleCard.className='card add-capsule-card';
 addCapsuleCard.setAttribute('aria-label','Open supplement shop');
 const addField=new Field(STATES[0]);
-addCapsuleCard.innerHTML='<span class="add-capsule-top"></span><span class="add-capsule-plus">+</span><div class="cap-meta"><b class="add-capsule-name"></b><span class="add-capsule-sub"></span></div>';
-addCapsuleCard.appendChild(addField.canvas);
+/* тот же каркас, что у остальных карточек: сверху таймер, только пустой и серый */
+addCapsuleCard.innerHTML='<div class="cap-timer"><span class="add-capsule-timer-label"></span><b>00:00:00</b></div>'
+  +'<span class="add-capsule-plus">+</span><div class="cap-meta"><b class="add-capsule-name"></b><span class="add-capsule-sub"></span></div>';
+/* последняя капсула тоже живая, но нейтрально-серая: это ещё не твоя формула */
+let addLava=null;
+try{
+  const alc=document.createElement('canvas');
+  alc.className='lava-canvas';
+  addLava=new LavaCapsule(alc,'#b7bec7',LC_GREY);
+  if(LC_GREY.offsetY) alc.style.top=(26+LC_GREY.offsetY)+'px';
+  addCapsuleCard.appendChild(alc);
+}catch(_){ addCapsuleCard.appendChild(addField.canvas); }
 track.appendChild(addCapsuleCard);
-addCapsuleCard.addEventListener('pointerdown',e=>e.stopPropagation());
-addCapsuleCard.addEventListener('click',e=>{e.stopPropagation();openStore();});
+/* карточка «дополнить формулу» живёт в общей карусели: тап по краю листает
+   кольцо дальше, тап по центру открывает магазин — этим занимается endDrag */
 
 /* seconds until the next occurrence of the capsule intake time */
 function secondsToIntake(intake){
@@ -1433,7 +2029,7 @@ function renderCards(){
     f.card.querySelector('.cap-name').textContent=s.name[lang];
     f.card.querySelector('.cap-when').textContent=`${it.time} · ${it.ctx[lang]}`;
   });
-  addCapsuleCard.querySelector('.add-capsule-top').textContent=lang==='ru'?'Дополнительно':'Optional';
+  addCapsuleCard.querySelector('.add-capsule-timer-label').textContent=T.capTimerLabel[lang];
   addCapsuleCard.querySelector('.add-capsule-name').textContent=lang==='ru'?'Дополнить формулу':'Add to formula';
   addCapsuleCard.querySelector('.add-capsule-sub').textContent=lang==='ru'?'Подборка добавок':'Supplement shop';
   tickCountdowns();
@@ -1452,36 +2048,48 @@ const phone=document.getElementById('phone');
 const stage=document.getElementById('stage');
 const dashboard=document.getElementById('dashboard');
 
-const CAROUSEL_VP={ spacing:198, sFall:0.32, oFall:0.45, blurMax:2.2, sMin:0.66 };
+/* соседей почти не гасим — они читаются формой и серым цветом, а не размытием */
+const CAROUSEL_VP={ spacing:198, sFall:0.30, oFall:0.16, blurMax:1.1, sMin:0.68 };
 const VP = {
   home:CAROUSEL_VP, carousel:CAROUSEL_VP, widget:CAROUSEL_VP,
   bio:CAROUSEL_VP, biodetail:CAROUSEL_VP, profile:CAROUSEL_VP,
 };
 
+/* карусель кольцевая: слот не ограничен, позиция берётся по кратчайшему
+   расстоянию внутри кольца — за последней карточкой снова идёт первая */
+function ringSize(){ return view==='carousel' ? STATES.length+1 : STATES.length; }
+function slotOf(){ const N=STATES.length+1; return ((carouselSlot%N)+N)%N; }
+function ringDelta(i, slot, N){ let d=(i-slot)%N; if(d>N/2) d-=N; if(d<-N/2) d+=N; return d; }
+
 function layout(animate){
   const vp=VP[view];
+  const N=ringSize();
   const visibleSlot=view==='carousel'?carouselSlot:active;
   fields.forEach((f,i)=>{
-    const pos=(i-visibleSlot)*vp.spacing+dragOffset;
+    const pos=ringDelta(i,visibleSlot,N)*vp.spacing+dragOffset;
     const norm=pos/vp.spacing;
     const s=Math.max(vp.sMin, 1-Math.abs(norm)*vp.sFall);
     const op=Math.max(0, 1-Math.abs(norm)*vp.oFall);
-    const blur=Math.min(vp.blurMax, Math.abs(norm)*3);
+    const blur=Math.min(vp.blurMax, Math.abs(norm)*1.5);
     f.card.classList.toggle('anim', animate);
     f.card.style.transform=`translate(${pos}px,0) scale(${s})`;
     f.card.style.opacity=op.toFixed(3);
     f.card.style.filter=`blur(${blur.toFixed(2)}px)`;
     f.card.style.zIndex=String(20-Math.round(Math.abs(norm)*10));
+    /* по центру — цвет состояния, в стороне — серые тона */
+    if(f.lava) f.lava.greyK=Math.min(1,Math.abs(norm)*1.15);
+    f.card.classList.toggle('is-centre',Math.abs(norm)<.5);
     f.centered=(i===active);
   });
-  const addPos=(STATES.length-visibleSlot)*vp.spacing+dragOffset;
+  const addPos=(view==='carousel'?ringDelta(STATES.length,visibleSlot,N):N)*vp.spacing+dragOffset;
   const addNorm=addPos/vp.spacing;
   const addScale=Math.max(vp.sMin,1-Math.abs(addNorm)*vp.sFall);
   addCapsuleCard.classList.toggle('anim',animate);
+  addCapsuleCard.classList.toggle('is-centre',Math.abs(addNorm)<.5);
   addCapsuleCard.style.transform=`translate(${addPos}px,0) scale(${addScale})`;
   addCapsuleCard.style.opacity=Math.max(0,1-Math.abs(addNorm)*vp.oFall).toFixed(3);
-  addCapsuleCard.style.filter=`blur(${Math.min(vp.blurMax,Math.abs(addNorm)*3).toFixed(2)}px)`;
-  const addIsAvailable=view==='carousel' && carouselSlot===STATES.length;
+  addCapsuleCard.style.filter=`blur(${Math.min(vp.blurMax,Math.abs(addNorm)*1.5).toFixed(2)}px)`;
+  const addIsAvailable=view==='carousel' && slotOf()===STATES.length;
   addCapsuleCard.style.zIndex=String(addIsAvailable?21:20-Math.round(Math.abs(addNorm)*10));
   addCapsuleCard.style.pointerEvents=addIsAvailable?'auto':'none';
 }
@@ -1494,6 +2102,157 @@ function applyState(i){
   renderCards();
   renderWidgetDetails(s);
 }
+
+/* ────────────────────────────────────────────────────────────
+   Живая клякса состояния (порт impre-state-scheme-v2).
+   Метаболы: у каждого шарика гладкое ядро exp(-r²), вклады
+   складываются — сумма даёт слипание и перетекание цвета.
+   Канвас прозрачный: край растворяется прямо в карточке.
+   ──────────────────────────────────────────────────────────── */
+const BLOB_MAX=12, BLOB_BOX=340, BLOB_ZOOM=1.22;   /* зум кадра: клякса крупнее в карточке */
+const BLOB_VERT=`#version 300 es
+in vec2 aPos; void main(){ gl_Position=vec4(aPos,0.0,1.0); }`;
+const BLOB_FRAG=`#version 300 es
+precision highp float;
+out vec4 outColor;
+#define MAX ${BLOB_MAX}
+uniform vec2 uRes; uniform vec2 uOrigin; uniform float uScale; uniform float uTime;
+uniform vec4 uNodes[MAX]; uniform vec3 uNodeCol[MAX]; uniform int uCount;
+uniform float uSoft,uThr,uEdge,uDens,uEmit,uDepth,uDrift,uSpeed,uGrain;
+float hash(vec2 p){ return fract(sin(dot(p,vec2(127.1,311.7)))*43758.5453); }
+float field(vec2 p, out vec3 col){
+  float f=0.0; vec3 acc=vec3(0.0);
+  for(int i=0;i<MAX;i++){
+    if(i>=uCount) break;
+    vec4 n=uNodes[i];
+    vec2 dr=vec2(sin(uTime*uSpeed*(0.5+float(i)*0.13)+float(i)),
+                 cos(uTime*uSpeed*(0.42+float(i)*0.11)+float(i)*1.7))*uDrift;
+    vec2 d=p-(n.xy+dr);
+    float r=max(n.z*uSoft,0.001);
+    float fi=exp(-dot(d,d)/(r*r)*2.2);
+    f+=fi; acc+=uNodeCol[i]*fi;
+  }
+  col=acc/max(f,0.0001); return f;
+}
+void main(){
+  vec2 lp=(gl_FragCoord.xy-uOrigin)/uScale; lp.y=-lp.y;
+  vec3 lightDir=normalize(vec3(-0.3,0.55,0.78));
+  vec3 c; float f=field(lp,c);
+  vec3 cc;
+  float fx=field(lp+vec2(2.0,0.0),cc)-f;
+  float fy=field(lp+vec2(0.0,2.0),cc)-f;
+  vec3 nrm=normalize(vec3(-fx*uDepth*0.02, fy*uDepth*0.02, 0.35));
+  float lit=0.78+0.22*clamp(dot(nrm,lightDir),0.0,1.0);
+  vec3 mass=c*lit*(1.0+uEmit*smoothstep(uThr,uThr+1.2,f));
+  float a=clamp(smoothstep(uThr,uThr+uEdge,f)*uDens,0.0,1.0);
+  mass=clamp(mass,0.0,1.0);
+  mass+=(hash(gl_FragCoord.xy+fract(uTime)*7.0)-0.5)*uGrain;
+  mass=clamp(mass,0.0,1.0);
+  vec3 srgb=mix(mass*12.92, 1.055*pow(mass,vec3(1.0/2.4))-0.055, step(vec3(0.0031308),mass));
+  outColor=vec4(srgb,a);
+}`;
+const s2lin=c=>c<=0.04045?c/12.92:Math.pow((c+0.055)/1.055,2.4);
+function hex2lin(h){ const v=parseInt(String(h).replace('#',''),16);
+  return [s2lin(((v>>16)&255)/255), s2lin(((v>>8)&255)/255), s2lin((v&255)/255)]; }
+function hexMix(a,b,t){
+  const pa=parseInt(a.slice(1),16), pb=parseInt(b.slice(1),16);
+  const m=(sh)=>Math.round((((pa>>sh)&255)*(1-t)+((pb>>sh)&255)*t));
+  return '#'+[m(16),m(8),m(0)].map(v=>v.toString(16).padStart(2,'0')).join('');
+}
+
+class StateBlob{
+  constructor(canvas){
+    this.canvas=canvas;
+    const gl=this.gl=canvas.getContext('webgl2',{antialias:false,alpha:true,premultipliedAlpha:false});
+    if(!gl) throw new Error('no webgl2');
+    const sh=(t,src)=>{ const s=gl.createShader(t); gl.shaderSource(s,src); gl.compileShader(s);
+      if(!gl.getShaderParameter(s,gl.COMPILE_STATUS)) throw new Error(gl.getShaderInfoLog(s)); return s; };
+    const p=this.prog=gl.createProgram();
+    gl.attachShader(p,sh(gl.VERTEX_SHADER,BLOB_VERT));
+    gl.attachShader(p,sh(gl.FRAGMENT_SHADER,BLOB_FRAG));
+    gl.linkProgram(p);
+    if(!gl.getProgramParameter(p,gl.LINK_STATUS)) throw new Error(gl.getProgramInfoLog(p));
+    gl.useProgram(p);
+    gl.bindVertexArray(gl.createVertexArray());
+    gl.bindBuffer(gl.ARRAY_BUFFER,gl.createBuffer());
+    gl.bufferData(gl.ARRAY_BUFFER,new Float32Array([-1,-1,3,-1,-1,3]),gl.STATIC_DRAW);
+    const loc=gl.getAttribLocation(p,'aPos');
+    gl.enableVertexAttribArray(loc);
+    gl.vertexAttribPointer(loc,2,gl.FLOAT,false,0,0);
+    this.u=new Map();
+    this.nodeBuf=new Float32Array(BLOB_MAX*4);
+    this.colBuf=new Float32Array(BLOB_MAX*3);
+  }
+  loc(n){ if(!this.u.has(n)) this.u.set(n,this.gl.getUniformLocation(this.prog,n)); return this.u.get(n); }
+  draw(nodes,style,t){
+    const {gl,canvas}=this;
+    const dpr=Math.min(window.devicePixelRatio||1,2);
+    const w=Math.round(canvas.clientWidth*dpr), h=Math.round(canvas.clientHeight*dpr);
+    if(!w||!h) return;
+    if(canvas.width!==w||canvas.height!==h){ canvas.width=w; canvas.height=h; gl.viewport(0,0,w,h); }
+    gl.clearColor(0,0,0,0); gl.clear(gl.COLOR_BUFFER_BIT);
+    const scale=Math.min(w/BLOB_BOX,h/BLOB_BOX)*BLOB_ZOOM;
+    const originX=(w-BLOB_BOX*scale)*0.5, originY=h-(h-BLOB_BOX*scale)*0.5;
+    gl.useProgram(this.prog);
+    gl.uniform2f(this.loc('uRes'),w,h);
+    gl.uniform2f(this.loc('uOrigin'),originX,originY);
+    gl.uniform1f(this.loc('uScale'),scale);
+    gl.uniform1f(this.loc('uTime'),t);
+    nodes.slice(0,BLOB_MAX).forEach((n,i)=>{
+      this.nodeBuf.set([n.pos[0],n.pos[1],n.r,0],i*4);
+      this.colBuf.set(hex2lin(n.color),i*3);
+    });
+    gl.uniform4fv(this.loc('uNodes'),this.nodeBuf);
+    gl.uniform3fv(this.loc('uNodeCol'),this.colBuf);
+    gl.uniform1i(this.loc('uCount'),Math.min(nodes.length,BLOB_MAX));
+    for(const k of ['Soft','Thr','Edge','Dens','Emit','Depth','Drift','Speed','Grain'])
+      gl.uniform1f(this.loc('u'+k),style[k.toLowerCase()]);
+    gl.drawArrays(gl.TRIANGLES,0,3);
+  }
+}
+
+/* палитра и раскладка — из сохранённого пресета lava-blobs (настройки/…json):
+   яркое свечение emit 2, быстрый дрейф, зелёные с акцентом #41ff4c.
+   Холодный набор идёт индекс-в-индекс, чтобы при плохом состоянии
+   каждая капля ушла в свой синий аналог той же светлоты. */
+const BLOB_WARM=['#b7f04a','#7ee06a','#d8f56a','#41ff4c','#a8e838'];
+const BLOB_COLD=['#6fd0f0','#6ab6e6','#9fd8f5','#41c8ff','#58a8e8'];
+const BLOB_STYLE={soft:1.81,thr:.29,edge:1.07,dens:1.9,emit:2,depth:60,drift:18.5,speed:.9,grain:.03};
+const BLOB_PULSE={amp:.1,speed:1.01,sync:.37};
+const BLOB_SAVED=[
+  {pos:[104.0864178078259,166.7277503790105], base:50.43015260631002, color:'#41ff4c', phase:0.796252603035623, rate:1.4137345679012345},
+  {pos:[143.50119501216605,83.52533805263418], base:35.639977709190674, color:'#41ff4c', phase:4.326827433435634, rate:0.7930632716049383},
+  {pos:[115.59900073491795,221.67617603994026], base:31.86832133058985, color:'#b7f04a', phase:0.11977591332745037, rate:1.0640586419753086},
+  {pos:[235.7195441514531,186.682429780649], base:50.448516803840874, color:'#41ff4c', phase:2.835863759463441, rate:0.7267206790123457},
+  {pos:[209.95659151613793,70.39285621812537], base:34.71389746227709, color:'#d8f56a', phase:2.0031154598776277, rate:0.9810493827160494},
+  {pos:[241.25956394006562,275.08783310131037], base:29.997796639231826, color:'#7ee06a', phase:5.999111424142794, rate:1.2270447530864197},
+  {pos:[145.88212429600046,215.35381289576023], base:47.6335476680384, color:'#41ff4c', phase:4.351876140292959, rate:0.8647067901234569},
+  {pos:[189.47060232723507,143.94372513949375], base:30.95448388203018, color:'#b7f04a', phase:5.43899001790091, rate:1.0940354938271604},
+  {pos:[190.43159200855845,124.28307334539562], base:25.293938614540465, color:'#d8f56a', phase:5.071662852180251, rate:1.315030864197531}
+];
+let blobNodes=[], stateScoreValue=78;
+function blobRegenerate(){
+  blobNodes=BLOB_SAVED.map(b=>({
+    pos:[b.pos[0],b.pos[1]], base:b.base, r:0,
+    slot:Math.max(0,BLOB_WARM.indexOf(b.color)),
+    color:b.color, phase:b.phase, rate:b.rate
+  }));
+}
+/* score → температура палитры: 40 % и ниже — совсем холодно, 85 % и выше — тепло */
+function blobWarmth(score){ return Math.max(0,Math.min(1,(score-40)/45)); }
+function blobApply(t,score){
+  const warm=blobWarmth(score);
+  blobNodes.forEach(b=>{
+    const ph=b.phase*(1-BLOB_PULSE.sync);
+    const rate=1+(b.rate-1)*(1-BLOB_PULSE.sync);
+    b.r=b.base*(1+BLOB_PULSE.amp*Math.sin(t*BLOB_PULSE.speed*rate*2+ph));
+    b.color=hexMix(BLOB_COLD[b.slot],BLOB_WARM[b.slot],warm);
+  });
+}
+blobRegenerate();
+let stateBlob=null;
+try{ stateBlob=new StateBlob(document.getElementById('stateBlob')); }
+catch(_){ document.getElementById('stateBlob').style.display='none'; }
 
 /* ── state screen: overall status + biomarkers that need attention ── */
 function attentionList(){ return BIOMARKERS.filter(b=>statusOf(b)!=='in'); }
@@ -1510,27 +2269,9 @@ function renderStateWidget(){
   const inRange=BIOMARKERS.filter(b=>statusOf(b)==='in').length;
   const score=Math.round(inRange/BIOMARKERS.length*100);
   document.getElementById('stateScore').innerHTML=`${score}<small>%</small>`;
+  stateScoreValue=score;
+  document.getElementById('stateBioage').textContent=lang==='ru'?'Биовозраст 32':'Bio age 32';
   const attn=attentionList();
-  document.getElementById('stateMapLabel').textContent=lang==='ru'?'Состояние':'State';
-  document.getElementById('stateMapStatus').textContent=lang==='ru'
-    ? (attn.length ? `${attn.length} зоны требуют внимания` : 'стабильно')
-    : (attn.length ? `${attn.length} areas need attention` : 'stable');
-  const map=document.getElementById('stateMap');
-  map.querySelectorAll('.state-bubble').forEach(el=>el.remove());
-  STATE_AREAS.forEach(area=>{
-    const [left,top]=area.pos;
-    const bubble=document.createElement('button');
-    const needsAttention=area.markers.some(key=>statusOf(BIOMARKERS.find(b=>b.key===key))!=='in');
-    bubble.type='button';
-    bubble.className=`state-bubble${needsAttention?' is-attention':''}`;
-    bubble.style.left=`${left}%`;
-    bubble.style.top=`${top}%`;
-    bubble.style.setProperty('--bubble-size',`${area.size}px`);
-    bubble.innerHTML=(lang==='ru'?area.ru:area.en).replace('\\n','<br>');
-    bubble.title=(lang==='ru'?area.ru:area.en).replace('\\n',' ');
-    bubble.onclick=()=>openBio(area.markers[0],'home');
-    map.appendChild(bubble);
-  });
   const rows=document.getElementById('attnRows');
   if(rows){
     rows.innerHTML=attn.map(b=>{
@@ -1546,13 +2287,13 @@ function renderStateWidget(){
       el.onclick=()=>openBio(el.dataset.bio,'home');
     });
   }
-  document.getElementById('seeMarkersText').textContent=T.seeMarkers[lang];
-  document.getElementById('heartLabel').textContent=lang==='ru'?'Пульс':'Heart rate';
-  document.getElementById('heartUnit').textContent=lang==='ru'?'уд/мин':'bpm';
-  document.getElementById('heartNote').textContent=lang==='ru'?'В покое':'At rest';
-  document.getElementById('sleepLabel').textContent=lang==='ru'?'Сон':'Sleep';
-  document.getElementById('sleepValue').textContent=lang==='ru'?'7ч 40м':'7h 40m';
-  document.getElementById('sleepNote').textContent=lang==='ru'?'Хорошее восстановление':'Good recovery';
+  document.getElementById('hormoneLabel').textContent=lang==='ru'?'Гормональный ответ':'Hormonal response';
+  document.getElementById('hormoneValue').innerHTML=lang==='ru'?'18 <small>дн.</small>':'18 <small>days</small>';
+  document.getElementById('hormoneNote').textContent=lang==='ru'?'18 дн. до диапазона':'18 days to range';
+  document.getElementById('nutrientLabel').textContent=lang==='ru'?'Нутриенты':'Nutrients';
+  document.getElementById('nutrientValue').innerHTML=lang==='ru'?'12 <small>дн.</small>':'12 <small>days</small>';
+  document.getElementById('metabolismLabel').textContent=lang==='ru'?'Метаболизм':'Metabolism';
+  document.getElementById('metabolismValue').textContent=lang==='ru'?'Стабильно':'Stable';
 }
 
 function fmtDose(d){
@@ -1589,8 +2330,10 @@ let activeSupp='Mg';
 function openSupplement(key, from){
   if(from) widgetBackTarget=from;
   activeSupp=key;
-  renderSupplementDetail();
+  /* сначала показываем экран: пока он display:none, у канваса нулевая ширина
+     и график тренда рисуется в пустоту */
   openWidget('supplement', widgetBackTarget);
+  renderSupplementDetail();
 }
 function bindSupplementList(id, source){
   const list=document.getElementById(id);
@@ -1802,19 +2545,21 @@ function renderWidgetDetails(s){
 
 function go(i){
   if(view==='carousel'){
-    carouselSlot=Math.max(0,Math.min(STATES.length,i));
-    if(carouselSlot<STATES.length){
-      active=carouselSlot;
-      dragOffset=0;
+    /* слот не зажимаем — кольцо, поэтому уезжаем за края и приходим с другой стороны */
+    carouselSlot=i;
+    dragOffset=0;
+    const s=slotOf();
+    if(s<STATES.length){
+      active=s;
       layout(true);
       applyState(active);
     }else{
-      dragOffset=0;
       layout(true);
     }
     return;
   }
-  active=Math.max(0,Math.min(STATES.length-1,i));
+  const L=STATES.length;
+  active=((i%L)+L)%L;
   carouselSlot=active;
   dragOffset=0;
   layout(true);
@@ -1822,6 +2567,12 @@ function go(i){
 }
 
 function setView(v){
+  /* уходя из магазина, снимаем карусель со слота «добавить формулу»:
+     иначе возврат в карусель снова показывает эту карточку по центру
+     и любой тап открывает магазин заново */
+  if(view==='widget' && lastWidgetScreen==='store' && v!=='widget'){
+    carouselSlot=active; dragOffset=0;
+  }
   view=v;
   if(v==='bio') renderBioList();
   if(v==='carousel') renderCards();
@@ -1942,7 +2693,9 @@ function openProfile(){
   }
   setView('profile');
 }
-function closeProfile(){ setView(profileReturn); }
+/* закрывать надо и редактор: иначе он остаётся открытым поверх всего
+   и перехватывает нажатия на других экранах */
+function closeProfile(){ closeProfileEditor(); setView(profileReturn); }
 document.getElementById('profileBtn').onclick=openProfile;
 document.getElementById('profileClose').onclick=closeProfile;
 const PROFILE_FORMS={
@@ -2012,11 +2765,11 @@ function endDrag(e){
     const rect=stage.getBoundingClientRect();
     const rel=(e.clientX-rect.left)-rect.width/2;
     const slot=view==='carousel'?carouselSlot:active;
-    if(rel<-104 && slot>0) return go(slot-1);
-    if(rel> 104 && slot<STATES.length) return go(slot+1);
+    if(rel<-104) return go(slot-1);
+    if(rel> 104) return go(slot+1);
     dragOffset=0; layout(true);
     if(view==='carousel'){
-      if(carouselSlot===STATES.length) openStore();
+      if(slotOf()===STATES.length) openStore();
       else openCapsule(active);
     }
     return;
@@ -2054,8 +2807,9 @@ document.getElementById('sensorChip').addEventListener('click',e=>{
   e.stopPropagation();
   openWidget('sensor','home');
 });
-document.getElementById('heartSummary').addEventListener('click',()=>openWidget('sensor','home'));
-document.getElementById('sleepSummary').addEventListener('click',()=>openWidget('sensor','home'));
+document.getElementById('hormoneSummary').addEventListener('click',()=>openBio('cortisol','home'));
+document.getElementById('nutrientSummary').addEventListener('click',()=>openBio('vitd','home'));
+document.getElementById('metabolismSummary').addEventListener('click',()=>openBio('glucose','home'));
 document.getElementById('seeMarkers').addEventListener('click',()=>setView('bio'));
 document.getElementById('bioSearchToggle').addEventListener('click',()=>{
   const wrap=document.getElementById('bioSearchWrap');
@@ -2260,22 +3014,31 @@ function finishExport(c,s){
   let prev=performance.now();
   function frame(now){
     const dt=Math.min(.05,(now-prev)/1000); prev=now;
+    if(stateBlob && view==='home'){
+      const t=now*0.001;
+      blobApply(t,stateScoreValue);
+      stateBlob.draw(blobNodes,BLOB_STYLE,t);
+    }
     if(view!=='carousel'){
       /* skip expensive card rendering when the stage is hidden */
       fields.forEach(f=>{ f.update(dt); f.centered=(f===fields[active]); });
-      addField.s=STATES[active];
-      addField.update(dt);
+      if(!addLava){ addField.s=STATES[active]; addField.update(dt); }
     }else{
+      const lt=now*0.001;
       fields.forEach(f=>{
         f.update(dt);
+        if(f.lava){ f.lava.draw(lt); return; }   /* лавовая капсула рисует себя сама */
         const ctx=f.ctx;
         ctx.clearRect(0,0,CW,CH);
         f.draw(ctx,0,0, f.centered?1:0.62);
       });
-      addField.s=STATES[active];
-      addField.update(dt);
-      addField.ctx.clearRect(0,0,CW,CH);
-      addField.draw(addField.ctx,0,0,carouselSlot===STATES.length?1:.62);
+      if(addLava){ addLava.draw(lt); }
+      else{
+        addField.s=STATES[active];
+        addField.update(dt);
+        addField.ctx.clearRect(0,0,CW,CH);
+        addField.draw(addField.ctx,0,0,slotOf()===STATES.length?1:.62);
+      }
     }
     requestAnimationFrame(frame);
   }
