@@ -114,7 +114,7 @@
   /* высвободившиеся 24 px отдаём левой плашке; правые не трогаем — оптическая компенсация */
   .blood-profile-card--primary{grid-row:1 / span 2;padding:26px 26px 20px;justify-content:flex-start;
     align-items:flex-start;text-align:left;overflow:hidden;gap:0;
-    border-radius:50% / 47%;corner-shape:squircle;background:var(--solid);box-shadow:none}
+    border-radius:74px;background:var(--solid);box-shadow:none}
   .blood-profile-card--primary .blood-profile-label{padding:0}
 
 
@@ -791,7 +791,7 @@
     transition:opacity .5s ease,transform .5s cubic-bezier(.32,.72,.28,1)}
   .auth.gone{opacity:0;pointer-events:none;transform:scale(1.02)}
   .auth-hero{position:relative;width:100%;height:340px;
-    border-radius:50%;corner-shape:round;corner-shape:superellipse(1.55);
+    border-radius:112px;
     overflow:hidden;background:var(--surface);box-shadow:var(--glow-l);display:grid;place-items:center}
   /* верхний блок входа держим сильно расфокусированным: это атмосфера, а не
      фигура. канвас чуть увеличен, чтобы размытие не подъедало края */
@@ -805,7 +805,7 @@
     text-transform:uppercase;color:rgba(34,35,39,.72)}
   /* группа ввода стоит по центру карточки, а не прижата к верху */
   .auth-card{width:100%;flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:0;
-    padding:34px 28px;border-radius:50%;corner-shape:round;corner-shape:superellipse(1.55);background:var(--card)}
+    padding:34px 28px;border-radius:104px;background:var(--card)}
   .auth-lead{margin-bottom:26px;text-align:center;font-size:11px;line-height:1.7;letter-spacing:1.8px;
     text-transform:uppercase;color:var(--ink-faint)}
   .auth-lead em{font-style:normal;color:var(--ink-mute)}
@@ -924,6 +924,16 @@
       height:calc(100dvh - env(safe-area-inset-top) - env(safe-area-inset-bottom) - 210px)}
     .topbar{top:calc(env(safe-area-inset-top) + 8px)}
   }
+  /* Safari (и всё, кроме свежего Chrome) не знает corner-shape, а `border-radius:50%`
+     без него превращается в честный эллипс — верхний блок входа и карточка
+     становились овалом и кругом. Поэтому по умолчанию радиус в пикселях,
+     а процентную форму включаем только при поддержке */
+  @supports (corner-shape: squircle){
+    .blood-profile-card--primary{border-radius:50% / 47%;corner-shape:squircle}
+    .auth-hero{border-radius:50%;corner-shape:superellipse(1.55)}
+    .auth-card{border-radius:50%;corner-shape:superellipse(1.55)}
+  }
+
   /* режим встраивания в лендинг: только телефон, без обвязки прототипа */
   .embed .screen-index,.embed .export{display:none}
   /* фон и поля гасим: в лендинге телефон должен лежать прямо на его подложке,
