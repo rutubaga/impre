@@ -905,6 +905,25 @@
   .screen-index button.on{color:var(--ink);font-weight:650}
   .screen-index button.on::before{content:"";display:inline-block;width:5px;height:5px;margin:0 8px 1px 0;border-radius:50%;background:rgb(var(--accent));vertical-align:middle}
   @media (max-width:760px){.screen-index{display:none}}
+  /* ── телефон: приложение занимает весь экран, макет корпуса не нужен ──
+     100dvh, а не 100vh — иначе адресная строка Safari срезает низ,
+     а верхний контент уезжает под чёлку */
+  @media (max-width:760px){
+    body{padding:0;display:block;min-height:100dvh;background:var(--bg-hi)}
+    .phone{width:100vw;height:100dvh;min-height:100dvh;border-radius:0;corner-shape:round;
+      box-shadow:none;transform:none}
+    .export{display:none}
+    /* мокап статус-бара и чёлки — у настоящего телефона они свои */
+    .phone > .notch,.phone > .status{display:none}
+    /* освобождаем место под системную шапку и жест «домой» */
+    .dashboard{inset:calc(env(safe-area-inset-top) + 54px) 18px 96px}
+    .tabbar{bottom:calc(env(safe-area-inset-bottom) + 18px)}
+    .widget-detail,.bio-panel,.biod-panel,.profile-panel{
+      top:calc(env(safe-area-inset-top) + 54px)}
+    .view-carousel .stage{top:calc(env(safe-area-inset-top) + 50px);
+      height:calc(100dvh - env(safe-area-inset-top) - env(safe-area-inset-bottom) - 210px)}
+    .topbar{top:calc(env(safe-area-inset-top) + 8px)}
+  }
   /* режим встраивания в лендинг: только телефон, без обвязки прототипа */
   .embed .screen-index,.embed .export{display:none}
   /* фон и поля гасим: в лендинге телефон должен лежать прямо на его подложке,
