@@ -1,0 +1,341 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Impre — генератор графиков</title>
+<style>
+  :root{
+    --bg:#e4e7eb; --card:#fff; --ink:#222327; --ink-mute:#777b82; --ink-faint:#9ba0a7;
+    --soft:rgba(120,126,136,.10);
+  }
+  *{margin:0;padding:0;box-sizing:border-box}
+  body{background:var(--bg);color:var(--ink);padding:34px 30px 70px;
+    font-family:-apple-system,BlinkMacSystemFont,"Inter","Segoe UI",Helvetica,Arial,sans-serif;
+    -webkit-font-smoothing:antialiased}
+  h1{font-size:28px;font-weight:300;letter-spacing:-1px}
+  .lead{margin-top:6px;font-size:12.5px;line-height:1.55;color:var(--ink-mute);max-width:620px}
+
+  .wrap{display:grid;grid-template-columns:330px minmax(0,1fr);gap:18px;margin-top:26px;align-items:start}
+  @media (max-width:900px){ .wrap{grid-template-columns:1fr} }
+
+  .panel{background:var(--card);border-radius:30px;corner-shape:squircle;padding:20px 20px 22px}
+  .panel + .panel{margin-top:12px}
+  .panel h2{font-size:9px;letter-spacing:2.2px;text-transform:uppercase;color:var(--ink-faint);margin-bottom:14px}
+
+  .row{display:grid;grid-template-columns:104px 1fr 46px;align-items:center;gap:10px;margin-bottom:9px}
+  .row label{font-size:11.5px;color:var(--ink-mute)}
+  .row output{font-size:11px;color:var(--ink-faint);text-align:right;font-variant-numeric:tabular-nums}
+  input[type=range]{-webkit-appearance:none;appearance:none;height:3px;border-radius:999px;
+    background:var(--soft);outline:none}
+  input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:14px;height:14px;
+    border-radius:50%;background:var(--ink);cursor:pointer}
+  .ramp{position:relative;height:10px;margin:14px 0 6px;border-radius:999px;overflow:hidden}
+  .ramp #rampBar{position:absolute;inset:0}
+  .ramp #rampMark{position:absolute;top:0;bottom:0;background:rgba(34,35,39,.55)}
+  .hint{font-size:10.5px;line-height:1.45;color:var(--ink-faint)}
+  .swatches{display:flex;gap:8px;flex-wrap:wrap}
+  .sw{display:flex;flex-direction:column;align-items:center;gap:5px}
+  .sw input{width:40px;height:28px;border:0;border-radius:9px;background:none;padding:0;cursor:pointer}
+  .sw span{font-size:8.5px;letter-spacing:.6px;text-transform:uppercase;color:var(--ink-faint)}
+
+  .btns{display:flex;flex-wrap:wrap;gap:8px;margin-top:4px}
+  button{all:unset;height:34px;padding:0 16px;border-radius:999px;background:var(--soft);
+    font-size:10px;font-weight:600;letter-spacing:1.2px;text-transform:uppercase;
+    color:var(--ink);cursor:pointer;display:grid;place-items:center}
+  button.solid{background:var(--ink);color:#fff}
+  button:active{opacity:.75}
+
+  .stage{background:var(--card);border-radius:30px;corner-shape:squircle;padding:24px}
+  .stage .big{width:100%}
+  .stage .small-row{display:flex;gap:16px;align-items:flex-end;margin-top:20px;
+    padding-top:18px;border-top:1px solid rgba(120,126,136,.12)}
+  .stage .small-row div{flex:none}
+  .stage .small-row span{display:block;margin-top:7px;font-size:9px;letter-spacing:1.4px;
+    text-transform:uppercase;color:var(--ink-faint)}
+  svg{display:block}
+  .code{margin-top:12px;background:var(--card);border-radius:30px;corner-shape:squircle;padding:18px 20px}
+  .code textarea{width:100%;height:150px;border:0;outline:none;resize:vertical;background:transparent;
+    font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:10.5px;line-height:1.5;color:var(--ink-mute)}
+</style>
+</head>
+<body>
+
+<h1>Генератор графиков</h1>
+<p class="lead">Та же отрисовка, что в прототипе: матовая плита, размытая масса под силуэтом ряда
+и штрихи прогноза за пунктиром. Все параметры формы, цвета и затуханий вынесены в ручки —
+можно собрать вариант и забрать готовый SVG.</p>
+
+<div class="wrap">
+  <div>
+    <div class="panel">
+      <h2>Ряд</h2>
+      <div class="row"><label>Зерно</label><input type="range" id="seed" min="1" max="200" value="7"><output></output></div>
+      <div class="row"><label>Точек</label><input type="range" id="pts" min="8" max="60" value="30"><output></output></div>
+      <div class="row"><label>Старт</label><input type="range" id="v0" min="0" max="100" value="24"><output></output></div>
+      <div class="row"><label>Финиш</label><input type="range" id="v1" min="0" max="100" value="66"><output></output></div>
+      <div class="row"><label>Разброс</label><input type="range" id="amp" min="0" max="60" value="16"><output></output></div>
+      <div class="row"><label>Частота</label><input type="range" id="freq" min="5" max="80" value="30"><output></output></div>
+      <div class="btns"><button id="reroll">Пересобрать</button></div>
+    </div>
+
+    <div class="panel">
+      <h2>Кадр и плита</h2>
+      <div class="row"><label>«Сейчас»</label><input type="range" id="now" min="30" max="85" value="58"><output></output></div>
+      <div class="row"><label>Воздух сверху</label><input type="range" id="padT" min="0" max="150" value="85"><output></output></div>
+      <div class="row"><label>Воздух снизу</label><input type="range" id="padB" min="0" max="120" value="50"><output></output></div>
+      <div class="row"><label>Скругление</label><input type="range" id="rad" min="0" max="60" value="20"><output></output></div>
+      <div class="row"><label>Плита</label><input type="range" id="plate" min="0" max="120" value="38"><output></output></div>
+      <div class="row"><label>Силуэт</label><input type="range" id="glass" min="0" max="120" value="30"><output></output></div>
+    </div>
+
+    <div class="panel">
+      <h2>Масса</h2>
+      <div class="row"><label>Отступ цвета</label><input type="range" id="inset" min="0" max="60" value="9"><output></output></div>
+      <div class="row"><label>Размытие</label><input type="range" id="blur" min="5" max="120" value="35"><output></output></div>
+      <div class="row"><label>Плотность</label><input type="range" id="slope" min="100" max="260" value="135"><output></output></div>
+      <div class="row"><label>Гаснет сверху</label><input type="range" id="fadeT" min="0" max="100" value="60"><output></output></div>
+      <div class="row"><label>Гаснет снизу</label><input type="range" id="fadeB" min="0" max="100" value="18"><output></output></div>
+      <div class="row"><label>Гаснет слева</label><input type="range" id="fadeL" min="0" max="60" value="28"><output></output></div>
+    </div>
+
+    <div class="panel">
+      <h2>Коридор и цвет</h2>
+      <div class="row"><label>Низ нормы</label><input type="range" id="b0" min="0" max="90" value="34"><output></output></div>
+      <div class="row"><label>Верх нормы</label><input type="range" id="b1" min="10" max="100" value="72"><output></output></div>
+      <div class="row"><label>Растяжка</label><input type="range" id="reach" min="20" max="200" value="100"><output></output></div>
+      <div class="swatches" id="sw"></div>
+      <div class="ramp"><div id="rampBar"></div><div id="rampMark"></div></div>
+      <div class="hint" id="rampHint"></div>
+    </div>
+
+    <div class="panel">
+      <h2>Прогноз</h2>
+      <div class="row"><label>Штрихов</label><input type="range" id="bars" min="0" max="26" value="12"><output></output></div>
+      <div class="row"><label>Толщина</label><input type="range" id="bw" min="5" max="40" value="10"><output></output></div>
+      <div class="row"><label>Разброс</label><input type="range" id="bspread" min="0" max="40" value="14"><output></output></div>
+      <div class="row"><label>Тяга к норме</label><input type="range" id="pull" min="0" max="100" value="72"><output></output></div>
+      <div class="btns">
+        <button class="solid" id="dlSvg">Скачать SVG</button>
+        <button id="dlPng">PNG ×3</button>
+        <button id="copy">Копировать код</button>
+      </div>
+    </div>
+  </div>
+
+  <div>
+    <div class="stage">
+      <div class="big" id="big"></div>
+      <div class="small-row">
+        <div><div id="mid"></div><span>в карточке</span></div>
+        <div><div id="tiny"></div><span>превью</span></div>
+      </div>
+    </div>
+    <div class="code"><textarea id="out" spellcheck="false" readonly></textarea></div>
+  </div>
+</div>
+
+<script>
+/* ── палитра: две стороны от коридора, как в приложении ── */
+const PAL = {
+  loFar:'#41c8ff', loNear:'#63dfa8', norm:'#5fdc63', hiNear:'#e8d453', hiFar:'#f24d6e'
+};
+const SW = [['loFar','недобор'],['loNear','ниже'],['norm','норма'],['hiNear','выше'],['hiFar','перебор']];
+document.getElementById('sw').innerHTML = SW.map(([k,t])=>
+  `<label class="sw"><input type="color" data-pal="${k}" value="${PAL[k]}"><span>${t}</span></label>`).join('');
+
+const hx=c=>{const n=parseInt(c.slice(1),16);return [n>>16&255,n>>8&255,n&255];};
+const mix=(a,b,t)=>{const A=hx(a),B=hx(b);t=Math.max(0,Math.min(1,t));
+  return '#'+A.map((v,i)=>Math.round(v+(B[i]-v)*t).toString(16).padStart(2,'0')).join('');};
+
+/* тон по отклонению от коридора: −1 глубокий недобор, 0 норма, +1 перебор */
+function tone(e){
+  if(e<0){ const k=Math.min(1,-e); return k<.5 ? mix(PAL.norm,PAL.loNear,k*2) : mix(PAL.loNear,PAL.loFar,(k-.5)*2); }
+  const k=Math.min(1,e);
+  return k<.5 ? mix(PAL.norm,PAL.hiNear,k*2) : mix(PAL.hiNear,PAL.hiFar,(k-.5)*2);
+}
+/* отход меряем до конца шкалы, гамма поднимает цвет сразу за границей */
+function dev(u,b0,b1,reach){
+  const mid=(b0+b1)/2, half=Math.max(.02,(b1-b0)/2), R=reach||1;
+  const g=x=>Math.pow(Math.max(0,Math.min(1,x/R)),.55);
+  return u<b0 ? -g((b0-u)/Math.max(.04,b0))
+       : u>b1 ?  g((u-b1)/Math.max(.04,1-b1))
+       : .34*(u-mid)/half;
+}
+
+/* гладкий value noise в две октавы — без него кромка рвётся в клочья */
+function makeNoise(seed){
+  const hash=x=>{const v=Math.sin((x+seed*13.37)*127.1)*43758.5453; return v-Math.floor(v);};
+  const vn=x=>{const i=Math.floor(x), f=x-i, u=f*f*(3-2*f); return hash(i)*(1-u)+hash(i+1)*u;};
+  return x=>vn(x)*.66+vn(x*2.3+11.7)*.34;
+}
+
+/* читаем строго через getElementById: id вроде `blur` перекрывается
+   одноимённым методом window, и значение приходило NaN */
+const q=id=>+document.getElementById(id).value;
+const P = () => ({
+  seed:q('seed'), pts:q('pts'), v0:q('v0')/100, v1:q('v1')/100,
+  amp:q('amp')/100, freq:q('freq')/10,
+  now:q('now')/100, padT:q('padT')/100, padB:q('padB')/100,
+  rad:q('rad'), plate:q('plate')/1000, glass:q('glass')/1000,
+  inset:q('inset')/100, blur:q('blur')/10, slope:q('slope')/100,
+  fadeT:q('fadeT')/100, fadeB:q('fadeB')/100, fadeL:q('fadeL')/100,
+  b0:q('b0')/100, b1:q('b1')/100, reach:q('reach')/100,
+  bars:q('bars'), bw:q('bw')/10, bspread:q('bspread')/100, pull:q('pull')/100
+});
+
+let uid=0;
+function build(p){
+  const W=250,H=214,L=0,R=W,T=34,B=186;
+  const id='g'+(++uid);
+  const nz=makeNoise(p.seed);
+  const n=p.pts;
+
+  /* ряд: линейный ход плюс шум */
+  const t=Array.from({length:n},(_,i)=>{
+    const k=i/(n-1);
+    return p.v0+(p.v1-p.v0)*k + (nz(k*p.freq)-.5)*p.amp;
+  });
+
+  /* прогноз: тяга к середине коридора с затуханием */
+  const cur=t[n-1], target=(p.b0+p.b1)/2;
+  const fc=Array.from({length:Math.max(1,p.bars)},(_,i)=>{
+    const k=(i+1)/Math.max(1,p.bars), e=1-Math.pow(1-k,1.7);
+    return cur+(target-cur)*e*p.pull+(nz(60+i*.75)-.5)*p.bspread;
+  });
+
+  const all=p.bars?t.concat(fc):t.slice();
+  const dMin=Math.min(...all), dMax=Math.max(...all), rng=Math.max(1e-6,dMax-dMin);
+  const vLo=dMin-rng*p.padB, vHi=dMax+rng*p.padT;
+  const yOf=v=>B-((v-vLo)/(vHi-vLo))*(B-T);
+  const xNow=L+(R-L)*p.now;
+  const xOf=i=>L+((xNow-L)*i)/(n-1);
+  const col=v=>tone(dev(v,p.b0,p.b1,p.reach));
+
+  /* кромка Catmull-Rom, иначе форма идёт ступеньками */
+  const area=(x0,x1,yFn,base)=>{
+    const Pt=t.map((v,i)=>[x0+((x1-x0)*i)/(n-1), yFn(v)]);
+    let d=`M ${x0.toFixed(1)} ${base.toFixed(1)} L ${Pt[0][0].toFixed(1)} ${Pt[0][1].toFixed(1)}`;
+    for(let i=0;i<Pt.length-1;i++){
+      const p0=Pt[i-1]||Pt[i],p1=Pt[i],p2=Pt[i+1],p3=Pt[i+2]||Pt[i+1];
+      d+=` C ${(p1[0]+(p2[0]-p0[0])/6).toFixed(1)} ${(p1[1]+(p2[1]-p0[1])/6).toFixed(1)}`
+       + ` ${(p2[0]-(p3[0]-p1[0])/6).toFixed(1)} ${(p2[1]-(p3[1]-p1[1])/6).toFixed(1)}`
+       + ` ${p2[0].toFixed(1)} ${p2[1].toFixed(1)}`;
+    }
+    return d+` L ${x1.toFixed(1)} ${base.toFixed(1)} Z`;
+  };
+  /* отступ цвета — доля ЛОКАЛЬНОЙ толщины: где масса тонкая, цвет жмётся к низу */
+  const yIn=v=>{const y=yOf(v),h=Math.max(6,B-y); return Math.min(B-3,y+Math.max(2,h*p.inset));};
+  const d=area(L,xNow,yOf,B), dIn=area(L,xNow,yIn,B-2);
+
+  let stops='';
+  for(let i=0;i<n;i++) stops+=`<stop offset="${(i/(n-1)).toFixed(4)}" stop-color="${col(t[i])}"/>`;
+
+  const bx0=xNow+6, bwid=R-bx0;
+  let bars='';
+  for(let i=0;i<p.bars;i++){
+    const x=bx0+(p.bars>1?bwid*i/(p.bars-1):0);
+    bars+=`<line x1="${x.toFixed(1)}" y1="${B}" x2="${x.toFixed(1)}" y2="${yOf(fc[i]).toFixed(1)}"`
+       +` stroke="${col(fc[i])}" stroke-width="${p.bw}" stroke-linecap="butt" opacity=".95"/>`;
+  }
+
+  const yStem=T+26, ct=col(cur);
+  const plateY=T-14, plateH=B-T+22;
+
+  return `<svg viewBox="0 0 ${W} ${H}" xmlns="http://www.w3.org/2000/svg" width="100%">
+  <defs>
+    <linearGradient id="${id}c" gradientUnits="userSpaceOnUse" x1="${L}" x2="${xNow}">${stops}</linearGradient>
+    <linearGradient id="${id}v" gradientUnits="userSpaceOnUse" x1="0" y1="${T}" x2="0" y2="${B}">
+      <stop offset="0" stop-color="#fff" stop-opacity="${p.fadeT.toFixed(2)}"/>
+      <stop offset=".3" stop-color="#fff" stop-opacity="1"/>
+      <stop offset=".82" stop-color="#fff" stop-opacity="1"/>
+      <stop offset="1" stop-color="#fff" stop-opacity="${p.fadeB.toFixed(2)}"/>
+    </linearGradient>
+    <linearGradient id="${id}h" gradientUnits="userSpaceOnUse" x1="${L}" x2="${R}">
+      <stop offset="0" stop-color="#fff" stop-opacity="0"/>
+      <stop offset="${(p.fadeL*.36).toFixed(3)}" stop-color="#fff" stop-opacity=".3"/>
+      <stop offset="${Math.max(.02,p.fadeL).toFixed(3)}" stop-color="#fff" stop-opacity="1"/>
+      <stop offset="1" stop-color="#fff" stop-opacity="1"/>
+    </linearGradient>
+    <mask id="${id}mv"><rect width="${W}" height="${H}" fill="url(#${id}v)"/></mask>
+    <mask id="${id}mh"><rect width="${W}" height="${H}" fill="url(#${id}h)"/></mask>
+    <filter id="${id}b" x="-20%" y="-30%" width="140%" height="170%">
+      <feGaussianBlur stdDeviation="${p.blur.toFixed(1)}"/>
+      <feComponentTransfer><feFuncA type="linear" slope="${p.slope.toFixed(2)}"/></feComponentTransfer>
+    </filter>
+    <clipPath id="${id}g"><path d="${d}"/></clipPath>
+    <clipPath id="${id}p"><rect x="${L}" y="${plateY}" width="${R-L}" height="${plateH}" rx="${p.rad}"/></clipPath>
+  </defs>
+  <rect x="${L}" y="${plateY}" width="${R-L}" height="${plateH}" rx="${p.rad}" fill="rgba(120,126,136,${p.plate.toFixed(3)})"/>
+  <g clip-path="url(#${id}p)" mask="url(#${id}mh)">
+    <path d="${d}" fill="rgba(120,126,136,${p.glass.toFixed(3)})"/>
+    <g clip-path="url(#${id}g)">
+      <path d="${dIn}" fill="url(#${id}c)" filter="url(#${id}b)" mask="url(#${id}mv)"/>
+    </g>
+    <g>${bars}</g>
+  </g>
+  <line x1="${xNow.toFixed(1)}" y1="${B}" x2="${xNow.toFixed(1)}" y2="${yStem}"
+    stroke="${ct}" stroke-width="1.2" stroke-dasharray="2.6 2.8"/>
+  <circle cx="${xNow.toFixed(1)}" cy="${yStem}" r="3.4" fill="${ct}"/>
+  <text x="${xNow.toFixed(1)}" y="${T+4}" text-anchor="middle" fill="#222327"
+    font-family="-apple-system,Inter,Helvetica,Arial,sans-serif"
+    font-size="19" font-weight="300" letter-spacing="-.6">${Math.round(cur*100)}</text>
+</svg>`;
+}
+
+const out=document.getElementById('out');
+const $=id=>document.getElementById(id);
+function render(){
+  document.querySelectorAll('.row').forEach(r=>{
+    const i=r.querySelector('input'), o=r.querySelector('output');
+    if(i&&o) o.textContent=i.value;
+  });
+  const p=P();
+  let g=''; for(let i=0;i<=40;i++){ const u=i/40;
+    g+=`${tone(dev(u,p.b0,p.b1,p.reach))} ${(u*100).toFixed(1)}%`+(i<40?',':''); }
+  $('rampBar').style.background=`linear-gradient(90deg,${g})`;
+  const lo=Math.min(p.v0,p.v1)-p.amp/2, hi=Math.max(p.v0,p.v1)+p.amp/2;
+  $('rampMark').style.left=(Math.max(0,lo)*100).toFixed(1)+'%';
+  $('rampMark').style.width=(Math.min(1,hi-Math.max(0,lo))*100).toFixed(1)+'%';
+  $('rampMark').style.background='none';
+  $('rampMark').style.boxShadow='inset 0 0 0 1.5px rgba(34,35,39,.5)';
+  $('rampMark').style.borderRadius='999px';
+  $('rampHint').textContent =
+    `Ряд занимает ${Math.round(Math.max(0,lo)*100)}–${Math.round(Math.min(1,hi)*100)} из 0–100. `+
+    `Крайние цвета палитры видно только там, где ряд доходит до концов шкалы — `+
+    `их вытягивает «Растяжка».`;
+  const svg=build(p);
+  $('big').innerHTML=svg;
+  $('mid').innerHTML=svg;  $('mid').firstChild.setAttribute('width','300');
+  $('tiny').innerHTML=svg; $('tiny').firstChild.setAttribute('width','150');
+  out.value=svg;
+}
+document.querySelectorAll('input').forEach(i=>i.addEventListener('input',e=>{
+  if(e.target.dataset.pal) PAL[e.target.dataset.pal]=e.target.value;
+  render();
+}));
+$('reroll').onclick=()=>{ $('seed').value=1+Math.floor(Math.random()*200); render(); };
+
+function save(name,blob){
+  const a=document.createElement('a');
+  a.href=URL.createObjectURL(blob); a.download=name; a.click();
+  setTimeout(()=>URL.revokeObjectURL(a.href),2000);
+}
+$('dlSvg').onclick=()=>save('impre-trend.svg',new Blob([out.value],{type:'image/svg+xml'}));
+$('copy').onclick=()=>navigator.clipboard.writeText(out.value);
+$('dlPng').onclick=()=>{
+  const img=new Image(), sc=3;
+  img.onload=()=>{
+    const c=document.createElement('canvas');
+    c.width=250*sc; c.height=214*sc;
+    const x=c.getContext('2d');
+    x.fillStyle='#fff'; x.fillRect(0,0,c.width,c.height);
+    x.drawImage(img,0,0,c.width,c.height);
+    c.toBlob(b=>save('impre-trend.png',b));
+  };
+  img.src='data:image/svg+xml;charset=utf-8,'+encodeURIComponent(out.value);
+};
+render();
+</script>
+</body>
+</html>

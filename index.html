@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="ru" data-theme="light">
+<html lang="ru">
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no" />
@@ -8,44 +8,6 @@
   :root{
     --accent: 90,210,160;
     --accent-hex:#5ad2a0;
-    --bg-hi:#484a4f;
-    --bg-lo:#2d2f34;
-    --body-bg:#141416;
-    --ink:#f3f2ef;
-    --ink-mute:#9a9ba0;
-    --ink-faint:#6b6c72;
-    --control-bg:rgba(255,255,255,.055);
-    --control-bg-strong:rgba(255,255,255,.12);
-    --control-border:rgba(255,255,255,.09);
-    --tick-major:rgba(255,255,255,.16);
-    --tick-minor:rgba(255,255,255,.09);
-    --selector-border:rgba(255,255,255,.17);
-    --selector-border-soft:rgba(255,255,255,.07);
-    --notch:#0c0c0e;
-    --phone-shadow:0 40px 120px -30px rgba(0,0,0,.85), inset 0 0 0 1px rgba(255,255,255,.04);
-    --vignette:rgba(0,0,0,.22);
-    /* язык поверхностей главного экрана: заливки почти нет,
-       вся форма держится рассеянной внутренней тенью (Border.svg) */
-    --surface:rgba(255,255,255,.045);
-    --glow-s:inset 0 0 18px 6px rgba(255,255,255,.07);
-    --glow-m:inset 0 0 26px 10px rgba(255,255,255,.08);
-    --glow-l:inset 0 0 40px 16px rgba(255,255,255,.09);
-    --solid:rgba(255,255,255,.14);
-    --attn:#ff7a1a;
-    /* обычная плашка контента: ровная заливка, без свечения.
-       свечение оставляем акцентам — их на экране единицы */
-    --card:rgba(255,255,255,.06);
-    /* мелкие контролы внутри плашки: белое на белом не читается */
-    --control-soft:rgba(255,255,255,.10);
-    --capsule-base-top:rgba(255,255,255,.05);
-    --capsule-base-mid:rgba(20,21,24,.28);
-    --capsule-base-bot:rgba(12,13,15,.42);
-    --rim-left:rgba(255,255,255,.20);
-    --rim-mid:rgba(255,255,255,.05);
-    --rim-right:rgba(255,255,255,.16);
-    --scrim:#26272b;
-  }
-  :root[data-theme="light"]{
     --bg-hi:#e4e7eb;
     --bg-lo:#e4e7eb;
     --body-bg:#d6d9de;
@@ -62,13 +24,18 @@
     --notch:#111215;
     --phone-shadow:0 36px 110px -42px rgba(32,36,44,.55), inset 0 0 0 1px rgba(255,255,255,.82);
     --vignette:rgba(120,126,136,.12);
+    /* язык поверхностей главного экрана: заливки почти нет,
+       вся форма держится рассеянной внутренней тенью (Border.svg) */
     --surface:rgba(255,255,255,.01);
     --glow-s:inset 0 0 18px 7px #fff;
     --glow-m:inset 0 0 26px 12px #fff;
     --glow-l:inset 0 0 40px 18px #fff;
     --solid:#fff;
     --attn:#ff5c00;
+    /* обычная плашка контента: ровная заливка, без свечения.
+       свечение оставляем акцентам — их на экране единицы */
     --card:#fff;
+    /* мелкие контролы внутри плашки: белое на белом не читается */
     --control-soft:rgba(120,126,136,.10);
     --capsule-base-top:rgba(255,255,255,.72);
     --capsule-base-mid:rgba(230,234,238,.46);
@@ -78,6 +45,7 @@
     --rim-right:rgba(255,255,255,.72);
     --scrim:#e4e7eb;
   }
+
   *{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent}
   html,body{height:100%}
   body{
@@ -88,29 +56,20 @@
     -webkit-font-smoothing:antialiased;
   }
   .phone{
-    position:relative;width:390px;height:844px;border-radius:52px;
+    position:relative;width:390px;height:844px;border-radius:52px;corner-shape:squircle;
     overflow:hidden;
-    background:radial-gradient(130% 100% at 50% 12%, var(--bg-hi), var(--bg-lo) 60%, #26272b 100%);
+    background:var(--bg-hi);
     box-shadow:var(--phone-shadow);
     isolation:isolate;
     transition:none;
   }
-  .phone::after{ /* soft vignette */
-    content:"";position:absolute;inset:0;pointer-events:none;
-    background:radial-gradient(120% 85% at 50% 42%, transparent 62%, var(--vignette) 100%);
-    z-index:6;
-  }
-  :root[data-theme="light"] .phone{
-    background:#e4e7eb;
-  }
-  :root[data-theme="light"] .phone::after{display:none}
 
   /* ── dashboard widgets ── */
   .dashboard{position:absolute;inset:112px 18px 96px;z-index:5;
     display:flex;flex-direction:column;gap:12px;overflow:hidden;padding:0 2px 18px;
     transition:opacity .45s ease;scrollbar-width:none}
   .dashboard::-webkit-scrollbar{width:0;height:0}
-  .widget{position:relative;overflow:hidden;border-radius:46px;
+  .widget{position:relative;overflow:hidden;border-radius:46px;corner-shape:squircle;
     background:var(--surface);
     border:0;
     box-shadow:none;
@@ -119,7 +78,7 @@
   /* по Border.svg: заливка белая всего на 1 %, вся белизна — inner shadow
      (Figma: blur 40 / spread 18 / white). Тень кладём поверх канваса
      отдельным слоем, иначе её перекрывает клякса. */
-  .hero-widget{flex:none;min-height:452px;padding:30px 22px 26px;border-radius:134px;
+  .hero-widget{flex:none;min-height:452px;padding:30px 22px 26px;border-radius:134px;corner-shape:squircle;
     display:flex;flex-direction:column;z-index:1;
     background:var(--surface);box-shadow:none;backdrop-filter:none}
   .hero-widget::after{content:"";display:block;position:absolute;inset:0;z-index:2;
@@ -131,13 +90,17 @@
   /* ровная сетка: правая колонка 75+12+75 = 162, левая ровно столько же */
   /* оптическая поправка: у главной плашки край размытый, у нижних — резкий,
      поэтому при равной ширине нижние читались шире. Поджимаем на 6 px. */
-  .blood-profile-grid{position:relative;z-index:1;display:grid;grid-template-columns:1fr 1fr;
-    grid-template-rows:78px 78px;gap:13px 12px;align-items:stretch;margin:0 6px}
+  /* правая колонка чуть уже левой: у овалов торцы «съедают» ширину,
+     при равных колонках они читались одинаковыми по массе */
+  .blood-profile-grid{position:relative;z-index:1;display:grid;grid-template-columns:1.09fr 1fr;
+    grid-template-rows:74px 74px;gap:13px 12px;align-items:stretch;margin:0 6px}
   /* правые плашки — полное скругление и та же логика, что у главной плашки:
      заливки нет, белизна только от рассеянной внутренней тени */
-  .blood-profile-card{position:relative;min-height:0;padding:0 26px;border-radius:999px;
+  /* правые плашки — настоящие овалы: squircle от .widget превращал торцы
+     в суперэллипс, и форма переставала быть таблеткой */
+  .blood-profile-card{position:relative;min-height:0;padding:0 26px;border-radius:999px;corner-shape:round;
     text-align:left;cursor:pointer;
-    display:flex;flex-direction:column;justify-content:center;gap:4px;
+    display:flex;flex-direction:column;justify-content:center;gap:9px;
     background:var(--surface);
     /* тень на самом элементе, а не оверлеем: иначе она ложится поверх текста */
     box-shadow:var(--glow-m)}
@@ -156,8 +119,8 @@
 
 
 
-  .blood-profile-label{display:block;padding-right:22px;color:var(--ink-faint);font-size:9.5px;letter-spacing:1.35px;text-transform:uppercase;line-height:1.15}
-  .blood-profile-value{display:block;margin:0;font-size:21px;font-weight:300;letter-spacing:-.9px;color:var(--ink);line-height:1;white-space:nowrap}
+  .blood-profile-label{display:block;padding-right:22px;margin-left:1px;color:var(--ink-faint);font-size:9.5px;letter-spacing:1.35px;text-transform:uppercase;line-height:1.15}
+  .blood-profile-value{display:block;margin:0 0 0 -1px;font-size:21px;font-weight:300;letter-spacing:-.9px;color:var(--ink);line-height:1;white-space:nowrap}
   .blood-profile-card--primary .blood-profile-value{margin-top:auto;font-size:30px}
   .blood-profile-value.is-status{font-size:17px;letter-spacing:-.4px}
   .blood-profile-value small{font-size:11px;font-weight:500;letter-spacing:0;color:var(--ink-mute)}
@@ -182,19 +145,17 @@
     0%,100%{transform:translate(-.6px,-1.4px) scale(.94)}
     50%{transform:translate(.8px,1.8px) scale(1.08)}}
   @media (prefers-reduced-motion:reduce){ #hormoneScatter circle{animation:none} }
-  .bp-dots{position:absolute;top:50%;right:20px;transform:translateY(-50%);
-    display:flex;align-items:center;gap:4px}
+  .bp-dots{display:none}
   .bp-dots i{display:block;width:4px;height:4px;border-radius:50%;background:var(--tick-minor)}
   .bp-dots i.on{background:var(--ink)}
   .bp-dots i.warn{background:var(--attn)}
-  .bp-bar{position:absolute;top:50%;right:20px;transform:translateY(-50%);
-    width:52px;height:3px;border-radius:999px;background:var(--tick-minor)}
+  .bp-bar{display:none}
   .bp-bar i{position:absolute;top:50%;width:7px;height:7px;border-radius:50%;
     transform:translate(-50%,-50%);background:var(--ink);transition:left .5s cubic-bezier(.22,.9,.24,1)}
   .bp-bar i.warn{background:var(--attn)}
   /* дробь в правом нижнем углу: сколько показателей группы в диапазоне.
      всё в норме — тихий серый, есть отклонение — тревожный тон */
-  .bp-count{position:absolute;right:22px;bottom:13px;font-size:10px;font-weight:600;letter-spacing:.3px;
+  .bp-count{position:absolute;right:24px;bottom:12px;font-size:10px;font-weight:600;letter-spacing:.3px;
     color:var(--ink-faint);font-variant-numeric:tabular-nums}
   /* правило одно на всё приложение: холодный тон = отклонение.
      всё в диапазоне — обе цифры нейтральные, ничего не сигналит;
@@ -250,7 +211,7 @@
   .attn-label{display:none}
   #attnRows{position:relative;z-index:1;display:grid;grid-template-columns:1fr 1fr;gap:10px}
   .attn-row{position:relative;z-index:1;display:flex;min-height:116px;flex-direction:column;align-items:flex-start;
-    justify-content:space-between;gap:0;padding:16px;border:0;border-radius:34px;background:#fff;color:var(--ink);text-align:left;cursor:pointer}
+    justify-content:space-between;gap:0;padding:16px;border:0;border-radius:34px;corner-shape:squircle;background:#fff;color:var(--ink);text-align:left;cursor:pointer}
   .attn-row:active{opacity:.6}
   .attn-row .aname{display:flex;align-items:center;gap:6px;font-size:14px;font-weight:600;color:var(--ink);line-height:1.2;min-width:0;padding-right:20px}
   .attn-status{display:inline-flex;align-items:center;justify-content:center;flex:0 0 17px;width:17px;height:17px;
@@ -283,7 +244,7 @@
   .widget-head{display:flex;align-items:flex-start;justify-content:space-between;gap:10px}
   .widget-title{font-size:13px;color:var(--ink);font-weight:600;letter-spacing:.2px}
   .widget-sub{margin-top:3px;font-size:11px;color:var(--ink-faint);line-height:1.25}
-  .formula-widget{grid-column:1 / 3;padding:20px 24px;border-radius:42px}
+  .formula-widget{grid-column:1 / 3;padding:20px 24px;border-radius:42px;corner-shape:squircle}
   .formula-widget::after{border-color:rgba(255,255,255,.86)}
   .formula-widget .widget-head{position:static}
   .formula-widget .widget-title{font-size:18px;letter-spacing:-.2px}
@@ -306,7 +267,7 @@
   .effect-tags{display:flex;gap:3px;flex-wrap:wrap}
   .effect-tags em{font-style:normal;background:rgba(120,126,136,.10);color:var(--ink-mute);
     font-size:8.5px;line-height:1;padding:3px 4px;border-radius:2px;white-space:nowrap}
-  .effect-card{border-radius:30px;background:rgba(120,126,136,.09);padding:18px;display:grid;gap:16px}
+  .effect-card{border-radius:30px;corner-shape:squircle;background:rgba(120,126,136,.09);padding:18px;display:grid;gap:16px}
   .effect-card-head{display:flex;align-items:flex-start;justify-content:space-between;gap:14px}
   .effect-card-title{display:flex;align-items:center;gap:12px;color:var(--ink);font-size:22px;font-weight:500;letter-spacing:-.5px}
   .effect-card-title .effect-orb{width:42px;height:42px;flex:none}
@@ -317,7 +278,7 @@
   .effect-meta span{color:var(--ink-mute);font-size:13px;line-height:1.25}
   .effect-meta b{color:var(--ink);font-size:13px;white-space:nowrap}
   .detail-table.effect-grid{display:grid;grid-template-columns:1fr;gap:20px;padding:0 14px 24px}
-  .detail-table.effect-grid .effect-card{cursor:pointer;min-height:0;background:#fff;border-radius:42px;padding:22px;overflow:hidden}
+  .detail-table.effect-grid .effect-card{cursor:pointer;min-height:0;background:#fff;border-radius:42px;corner-shape:squircle;padding:22px;overflow:hidden}
   .detail-table.effect-grid .effect-card:first-child{grid-column:auto;min-height:0}
   .detail-table.effect-grid .effect-card:active{transform:scale(.992)}
   .detail-table.effect-grid .effect-card-head{display:grid;grid-template-columns:minmax(0,1fr) auto;align-items:center;gap:12px}
@@ -329,7 +290,6 @@
   .detail-table.effect-grid .detail-row{grid-template-columns:70px minmax(82px,1fr) minmax(92px,auto);gap:12px;padding:18px 0 0}
   .detail-table.effect-grid .detail-row b{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
   .detail-table.effect-grid .effect-meta{display:none}
-  :root[data-theme="dark"] .detail-table.effect-grid .effect-card{background:linear-gradient(145deg,rgba(255,255,255,.095),rgba(255,255,255,.04))}
   .effect-card .detail-row{grid-template-columns:96px 1fr auto;padding:0;gap:14px}
   .effect-card .detail-row span{color:var(--ink);font-size:14px;font-weight:600}
   .effect-card .detail-row b{font-size:13px;white-space:nowrap}
@@ -341,7 +301,7 @@
   .formula-row .gscale .gnode{filter:none;box-shadow:none}
   .formula-more{position:absolute;right:26px;top:22px;color:var(--ink-faint);font-size:18px}
 
-  .system-widget{grid-column:1 / 3;padding:24px 22px;border-radius:42px;
+  .system-widget{grid-column:1 / 3;padding:24px 22px;border-radius:42px;corner-shape:squircle;
     display:block}
   .system-widget::before{display:none}
   .system-item{min-width:0;display:flex;align-items:flex-start;justify-content:space-between;gap:16px}
@@ -387,18 +347,24 @@
   .detail-screen.intake-screen .detail-title{display:none}
   .detail-kicker{font-size:11px;letter-spacing:2.6px;text-transform:uppercase;color:var(--ink-faint);margin-bottom:12px}
   .detail-title{font-size:34px;line-height:.98;font-weight:300;letter-spacing:-1.2px;color:var(--ink);margin-bottom:26px}
-  /* список — одна мягкая плашка в языке главной, без разделительных линий */
-  .detail-table{display:grid;gap:0;padding:6px 22px;border-radius:44px;corner-shape:squircle;
-    background:var(--card);box-shadow:none}
+  /* объект = плашка: каждый компонент состава — свой фрейм, как строки показателей */
+  .detail-table{display:grid;gap:10px;padding:0;border-radius:0;background:transparent;box-shadow:none}
   /* колонка имени шире: по-русски «Витамин D3» и «Ашваганда» не влезали в 60 px */
-  .detail-row{display:grid;grid-template-columns:92px minmax(52px,1fr) auto 14px;gap:12px;align-items:center;padding:15px 0}
+  .detail-row{display:block;padding:20px 24px 17px;border-radius:36px;corner-shape:squircle;
+    background:var(--card);transition:opacity .2s}
+  .dr-top{display:grid;grid-template-columns:1fr auto;align-items:baseline;gap:12px}
   .detail-row>*{min-width:0}
   .detail-row[data-supp]{cursor:pointer}
-  .detail-row[data-supp]:active{background:rgba(120,126,136,.06)}
-  .detail-row span{color:var(--ink-mute);font-size:14px}
-  .detail-row b{color:var(--ink);font-size:14px}
-  .detail-row small{display:block;color:var(--ink-faint);font-size:11px;margin-top:3px}
-  .open-arrow{font-size:20px;line-height:1;color:var(--ink-faint);transform:translateY(-1px)}
+  .detail-row[data-supp]:active{opacity:.72}
+  .detail-row .dr-top>span{color:var(--ink);font-size:14px;font-weight:600;line-height:1.2}
+  /* в правом верхнем углу теперь не доза, а статус — доза висит над перетяжкой */
+  .detail-row .dr-top>b{font-size:11px;font-weight:500;color:var(--ink-faint);line-height:1.4}
+  .detail-row b{display:block;text-align:right;color:var(--ink);font-size:15px;white-space:nowrap}
+  .detail-row small{display:block;color:var(--ink-faint);font-size:11px;font-weight:400;margin-top:3px}
+  /* шеврон рисуем тем же штрихом, что и знаки статуса: типографский «›»
+     выпадал из набора иконок — другая толщина, другие торцы */
+  .open-arrow{display:block;width:12px;height:12px;margin-top:2px;fill:none;
+    stroke:var(--ink-faint);stroke-width:1.7;stroke-linecap:round;stroke-linejoin:round}
   .detail-note{margin-top:20px;border-radius:36px;corner-shape:squircle;
     background:var(--card);box-shadow:none;padding:20px 22px;
     color:var(--ink-mute);font-size:14px;line-height:1.35}
@@ -407,7 +373,7 @@
     background:var(--card);box-shadow:none;padding:20px;min-height:112px}
   .detail-card strong{display:block;color:var(--ink);font-size:24px;font-weight:400;margin-top:18px}
   .detail-card span{color:var(--ink-faint);font-size:10px;letter-spacing:1.5px;text-transform:uppercase}
-  [data-screen="system"] .detail-card{min-height:82px;padding:16px 20px;border-radius:34px}
+  [data-screen="system"] .detail-card{min-height:82px;padding:16px 20px;border-radius:34px;corner-shape:squircle}
   [data-screen="system"] .detail-card strong{font-size:21px;margin-top:12px}
   .subscription-card{margin-top:14px;border-radius:40px;corner-shape:squircle;
     background:var(--card);box-shadow:none;padding:24px 22px 20px}
@@ -426,23 +392,28 @@
   .subscription-actions button.primary{background:var(--ink);box-shadow:none;color:var(--body-bg)}
 
   /* ── gradient scales ── */
-  .gscale{position:relative;margin-top:2px;overflow:visible}
+  /* торцы капсулы скруглены и оптически «уходят», поэтому по краю текста
+     шкала читалась уже колонки — выпускаем её на те же 5 px, что и плашки профиля */
+  .gscale{position:relative;margin:8px -5px 0;overflow:visible}
+  .gscale.has-val{margin-top:4px;padding-top:27px}
+  .gs-val{position:absolute;top:0;transform:translateX(-50%);white-space:nowrap;
+    font-size:20px;font-weight:300;letter-spacing:-.6px;line-height:1;color:var(--ink);
+    font-variant-numeric:tabular-nums;text-align:left}
+  /* единицу выносим из потока: иначе центр подписи уезжает с перетяжки */
+  .gs-val i{position:absolute;left:100%;top:.42em;margin-left:3px;font-style:normal;
+    font-size:11px;font-weight:500;letter-spacing:.2px;color:var(--ink-mute)}
 
   .gscale svg{display:block;width:100%;height:auto}
-  .gscale circle{fill:var(--ink-mute);transform-box:fill-box;transform-origin:50% 50%;
-    animation:hsFloat 6s ease-in-out infinite}
-  .gs-track{fill:var(--tick-minor)}
-  .gs-band{fill:var(--tick-major)}
-  .gs-edge{stroke:var(--tick-major);stroke-width:1.2;stroke-linecap:round}
-  .gs-cloud{animation:gsBreath 7s ease-in-out infinite;transform-box:fill-box;transform-origin:50% 50%}
-  .gs-core{animation:gsBreath 5.5s ease-in-out infinite;transform-box:fill-box;transform-origin:50% 50%}
-  @keyframes gsBreath{0%,100%{transform:scale(.94)}50%{transform:scale(1.07)}}
-  @media (prefers-reduced-motion:reduce){ .gs-cloud,.gs-core{animation:none} }
-
-  @media (prefers-reduced-motion:reduce){ .gscale circle{animation:none} }
+  /* матовое стекло: пятно цвета лежит внутри тела и приглушено белой вуалью */
+  .gs-tube{fill:rgba(120,126,136,.055)}
+  .gs-field{animation:gsDrift 9s ease-in-out infinite}
+  .gs-frost{fill:#fff;opacity:.04}
+  .gs-mark{stroke:var(--ink);stroke-width:1.1;stroke-dasharray:2.4 2.6;opacity:.5}
+  .gs-num{fill:var(--ink-faint);font-size:7px;letter-spacing:.2px;text-anchor:middle}
+  @keyframes gsDrift{0%,100%{transform:translateX(-1.5px)}50%{transform:translateX(1.5px)}}
+  @media (prefers-reduced-motion:reduce){ .gs-field{animation:none} }
   .gscale .gt{position:absolute;left:0;right:0;top:50%;height:4px;transform:translateY(-50%);
     border-radius:999px;background:rgba(120,126,136,.12)}
-  :root[data-theme="dark"] .gscale .gt{background:rgba(255,255,255,.10)}
   .gscale .gfill{position:absolute;left:0;top:50%;height:16px;transform:translateY(-50%);
     border-radius:999px;background:linear-gradient(90deg,#80e6aa,#9bdcff,#a79aed);
     filter:blur(6px);box-shadow:0 0 18px rgba(128,230,170,.42)}
@@ -463,8 +434,8 @@
   .status-pill.warn{color:var(--attn)}
 
   /* ── biomarkers list (same row language as formula) ── */
-  .bio-list{display:grid;margin-top:16px;padding:6px 22px;border-radius:44px;corner-shape:squircle;
-    background:var(--card);box-shadow:none}
+  /* каждая строка — свой длинный фрейм, как в ранних версиях */
+  .bio-list{display:grid;gap:10px;margin-top:16px;padding:0;border-radius:0;background:transparent;box-shadow:none}
   .bio-title-row{display:flex;align-items:center;justify-content:space-between;gap:12px}
   .bio-title-row .detail-title{margin-bottom:0}
   /* лупа без плашки: рядом с заголовком третий белый круг выглядел перегруженно */
@@ -479,17 +450,23 @@
     outline:0;background:var(--card);box-shadow:none;font:500 14px/1 inherit;color:var(--ink)}
   .bio-search::placeholder{color:var(--ink-faint)}
   .bio-empty{padding:28px 0;color:var(--ink-faint);font-size:14px;text-align:center}
-  .bio-item{display:block;padding:14px 0 10px;cursor:pointer}
-  .bio-top{display:grid;grid-template-columns:1fr auto 12px;align-items:flex-start;gap:12px}
-  .bio-item:active{background:rgba(120,126,136,.06)}
+  .bio-item{display:block;padding:20px 24px 17px;border-radius:36px;corner-shape:squircle;
+    background:var(--card);cursor:pointer;transition:opacity .2s}
+  .bio-item:active{opacity:.72}
+  .bio-top{display:grid;grid-template-columns:1fr auto;align-items:baseline;gap:12px}
+
   .bio-item .bname{font-size:14px;font-weight:600;color:var(--ink);line-height:1.2}
   .bio-item .bname small{display:block;font-size:11px;font-weight:400;color:var(--ink-faint);margin-top:3px}
+  .bio-item .bstat{display:flex;align-items:center;justify-content:flex-end;min-height:17px;
+    font-size:11px;font-weight:500;color:var(--ink-faint);white-space:nowrap}
   .bio-item .bval{display:flex;flex-direction:column;align-items:flex-end;text-align:right;font-size:15px;font-weight:600;color:var(--ink);white-space:nowrap;min-width:0}
   .bio-item .bval small{display:block;font-size:11px;font-weight:500;margin-top:3px;color:var(--ink-faint)}
-  .bi-st{display:block;width:13px;height:13px;margin:5px 0 0 auto;fill:none;
+  .bi-st{display:block;width:13px;height:13px;margin:0 0 0 auto;fill:none;
     stroke:var(--ink-faint);stroke-width:1.7;stroke-linecap:round;stroke-linejoin:round}
   .bi-st.warn{stroke:var(--attn)}
   .bio-item .bval small.warn{color:var(--attn)}
+  .bio-item .bstat small{font-size:11px;font-weight:500;color:var(--ink-faint)}
+  .bio-item .bstat small.warn{color:var(--attn)}
 
   /* ── biomarker detail (Hemoglobin template) ── */
   .biod-head{display:flex;align-items:flex-start;justify-content:space-between;gap:12px}
@@ -506,17 +483,29 @@
   .biod-delta{margin:8px 0 2px;font-size:20px;font-weight:600;color:var(--ink);font-variant-numeric:tabular-nums}
   .biod-delta i{font-style:normal;font-size:13px;margin-right:4px;color:var(--attn)}
   .biod-delta i.down{color:var(--ink-mute)}
+  /* серая плита не упирается в края белой карточки — поля остаются */
   .trend-canvas{display:block;width:100%;margin-top:10px}
+  /* приближение графика: можно посмотреть короткий промежуток */
+  .trend-zoom{display:flex;gap:6px;margin-top:10px}
+  .trend-zoom button{all:unset;height:30px;padding:0 14px;border-radius:999px;cursor:pointer;
+    display:grid;place-items:center;background:var(--control-soft);
+    font-size:9.5px;font-weight:600;letter-spacing:1.2px;color:var(--ink-faint);transition:color .2s}
+  .trend-zoom button.on{background:var(--ink);color:var(--body-bg)}
   .trend-canvas svg{display:block;width:100%;height:auto}
   /* та же пластика, что у кляксы: пятна дышат и слипаются */
-  .trend-canvas circle{fill:var(--ink-faint);transform-box:fill-box;transform-origin:50% 50%;
-    animation:hsFloat 7s ease-in-out infinite}
-  .tg-band{fill:var(--tick-minor);opacity:.6}
-  .tg-line{stroke:var(--tick-major);stroke-width:.5;stroke-dasharray:2 2}
-  .tg-tick{stroke:var(--tick-minor);stroke-width:.4}
-  .tg-label{fill:var(--ink-faint);font-size:4px;letter-spacing:.2px}
+  /* плита и силуэт складываются друг с другом, поэтому по отдельности они
+     светлее трубы в строках (.055) — в сумме на массе получается тот же тон */
+  .tg-plate{fill:rgba(120,126,136,.052)}
+  .tg-glass{fill:rgba(120,126,136,.062)}
+  .tg-veil{fill:#fff;opacity:0}
+  .tg-mass{animation:gsDrift 13s ease-in-out infinite}
+  .tg-bar{stroke-width:.5;stroke-linecap:butt;opacity:.95}
+  .tg-guide{stroke:var(--tick-major);stroke-width:.6;stroke-dasharray:2 3;opacity:.5}
+  .tg-stem{stroke-width:1.2;stroke-dasharray:2.6 2.8}
+  .tg-now{fill:var(--ink);font-size:19px;font-weight:300;letter-spacing:-.6px;text-anchor:middle}
+  .tg-label{fill:var(--ink-faint);font-size:8px;letter-spacing:.2px}
 
-  @media (prefers-reduced-motion:reduce){ .trend-canvas circle{animation:none} }
+  @media (prefers-reduced-motion:reduce){ .tg-mass{animation:none} }
   .trend-range{display:flex;justify-content:space-between;font-size:10.5px;color:var(--ink-faint);margin-top:5px}
 
   /* ── cross-link: component → related biomarker ── */
@@ -606,7 +595,7 @@
   .add-capsule-card{justify-content:flex-start;border:0;background:transparent;padding:0;font:inherit;color:inherit}
   .add-capsule-top{position:absolute;z-index:2;top:12px;left:0;right:0;text-align:center;font-size:10px;letter-spacing:2.2px;
     text-transform:uppercase;color:var(--ink-faint)}
-  .add-capsule-plus{position:absolute;z-index:3;top:294px;left:141px;width:48px;height:48px;display:grid;place-items:center;border-radius:50%;
+  .add-capsule-plus{position:absolute;z-index:3;top:294px;left:50%;transform:translateX(-50%);width:48px;height:48px;display:grid;place-items:center;border-radius:50%;
     background:var(--card);box-shadow:none;color:var(--ink);font-size:26px;font-weight:200;line-height:1}
   /* подпись серой капсулы — минималистичная, в стиле «STATE · TODAY» */
   .add-capsule-card .cap-meta{gap:0}
@@ -630,12 +619,10 @@
     background:var(--control-soft);color:var(--ink-mute)}
   .store-badge.top{background:rgba(var(--accent),.22);color:var(--ink)}
   /* капля товара: тот же язык, что у капсул, только вектором и в своём цвете */
-  .store-orb{position:relative;width:74px;height:74px;margin:16px 0 22px}
-  .store-orb::before{content:"";position:absolute;left:50%;bottom:-2px;transform:translateX(-50%);
-    width:80%;height:26%;border-radius:50%;background:var(--orb);filter:blur(9px);opacity:.55}
-  .store-orb::after{content:"";position:absolute;inset:0;border-radius:50% 50% 46% 46%;
-    background:radial-gradient(60% 55% at 36% 28%,#fff 0 6%,var(--orb-hi) 34%,var(--orb) 78%,var(--orb-lo) 100%);
-    box-shadow:inset -6px -8px 14px rgba(255,255,255,.35)}
+  /* капсула, как в формуле: мягкое стекло и размытые пятна внутри */
+  /* живая капсула товара: тот же рендер, что в карусели, только меньше кадром */
+  /* без цветного ореола: капсула читается формой, а не свечением */
+  .store-lava{display:block;width:96px;height:126px;margin:6px 0 12px}
   .store-name{font-size:11px;letter-spacing:.2px;color:var(--ink-faint);text-align:center;line-height:1.25}
   .store-price{margin-top:6px;font-size:19px;font-weight:300;letter-spacing:-.6px;color:var(--ink)}
 
@@ -664,10 +651,12 @@
   .profile-hero{display:flex;align-items:center;gap:16px;margin:0 0 8px;padding-left:5px}
   /* в аватарке — то же состояние, что на главной: живая клякса, только крупнее кадром */
   .avatar-lg{position:relative;width:56px;height:56px;border-radius:50%;flex:none;overflow:hidden;
-    background:var(--lava-medium,#e9edf1);
+    background:var(--surface);box-shadow:inset 0 0 14px 6px #fff;
     color:var(--ink);font-size:13px;font-weight:600;letter-spacing:.4px;
     display:flex;align-items:center;justify-content:center;box-shadow:none}
-  .avatar-lg canvas{position:absolute;inset:0;width:100%;height:100%;display:block;z-index:1}
+  .avatar-lg canvas{position:absolute;inset:0;width:100%;height:100%;display:block;z-index:1;
+    -webkit-mask-image:radial-gradient(58% 58% at 50% 50%,#000 0 42%,rgba(0,0,0,.66) 66%,rgba(0,0,0,.2) 84%,transparent 100%);
+    mask-image:radial-gradient(58% 58% at 50% 50%,#000 0 42%,rgba(0,0,0,.66) 66%,rgba(0,0,0,.2) 84%,transparent 100%)}
   .avatar-lg span{position:relative;z-index:2;mix-blend-mode:multiply;opacity:.62}
   .profile-who strong{display:block;font-size:19px;font-weight:600;color:var(--ink)}
   .plan-badge{display:inline-block;margin-top:5px;font-size:9.5px;font-weight:600;letter-spacing:1.5px;text-transform:uppercase;
@@ -679,36 +668,39 @@
   .prow b{font-size:13px;font-weight:600;color:var(--ink);text-align:right}
   .pmanage{all:unset;display:block;margin-top:12px;font-size:13px;font-weight:600;color:var(--ink);cursor:pointer}
   .pmanage.danger{color:var(--attn)}
-  .profile-data-grid{display:grid;grid-template-columns:1.05fr 1fr;grid-template-areas:"body age" "body routine" "limits goals";grid-auto-rows:94px;gap:10px}
+  .profile-data-grid{display:grid;grid-template-columns:1.05fr 1fr;grid-template-areas:"body age" "body routine" "limits goals";grid-auto-rows:74px;gap:8px}
   /* та же пара форм, что на главной: невысокие блоки — овалы,
      большой — squircle с непрерывной кривизной */
-  .profile-data-card{position:relative;min-height:0;padding:0 26px;border:0;border-radius:999px;
+  .profile-data-card{position:relative;min-height:0;padding:0 24px;border:0;border-radius:999px;
     background:var(--card);box-shadow:none;
     display:flex;flex-direction:column;justify-content:center;gap:6px;
     color:var(--ink);text-align:left;cursor:pointer;overflow:hidden}
-  .profile-data-card[data-profile-card="baseline"]{grid-area:body;padding:24px 26px;
-    justify-content:flex-start;border-radius:50% / 40%;corner-shape:squircle}
+  /* угол в пикселях: на процентах при неквадратном боксе четыре угла
+     получались разной кривизны и плашка выглядела кривой */
+  .profile-data-card[data-profile-card="baseline"]{grid-area:body;padding:20px 24px;
+    justify-content:center;gap:12px;border-radius:52px;corner-shape:squircle}
   .profile-data-card[data-profile-card="age"]{grid-area:age}
   .profile-data-card[data-profile-card="routine"]{grid-area:routine}
   .profile-data-card[data-profile-card="limits"]{grid-area:limits}
   .profile-data-card[data-profile-card="goals"]{grid-area:goals}
   .profile-data-card::after{display:none}
   .profile-data-card span{display:block;font-size:10px;letter-spacing:1.5px;text-transform:uppercase;color:var(--ink-faint)}
-  .profile-data-card b{display:block;margin:0;font-size:16px;line-height:1.15;font-weight:400;letter-spacing:-.3px}
-  .profile-measures{display:grid;gap:6px;margin-top:auto}
-  .profile-measures b{font-size:26px;line-height:1;font-weight:300;letter-spacing:-1.1px}
+  .profile-data-card b{display:block;margin:0;font-size:15px;line-height:1.15;font-weight:400;letter-spacing:-.3px}
+  .profile-measures{display:grid;gap:4px;margin:0}
+  .profile-measures b{font-size:23px;line-height:1;font-weight:300;letter-spacing:-.9px}
   .profile-measures small{margin-left:4px;font-size:12px;font-weight:500;letter-spacing:0;color:var(--ink-mute)}
   .profile-data-card[data-profile-card="age"] b,.profile-data-card[data-profile-card="routine"] b{margin-top:9px}
   .profile-data-card:active{opacity:.7}
   /* оптическая компенсация: у овалов края «уходят», у широких плашек —
      резкие, поэтому при равной ширине они читались шире сетки. Поджимаем на 5 px */
-  .profile-panel .biod-card{border-radius:44px;corner-shape:squircle;padding:20px 26px;margin-left:5px;margin-right:5px;
+  .profile-panel .biod-card{border-radius:56px;corner-shape:squircle;padding:22px 26px;margin-left:5px;margin-right:5px;
     background:var(--card);box-shadow:none}
-  .profile-shipment{margin-top:10px}
-  /* без абсолютного позиционирования: заголовок сверху, дни снизу, ровный шаг */
+  /* без абсолютного позиционирования: заголовок сверху, дни снизу, ровный шаг.
+     `all:unset` сбрасывает и поля, поэтому те же 5 px поджатия задаём здесь заново —
+     иначе плашка доставки шире соседних карточек на 10 px */
   .profile-pack-widget{all:unset;box-sizing:border-box;position:relative;display:flex;flex-direction:column;gap:18px;
-    width:calc(100% - 10px);margin:16px 5px 0;padding:22px 26px 20px;
-    border-radius:44px;corner-shape:squircle;background:var(--card);box-shadow:none;color:var(--ink);cursor:pointer}
+    width:100%;margin:14px 0 0;padding:22px 26px 20px;
+    border-radius:56px;corner-shape:squircle;background:var(--card);box-shadow:none;color:var(--ink);cursor:pointer}
   .profile-pack-widget .system-item{display:flex;align-items:flex-start}
   .profile-pack-widget .pack-row{position:static;left:auto;right:auto;bottom:auto;display:flex;align-items:center;gap:7px}
   .profile-pack-widget .pack-day{width:32px;height:32px;font-size:11px}
@@ -716,15 +708,18 @@
   .profile-pack-widget .pack-all{background:transparent;box-shadow:none;height:auto;padding:0;
     color:var(--ink-mute);font-size:9.5px;letter-spacing:1.4px}
   .profile-pack-widget .pack-all{pointer-events:none}
+  /* `.profile-panel .detail-panel > *` обнуляет поля, поэтому те же 5 px поджатия,
+     что у соседних карточек, задаём отдельным правилом такой же силы */
+  .profile-panel .profile-pack-widget{width:calc(100% - 10px);margin-left:5px;margin-right:5px}
   /* редактор кладётся поверх списка профиля, поэтому нужен плотный фон —
      ровно цвет корпуса, чтобы плашки читались так же, как на главной */
-  .profile-editor{position:absolute;inset:-14px -18px;z-index:12;padding:14px 30px 24px;border-radius:0;background:var(--scrim);overflow-y:auto;opacity:0;pointer-events:none;transform:translateX(18px);transition:opacity .28s ease,transform .28s ease}
+  .profile-editor{position:absolute;inset:-14px -18px;z-index:12;display:flex;flex-direction:column;padding:58px 30px 34px;border-radius:0;background:var(--scrim);overflow-y:auto;opacity:0;pointer-events:none;transform:translateX(18px);transition:opacity .28s ease,transform .28s ease}
   .profile-editor.on{opacity:1;pointer-events:auto;transform:none}
   /* та же вертикаль: заголовок и подписи полей на одной линии */
   .profile-editor > .biod-card,.profile-editor > .profile-editor-save{margin-left:-14px;margin-right:-14px}
   .phone:not(.view-profile) .profile-editor{pointer-events:none}
   .profile-editor::-webkit-scrollbar{width:0;height:0}
-  .profile-editor-back{all:unset;display:grid;place-items:center;width:42px;height:42px;margin-bottom:24px;border-radius:50%;background:var(--card);box-shadow:none;border:0;cursor:pointer}
+  .profile-editor-back{all:unset;position:absolute;top:6px;left:30px;z-index:14;display:grid;place-items:center;width:42px;height:42px;margin:0;border-radius:50%;background:var(--card);box-shadow:none;border:0;cursor:pointer}
   .profile-editor-kicker{font-size:11px;letter-spacing:2.2px;text-transform:uppercase;color:var(--ink-faint)}
   .profile-editor h2{margin:9px 0 22px;font-size:34px;line-height:1;font-weight:350;letter-spacing:-1.4px}
   .profile-field{display:block;padding:11px 0}.profile-field+.profile-field{border-top:0}
@@ -744,24 +739,29 @@
   .pf-tick.mo{height:24px;background:var(--tick-major)}
   .pf-cursor{position:absolute;left:50%;top:8px;bottom:8px;width:2px;transform:translateX(-50%);
     border-radius:2px;background:var(--ink)}
-  .profile-editor-save{width:100%;height:52px;margin-top:22px;border:0;border-radius:999px;background:var(--ink);color:var(--body-bg);font:600 11px "Arial Narrow",Arial,sans-serif;letter-spacing:1.8px;text-transform:uppercase;cursor:pointer}
+  .profile-editor-save{width:100%;height:52px;margin-top:auto;border:0;border-radius:999px;background:var(--ink);color:var(--body-bg);font:600 11px "Arial Narrow",Arial,sans-serif;letter-spacing:1.8px;text-transform:uppercase;cursor:pointer}
   .profile-month-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:15px}.profile-month-head span{font-size:13px;color:var(--ink-mute)}
   .profile-month-cal{display:grid;grid-template-columns:repeat(7,1fr);gap:8px;padding:8px 0}.profile-month-cal span{aspect-ratio:1;display:grid;place-items:center;border-radius:50%;font-size:13px;color:var(--ink-mute)}
   .profile-month-cal .blank{visibility:hidden}.profile-month-cal .ship{background:var(--ink);color:var(--body-bg);font-weight:700}
 
   /* ── история состояния ── */
-  .state-history{position:absolute;top:auto;left:18px;right:18px;bottom:96px;height:162px;z-index:6;
-    display:flex;flex-direction:column;justify-content:space-between;
+  .state-history{position:absolute;top:auto;left:18px;right:18px;bottom:104px;height:126px;z-index:6;
+    display:flex;flex-direction:column;justify-content:center;
     opacity:0;pointer-events:none;transition:opacity .35s ease}
   .view-history .state-history{opacity:1;pointer-events:auto}
   .blood-profile-grid{transition:opacity .3s ease}
   .view-history .blood-profile-grid{opacity:0;pointer-events:none}
-  .hist-ruler{position:relative;height:74px;overflow:hidden;touch-action:none;cursor:grab}
+  .hist-ruler{position:relative;height:92px;overflow:hidden;touch-action:none;cursor:grab}
   .hist-ruler:active{cursor:grabbing}
-  .hist-track{position:absolute;top:0;bottom:0;left:0;display:flex;align-items:center;will-change:transform}
-  .hist-tick{flex:none;width:2px;height:15px;margin:0 2px;border-radius:2px;background:var(--tick-minor)}
-  .hist-tick.mo{height:31px;background:var(--tick-major)}
-  .hist-cursor{position:absolute;left:50%;top:12px;bottom:12px;width:2px;transform:translateX(-50%);
+  .hist-track{position:absolute;top:0;bottom:0;left:0;will-change:transform}
+  /* столбик = день: высота по оценке, цвет по зоне */
+  .hist-tick{position:absolute;bottom:24px;width:2px;border-radius:2px;
+    transform:translateX(-50%);opacity:.72;transition:opacity .2s}
+  .hist-tick.on{opacity:1;width:3px}
+  .hist-month{position:absolute;bottom:2px;transform:translateX(-50%);
+    font-size:8px;letter-spacing:1.4px;text-transform:uppercase;color:var(--ink-faint);white-space:nowrap}
+  .hist-today{color:var(--ink-mute)}
+  .hist-cursor{position:absolute;left:50%;top:4px;bottom:20px;width:2px;transform:translateX(-50%);
     border-radius:2px;background:var(--ink)}
   .hist-caption{font-size:9.5px;letter-spacing:2.2px;text-transform:uppercase;color:var(--ink-faint);
     margin-bottom:9px;padding-left:4px}
@@ -775,6 +775,70 @@
     display:grid;place-items:center;cursor:pointer;
     font-size:9.5px;font-weight:600;letter-spacing:1.6px;text-transform:uppercase}
   .hist-bio:active{opacity:.8}
+
+  /* затухание — только сигнал «дальше есть контент»:
+     нет прокрутки — нет затухания; у самого верха не гасим верх,
+     у самого низа не гасим низ. Ширина ступени короткая, чтобы не съедать карточки. */
+  .widget-detail,.bio-panel,.biod-panel,.profile-panel{--fade-t:0px;--fade-b:0px;
+    -webkit-mask-image:linear-gradient(to bottom,transparent 0,rgba(0,0,0,.35) calc(var(--fade-t) * .45),#000 var(--fade-t),#000 calc(100% - var(--fade-b)),rgba(0,0,0,.35) calc(100% - var(--fade-b) * .45),transparent 100%);
+    mask-image:linear-gradient(to bottom,transparent 0,rgba(0,0,0,.35) calc(var(--fade-t) * .45),#000 var(--fade-t),#000 calc(100% - var(--fade-b)),rgba(0,0,0,.35) calc(100% - var(--fade-b) * .45),transparent 100%)}
+  .widget-detail.fade-top,.bio-panel.fade-top,.biod-panel.fade-top,.profile-panel.fade-top{--fade-t:54px}
+  .widget-detail.fade-bottom,.bio-panel.fade-bottom,.biod-panel.fade-bottom,.profile-panel.fade-bottom{--fade-b:58px}
+
+  /* ── вход ── */
+  .auth{position:absolute;inset:0;z-index:30;display:flex;flex-direction:column;align-items:center;
+    padding:78px 24px 30px;gap:14px;background:var(--scrim);
+    transition:opacity .5s ease,transform .5s cubic-bezier(.32,.72,.28,1)}
+  .auth.gone{opacity:0;pointer-events:none;transform:scale(1.02)}
+  .auth-hero{position:relative;width:100%;height:340px;
+    border-radius:50%;corner-shape:round;corner-shape:superellipse(1.55);
+    overflow:hidden;background:var(--surface);box-shadow:var(--glow-l);display:grid;place-items:center}
+  /* верхний блок входа держим сильно расфокусированным: это атмосфера, а не
+     фигура. канвас чуть увеличен, чтобы размытие не подъедало края */
+  .auth-blob{position:absolute;inset:0;width:100%;height:100%;display:block;
+    filter:blur(22px);transform:scale(1.14);
+    -webkit-mask-image:radial-gradient(58% 54% at 50% 50%,#000 0 38%,rgba(0,0,0,.6) 62%,rgba(0,0,0,.18) 82%,transparent 100%);
+    mask-image:radial-gradient(58% 54% at 50% 50%,#000 0 38%,rgba(0,0,0,.6) 62%,rgba(0,0,0,.18) 82%,transparent 100%)}
+  .auth-hero-text{position:relative;z-index:2;text-align:center;padding:0 26px}
+  .auth-mark{font-size:26px;font-weight:300;letter-spacing:5px;text-transform:lowercase;color:var(--ink)}
+  .auth-hero-text p{margin-top:10px;font-size:11px;line-height:1.5;letter-spacing:1.6px;
+    text-transform:uppercase;color:rgba(34,35,39,.72)}
+  /* группа ввода стоит по центру карточки, а не прижата к верху */
+  .auth-card{width:100%;flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:0;
+    padding:34px 28px;border-radius:50%;corner-shape:round;corner-shape:superellipse(1.55);background:var(--card)}
+  .auth-lead{margin-bottom:26px;text-align:center;font-size:11px;line-height:1.7;letter-spacing:1.8px;
+    text-transform:uppercase;color:var(--ink-faint)}
+  .auth-lead em{font-style:normal;color:var(--ink-mute)}
+  .auth-field{position:relative;width:76%;margin-bottom:12px}
+  .auth-field input{width:100%;height:50px;border:0;border-radius:999px;background:var(--control-soft);
+    box-shadow:none;padding:0 26px;font:500 14px inherit;color:var(--ink);outline:none}
+  .auth-eye{position:absolute;right:22px;top:50%;transform:translateY(-50%);
+    width:17px;height:17px;color:var(--ink-faint);pointer-events:none}
+  .auth-field input::placeholder{color:var(--ink-faint);letter-spacing:.2px}
+  .auth-go{all:unset;width:76%;box-sizing:border-box;height:52px;margin-top:6px;border-radius:999px;
+    background:var(--ink);color:var(--body-bg);
+    display:grid;place-items:center;cursor:pointer;
+    font-size:10px;font-weight:600;letter-spacing:2px;text-transform:uppercase}
+  .auth-go:active{opacity:.82}
+  .auth-link{all:unset;width:100%;margin:16px 0 -22px;text-align:center;cursor:pointer;
+    font-size:10px;letter-spacing:1.6px;text-transform:uppercase;color:var(--ink-faint)}
+
+  /* ── экран загрузки после входа ── */
+  .auth-load{position:absolute;inset:0;z-index:31;display:flex;align-items:flex-end;justify-content:space-between;
+    gap:20px;padding:0 34px 66px;background:var(--scrim);
+    opacity:0;pointer-events:none;transition:opacity .45s ease}
+  .auth-load.on{opacity:1;pointer-events:auto}
+  /* снизу поднимается живая лава, а не плоский градиент */
+  .auth-load-blob{position:absolute;left:-18%;right:-18%;bottom:-10%;width:136%;height:66%;display:block;z-index:1;
+    -webkit-mask-image:linear-gradient(to top,#000 0,#000 42%,rgba(0,0,0,.45) 72%,transparent 100%);
+    mask-image:linear-gradient(to top,#000 0,#000 42%,rgba(0,0,0,.45) 72%,transparent 100%)}
+  .auth-load h1{position:relative;z-index:2;font-size:42px;line-height:1.04;font-weight:300;
+    letter-spacing:-1.7px;color:var(--ink)}
+  .auth-spin{position:relative;z-index:2;flex:none;width:44px;height:44px;margin:0 0 6px;
+    animation:authSpin 1.2s linear infinite}
+  .auth-spin circle{fill:none;stroke:var(--ink);stroke-width:1.6;stroke-linecap:round;
+    stroke-dasharray:16 44}
+  @keyframes authSpin{to{transform:rotate(360deg)}}
 
   /* ── view visibility ── */
   .carousel-only{transition:opacity .45s ease}
@@ -792,7 +856,11 @@
      остальные — круглые кнопки рядом */
   .tabbar{position:absolute;left:50%;bottom:20px;transform:translateX(-50%);z-index:20;
     display:flex;align-items:center;gap:7px;padding:0;border-radius:0;
-    background:transparent;border:0;box-shadow:none}
+    background:transparent;border:0;box-shadow:none;
+    transition:opacity .3s ease,transform .34s cubic-bezier(.32,.72,.28,1)}
+  /* вглубь экран пушится — корневая навигация уходит, выход один: стрелка слева */
+  .view-widget .tabbar,.view-bio .tabbar,.view-biodetail .tabbar{
+    opacity:0;pointer-events:none;transform:translate(-50%,18px)}
   /* форма рисуется отдельным слоем и слипается фильтром — текст остаётся резким */
   .tabbar-goo{position:absolute;left:0;top:0;height:100%;display:flex;align-items:center;gap:7px;
     pointer-events:none;filter:url(#tabGoo)}
@@ -821,14 +889,14 @@
 
   /* ── export ── */
   .export{position:fixed;top:26px;right:26px;width:44px;height:44px;
-    background:#fff;color:#141416;border:none;border-radius:16px;padding:0;
+    background:#fff;color:#141416;border:none;border-radius:16px;corner-shape:squircle;padding:0;
     font-size:0;font-weight:600;z-index:50;letter-spacing:.2px;
     box-shadow:0 8px 24px -16px rgba(0,0,0,.55)}
   .export::after{content:"PNG";font-size:10px;letter-spacing:.8px}
   .export:active{transform:scale(.97)}
 
   /* ── prototype screen index (outside the phone) ── */
-  .screen-index{display:none;position:fixed;left:calc(50% + 250px);top:50%;z-index:40;
+  .screen-index{position:fixed;left:calc(50% + 250px);top:50%;z-index:40;
     width:178px;transform:translateY(-50%);gap:4px}
   .screen-index__title{margin-bottom:10px;font-size:10px;letter-spacing:1.8px;text-transform:uppercase;color:var(--ink-faint)}
   .screen-index button{all:unset;box-sizing:border-box;display:block;width:100%;padding:7px 10px;border-radius:10px;
@@ -837,6 +905,11 @@
   .screen-index button.on{color:var(--ink);font-weight:650}
   .screen-index button.on::before{content:"";display:inline-block;width:5px;height:5px;margin:0 8px 1px 0;border-radius:50%;background:rgb(var(--accent));vertical-align:middle}
   @media (max-width:760px){.screen-index{display:none}}
+  /* режим встраивания в лендинг: только телефон, без обвязки прототипа */
+  .embed .screen-index,.embed .export{display:none}
+  /* фон и поля гасим: в лендинге телефон должен лежать прямо на его подложке,
+     иначе получается рамка в рамке и серый кант вокруг */
+  .embed body{background:transparent;padding:0}
 </style>
 </head>
 <body>
@@ -932,13 +1005,6 @@
         <div class="pgroup-label" id="pgSettings">Settings</div>
         <div class="biod-card">
           <div class="setting-row">
-            <span id="themeLabel">Theme</span>
-            <div class="theme-options" id="themeOptions">
-              <button data-theme="light" class="on">Light</button>
-              <button data-theme="dark">Dark</button>
-            </div>
-          </div>
-          <div class="setting-row">
             <span id="languageLabel">Language</span>
             <div class="lang" id="lang">
               <button data-l="en" class="on">EN</button>
@@ -978,14 +1044,14 @@
           <span class="bp-sub" id="hormoneSub">cortisol rhythm</span>
         </button>
         <button class="widget blood-profile-card" type="button" id="nutrientSummary">
-          <span class="bp-dots" id="nutrientDots" aria-hidden="true"></span>
           <span class="blood-profile-label" id="nutrientLabel">Nutrients</span>
-          <span class="bp-count" id="nutrientCount">0/0</span><strong class="blood-profile-value" id="nutrientValue">75<small>%</small></strong>
+          <strong class="blood-profile-value" id="nutrientValue">75<small>%</small></strong>
+          <span class="bp-count" id="nutrientCount">0/0</span>
         </button>
         <button class="widget blood-profile-card" type="button" id="metabolismSummary">
-          <span class="bp-bar" id="metabolismBar" aria-hidden="true"><i></i></span>
           <span class="blood-profile-label" id="metabolismLabel">Metabolism</span>
-          <span class="bp-count" id="metabolismCount">0/0</span><strong class="blood-profile-value" id="metabolismValue">83<small>%</small></strong>
+          <strong class="blood-profile-value" id="metabolismValue">83<small>%</small></strong>
+          <span class="bp-count" id="metabolismCount">0/0</span>
         </button>
       </div>
     </div>
@@ -995,15 +1061,6 @@
       <div class="hist-ruler" id="histRuler">
         <div class="hist-track" id="histTrack"></div>
         <i class="hist-cursor"></i>
-      </div>
-      <div class="hist-caption" id="histCaption">Biomarkers over</div>
-      <div class="hist-bottom">
-        <div class="hist-periods" id="histPeriods">
-          <button type="button" data-period="7" class="on">7 d</button>
-          <button type="button" data-period="30">30 d</button>
-          <button type="button" data-period="90">90 d</button>
-        </div>
-        <button class="hist-bio" type="button" id="histBio">Open</button>
       </div>
     </div>
 
@@ -1016,7 +1073,7 @@
             <div class="card-kicker" id="capsuleImpactLabel">Expected impact</div>
             <div class="biod-about" id="capsuleImpact"></div>
           </div>
-          <div class="detail-kicker" id="capsuleCompLabel" style="margin:22px 0 0">Composition</div>
+          <div class="detail-kicker" id="capsuleCompLabel" style="margin:26px 0 12px">Composition</div>
           <div class="detail-table" id="capsuleRows"></div>
           <div class="biod-card">
             <div class="card-kicker" id="capsuleReasonLabel">Why it is separate</div>
@@ -1148,6 +1205,11 @@
         <div class="biod-card">
           <div class="card-kicker"><span id="biodTrendLabel">Trend</span><em id="biodPeriod"></em></div>
           <div class="biod-delta" id="biodDelta"></div>
+          <div class="trend-zoom" id="trendZoom">
+            <button type="button" data-zoom="1">1M</button>
+            <button type="button" data-zoom="3">3M</button>
+            <button type="button" data-zoom="6" class="on">6M</button>
+          </div>
           <div class="trend-canvas" id="trendCanvas"></div>
           <div class="trend-range"><span id="trendFrom"></span><span id="trendTo"></span></div>
         </div>
@@ -1157,6 +1219,37 @@
     <div class="stage" id="stage">
       <div class="track" id="track"></div>
     </div>
+
+    <!-- вход: сверху живое состояние, снизу карточка с полями -->
+    <section class="auth" id="authScreen">
+      <div class="auth-hero">
+        <canvas class="auth-blob" id="authBlob" aria-hidden="true"></canvas>
+        <div class="auth-hero-text">
+          <div class="auth-mark">impre</div>
+          <p id="authTagline">Your state, read daily<br>and answered by the formula</p>
+        </div>
+      </div>
+      <div class="auth-card">
+        <div class="auth-lead" id="authLead">Enter your credentials<br><em>or sign up</em></div>
+        <label class="auth-field"><input type="email" id="authEmail" placeholder="Email" autocomplete="off"></label>
+        <label class="auth-field"><input type="password" id="authPass" placeholder="Password" autocomplete="off">
+          <svg class="auth-eye" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.4" aria-hidden="true">
+            <path d="M2.6 12S6.4 5.8 12 5.8 21.4 12 21.4 12 17.6 18.2 12 18.2 2.6 12 2.6 12z"/>
+            <circle cx="12" cy="12" r="2.7"/><path d="M4.6 19.4 19.4 4.6"/>
+          </svg></label>
+        <button class="auth-go" type="button" id="authGo">Log in</button>
+        <button class="auth-link" type="button" id="authForgot">Forgot password?</button>
+      </div>
+    </section>
+
+    <!-- после входа: приветствие и загрузка, снизу поднимается наш зелёный -->
+    <section class="auth-load" id="authLoad" aria-hidden="true">
+      <canvas class="auth-load-blob" id="authLoadBlob" aria-hidden="true"></canvas>
+      <h1 id="authWelcome">Welcome,<br>Alisa</h1>
+      <svg class="auth-spin" viewBox="0 0 24 24" aria-hidden="true">
+        <circle cx="12" cy="12" r="9"/>
+      </svg>
+    </section>
 
     <nav class="tabbar" id="tabbar" aria-label="root navigation">
       <button class="tab on" data-tab="home">
@@ -1174,7 +1267,10 @@
 
   <aside class="screen-index" aria-label="Prototype screens">
     <div class="screen-index__title">Экраны</div>
+    <button type="button" data-prototype-screen="auth">Вход</button>
+    <button type="button" data-prototype-screen="loading">Загрузка после входа</button>
     <button type="button" data-prototype-screen="home">Состояние</button>
+    <button type="button" data-prototype-screen="history">История состояния</button>
     <button type="button" data-prototype-screen="bio">Все показатели</button>
     <button type="button" data-prototype-screen="biodetail">Показатель: Витамин D</button>
     <button type="button" data-prototype-screen="carousel">Формула</button>
@@ -1361,7 +1457,6 @@ const T = {
   capsuleInside:{en:'Inside', ru:'Внутри'},
 };
 let lang = 'en';
-let theme = 'light';
 
 const BODY_STATE = {
   score:78,
@@ -1403,7 +1498,7 @@ const BIOMARKERS=[
     about:{en:'Stress hormone; rises under sustained load.',ru:'Гормон стресса, растёт при длительной нагрузке.'},
     aboutSub:{en:'The formula shifted toward Restorative support to bring it down gently.',ru:'Формула сместилась к восстановлению, чтобы мягко снизить уровень.'},
     from:{en:'Jan 2026',ru:'янв 2026'}, to:{en:'Jun 2026',ru:'июн 2026'},
-    trend:[12,13,12.5,14,13.5,15,16,15.5,17,18,18.6,19.1] },
+    trend:[13.5,13,12.4,11.8,11.2,10.8,11.6,13,15.2,17.6,19.4,21] },
   { key:'crp', name:{en:'hs-CRP',ru:'hs-СРБ'}, unit:'mg/L', dec:1,
     value:0.8, min:0, max:3, sMin:0, sMax:5,
     about:{en:'A sensitive marker of inflammation.',ru:'Чувствительный маркер воспаления.'},
@@ -1494,72 +1589,278 @@ function rampColor(t){
    к перебору — оранжевый. Переход плавный, оттенки те же, что у кляксы. */
 /* только три чистых тона: норма — зелёный, перебор — оранжевый, недобор — голубой.
    промежуточных оттенков нет, поэтому на смешении не появляется грязь */
-const TONE_OK='#5ada86', TONE_HI='#ff6a12', TONE_LO='#5cb4ff';
+/* тона берём прямо из палитры кляксы: норма — её зелёный, недобор — её холодный
+   голубой, перебор — наш оранжевый сигнала */
+const TONE_OK='#7ee06a', TONE_HI='#ff5c00', TONE_LO='#41c8ff';
+/* лесенка чистых тонов из палитры кляксы: цвет зависит от того, где именно
+   стоит значение, но каждый тон берётся готовым — смешивания нет, грязи тоже */
+const TONE_STEPS={
+  lo:['#9fd8f5','#6fd0f0','#41c8ff','#58a8e8'],          /* ниже нормы: чем дальше, тем плотнее */
+  ok:['#7ee06a','#41ff4c','#a8e838','#b7f04a','#d8f56a'], /* внутри нормы: от нижнего края к верхнему */
+  hi:['#ff8a3d','#ff5c00']
+};
 function zoneTone(t,b0,b1){
-  const span=Math.max(.06,b1-b0);
-  if(t>b1) return hexMix(TONE_OK,TONE_HI,Math.min(1,.5+(t-b1)/(span*.7)));
-  if(t<b0) return hexMix(TONE_OK,TONE_LO,Math.min(1,.5+(b0-t)/(span*.7)));
-  return TONE_OK;
+  const span=Math.max(.001,b1-b0);
+  if(t>b1){ return TONE_STEPS.hi[(t-b1)/span>.35?1:0]; }
+  if(t<b0){ const d=(b0-t)/span; return TONE_STEPS.lo[d>1?3:d>.55?2:d>.25?1:0]; }
+  const k=(t-b0)/span;
+  return TONE_STEPS.ok[Math.min(TONE_STEPS.ok.length-1,Math.floor(k*TONE_STEPS.ok.length))];
 }
-/* строка показателя — облако плотности, а не бусина на нитке:
-   где стоит облако — там значение, ширина — разброс за период,
-   цвет — зона. Насечки отмечают границы личной нормы. */
 let gsId=0;
+/* шкала-спектр, как в лабораторном бланке, но в нашей палитре:
+   полоса показывает зоны (недобор — норма — перебор) чистыми тонами
+   с жёсткими стыками, засечки отмечают границы личной нормы,
+   значение стоит живой каплей. */
+/* палитра шкал снята пипеткой с рефа. рампа двусторонняя: норма зелёная,
+   недобор уходит в холод (тот же #41c8ff, что и везде в приложении),
+   перебор — через песок в коралл и дальше в розу */
+const GS_LO=[[0,'#5fdc63'],[.32,'#63dfa8'],[.66,'#4fd3e8'],[1,'#41c8ff']];
+const GS_HI=[[0,'#5fdc63'],[.28,'#9ee878'],[.56,'#e8d453'],[.82,'#ff8a45'],[1,'#f24d6e']];
+function gsRamp(R,e){
+  e=Math.max(0,Math.min(1,e));
+  for(let i=1;i<R.length;i++){
+    const [a,ca]=R[i-1],[b,cb]=R[i];
+    if(e<=b) return hexMix(ca,cb,(e-a)/(b-a));
+  }
+  return R[R.length-1][1];
+}
+function gsTone(e){ return e<0 ? gsRamp(GS_LO,-e) : gsRamp(GS_HI,e); }
+/* «насколько далеко от личной нормы»: внутри коридора почти ноль, знак — сторона.
+   наружу нормируем на оставшийся кусок шкалы, поджимая рампу, чтобы цвет успел дойти */
+function gsDev(u,b0,b1){
+  const mid=(b0+b1)/2, half=Math.max(.02,(b1-b0)/2);
+  /* нормируем на расстояние от границы коридора до конца шкалы, а не на ширину
+     коридора: иначе у показателя с узким коридором края доходили до предельного
+     цвета, а у широкого оставались зелёными — и каждая строка выглядела как
+     другая система. гамма 0.55 при этом поднимает цвет сразу за границей */
+  const g=x=>Math.pow(Math.max(0,Math.min(1,x)),.55);
+  return u<b0 ? -g((b0-u)/Math.max(.04,b0))
+       : u>b1 ?  g((u-b1)/Math.max(.04,1-b1))
+       : .34*(u-mid)/half;
+}
 function gradScale(el,cfg){
   const t=Math.max(0,Math.min(1,cfg.t));
   const b0=cfg.band?Math.max(0,cfg.band[0]):0, b1=cfg.band?Math.min(1,cfg.band[1]):1;
   const out=(t<b0-.001||t>b1+.001);
-  const W=250, H=34, y=H/2, L=12, R=238, S=R-L;
+  /* тело капсулы занимает всю ширину svg: поля внутри viewBox делали шкалу
+     визуально короче текстовой строки, хотя блок и был шире */
+  const W=250, H=40, cy=22, L=0, R=W, S=R-L, TH=32;
   const px=v=>L+v*S, cx=px(t);
-  const tone=zoneTone(t,b0,b1);
   const id='gs'+(++gsId);
-  const spread=Math.max(26,Math.min(64,(b1-b0)*S*.55));
+
+  let stops='';
+  for(let i=0;i<=16;i++){ const u=i/16; stops+=`<stop offset="${u}" stop-color="${gsTone(gsDev(u,b0,b1))}"/>`; }
+
+  /* перетяжка построена как в тап-баре: две дольки-капсулы и вогнутая галтель,
+     касательная к обоим торцам. fr выводится из d, поэтому стык всегда гладкий */
+  const r=TH/2;
+  const room=Math.min(cx-(L+r), (R-r)-cx);
+  /* у самого края дольку уже не построить: чем меньше места, тем шире горло —
+     перетяжка превращается в пологую вмятину, а не в оторванный огрызок */
+  const kRoom=Math.max(0,Math.min(1,room/(r*1.35)));
+  const wr=r*(.21+(1-kRoom)*.5);
+  const dMin=Math.sqrt(r*r-wr*wr)+.3;
+  const frI=r*.42, dI=Math.sqrt((frI+r)*(frI+r)-(frI+wr)*(frI+wr));
+  const d=Math.max(dMin, Math.min(dI, room));
+  const fr=(d*d-r*r+wr*wr)/(2*(r-wr));
+  const cxc=Math.max(L+r+d, Math.min(R-r-d, cx));
+  const tx=cxc-d+r*d/(fr+r), ty=r*(fr+wr)/(fr+r), tx2=cxc+d-r*d/(fr+r);
+  const n=v=>v.toFixed(1);
+  const D=[
+    `M ${L+r} ${cy-r}`, `H ${n(cxc-d)}`,
+    `A ${n(r)} ${n(r)} 0 0 1 ${n(tx)} ${n(cy-ty)}`,
+    `A ${n(fr)} ${n(fr)} 0 0 0 ${n(tx2)} ${n(cy-ty)}`,
+    `A ${n(r)} ${n(r)} 0 0 1 ${n(cxc+d)} ${cy-r}`,
+    `H ${R-r}`, `A ${r} ${r} 0 0 1 ${R-r} ${cy+r}`, `H ${n(cxc+d)}`,
+    `A ${n(r)} ${n(r)} 0 0 1 ${n(tx2)} ${n(cy+ty)}`,
+    `A ${n(fr)} ${n(fr)} 0 0 0 ${n(tx)} ${n(cy+ty)}`,
+    `A ${n(r)} ${n(r)} 0 0 1 ${n(cxc-d)} ${cy+r}`,
+    `H ${L+r}`, `A ${r} ${r} 0 0 1 ${L+r} ${cy-r}`, 'Z'
+  ].join(' ');
+
+  /* цвет живёт не полосой, а двумя капсулами поменьше — по одной в каждой дольке.
+     отступ одинаковый со всех сторон, размытие изотропное, поэтому цвет
+     затухает сверху и снизу ровно так же, как с торцов */
+  /* отступ от перетяжки тем меньше, чем она мельче: у краёв шкалы горло почти
+     открыто, и цвет должен проходить сквозь него, а не распадаться на два пятна */
+  const ih=TH*.46, iy=cy-ih/2, ir=ih/2, mx=TH*.19, mn=TH*.20*Math.min(1,(r*.21)/wr);
+  const ax=L+mx, aw=Math.max(ih,(cxc-mn)-ax);
+  const bx=cxc+mn, bw=Math.max(ih,(R-mx)-bx);
+
+
+
+  /* как в рефе: значение стоит над точкой замера и едет вместе с перетяжкой.
+     у краёв придерживаем, иначе подпись вылезает за карточку */
+  const vp=Math.max(15,Math.min(85,cxc/W*100));
+  const val=cfg.value
+    ? `<span class="gs-val" style="left:${vp.toFixed(1)}%">${cfg.value}`+
+      `${cfg.sub?`<i>${cfg.sub}</i>`:''}</span>`
+    : '';
+
   el.classList.toggle('warn',out);
-  el.innerHTML=`<svg viewBox="0 0 ${W} ${H}">
-    <defs><radialGradient id="${id}">
-      <stop offset="0" stop-color="${tone}" stop-opacity=".78"/>
-      <stop offset=".45" stop-color="${tone}" stop-opacity=".34"/>
-      <stop offset="1" stop-color="${tone}" stop-opacity="0"/>
-    </radialGradient></defs>
-    <line class="gs-edge" x1="${px(b0).toFixed(1)}" y1="${y-6}" x2="${px(b0).toFixed(1)}" y2="${y+6}"/>
-    <line class="gs-edge" x1="${px(b1).toFixed(1)}" y1="${y-6}" x2="${px(b1).toFixed(1)}" y2="${y+6}"/>
-    <rect class="gs-track" x="${L}" y="${y-.6}" width="${S}" height="1.2" rx=".6"/>
-    <ellipse class="gs-cloud" cx="${cx.toFixed(1)}" cy="${y}" rx="${spread.toFixed(1)}" ry="${(H*.42).toFixed(1)}" fill="url(#${id})"/>
-    <circle class="gs-core" cx="${cx.toFixed(1)}" cy="${y}" r="3.4" style="fill:${tone}"/>
+  el.classList.toggle('has-val',!!cfg.value);
+  el.innerHTML=val+`<svg viewBox="0 0 ${W} ${H}">
+    <defs>
+      <linearGradient id="${id}" gradientUnits="userSpaceOnUse" x1="${L}" x2="${R}">${stops}</linearGradient>
+      <filter id="${id}s" x="-25%" y="-160%" width="150%" height="420%">
+        <feGaussianBlur stdDeviation="${(TH*.125).toFixed(1)}"/>
+      </filter>
+      <clipPath id="${id}c"><path d="${D}"/></clipPath>
+    </defs>
+    <g clip-path="url(#${id}c)">
+      <rect class="gs-tube" x="${L}" y="${cy-r}" width="${S}" height="${TH}"/>
+      <g class="gs-field" fill="url(#${id})" filter="url(#${id}s)">
+        <rect x="${n(ax)}" y="${n(iy)}" width="${n(aw)}" height="${n(ih)}" rx="${n(ir)}"/>
+        <rect x="${n(bx)}" y="${n(iy)}" width="${n(bw)}" height="${n(ih)}" rx="${n(ir)}"/>
+      </g>
+      <rect class="gs-frost" x="${L}" y="${cy-r}" width="${S}" height="${TH}"/>
+    </g>
+    <line class="gs-mark" x1="${cxc.toFixed(1)}" y1="${cy-r-4}" x2="${cxc.toFixed(1)}" y2="${cy+r+4}"/>
   </svg>`;
 }
-/* trend: blurred gradient columns with thin neutral line + nodes */
-function drawTrend(el,bm){
-  /* динамика на сетке: видно, из какой зоны и куда идёт показатель.
-     положение — по шкале самого показателя, цвет — по той же радуге, что и строки */
-  if(!el) return;
-  const t=bm.trend, n=t.length, H=64, L=13, R=97;
-  const lo=bm.sMin, hi=bm.sMax;
-  const yOf=v=>H-6-((v-lo)/(hi-lo))*(H-14);
-  const xOf=i=>L+((R-L)*i)/(n-1);
-  const yMin=yOf(bm.min), yMax=yOf(bm.max);
-  const b0=(bm.min-lo)/(hi-lo), b1=(bm.max-lo)/(hi-lo);
-  let dots='';
-  for(let i=0;i<n;i++){
-    const k=(t[i]-lo)/(hi-lo);
-    const r=2.2+Math.min(1,Math.abs(k-.5)*.9+.5)*2.2;
-    dots+=`<circle cx="${xOf(i).toFixed(1)}" cy="${yOf(t[i]).toFixed(1)}" r="${r.toFixed(1)}" `+
-      `style="fill:${zoneTone(k,b0,b1)};animation-delay:${(-i*.6).toFixed(2)}s;animation-duration:${(6+(i%4)*.9).toFixed(2)}s"/>`;
-    if(i<n-1){
-      const vm=(t[i]+t[i+1])/2, km=(vm-lo)/(hi-lo);
-      dots+=`<circle cx="${((xOf(i)+xOf(i+1))/2).toFixed(1)}" cy="${yOf(vm).toFixed(1)}" r="2.4" `+
-        `style="fill:${zoneTone(km,b0,b1)};animation-delay:${(-i*.45-.3).toFixed(2)}s;animation-duration:${(7+(i%3)).toFixed(2)}s"/>`;
-    }
-  }
-  let grid=`<rect class="tg-band" x="${L}" y="${yMax.toFixed(1)}" width="${R-L}" height="${(yMin-yMax).toFixed(1)}"/>`;
-  [[yMax,bm.max],[yMin,bm.min]].forEach(([y,v])=>{
-    grid+=`<line class="tg-line" x1="${L}" y1="${y.toFixed(1)}" x2="${R}" y2="${y.toFixed(1)}"/>`+
-      `<text class="tg-label" x="0" y="${(y+2).toFixed(1)}">${fmtVal(bm,v)}</text>`;
-  });
-  for(let i=0;i<n;i+=3) grid+=`<line class="tg-tick" x1="${xOf(i).toFixed(1)}" y1="6" x2="${xOf(i).toFixed(1)}" y2="${H-6}"/>`;
-  el.innerHTML=`<svg viewBox="0 0 100 ${H}">${grid}<g filter="url(#dotGoo)">${dots}</g></svg>`;
-}
 
+/* trend: blurred gradient columns with thin neutral line + nodes */
+let trendZoom=6;   /* месяцев в окне графика */
+/* подпись окна: для полного ряда — его собственные даты, для приближения —
+   длина окна, чтобы не выдумывать месяцы, которых в данных нет */
+function trendWindowLabel(months,b){
+  if(months>=6) return b.from[lang];
+  return lang==='ru' ? `последние ${months} мес.` : `last ${months} months`;
+}
+function drawTrend(el,bm){
+  /* тренд двумя половинами: прошлое — размытая масса, будущее — тонкие штрихи.
+     между ними пунктирная ножка с точкой и текущим значением */
+  if(!el) return;
+  const src=bm.trend, span=Math.max(2,Math.round(src.length*trendZoom/6));
+  const from=src.length-span;
+  const n=Math.max(26,span*4);
+  /* ряд помесячный: на коротком окне между двумя точками получалась ровная плита.
+     добавляем разброс, но не белым шумом — он рвал кромку в клочья, — а гладким
+     value noise в две октавы; он детерминирован по позиции, поэтому при смене
+     окна рельеф не пересобирается */
+  const hash=x=>{ const v=Math.sin(x*127.1)*43758.5453; return v-Math.floor(v); };
+  const vnoise=x=>{ const i=Math.floor(x), f=x-i, u=f*f*(3-2*f);
+    return hash(i)*(1-u)+hash(i+1)*u; };
+  const fbm=x=>vnoise(x)*.66+vnoise(x*2.3+11.7)*.34;
+  const amp=(bm.max-bm.min)*(.05+.09*(1-trendZoom/6));
+  const t=Array.from({length:n},(_,i)=>{
+    const p=from+(span-1)*i/(n-1);
+    const k=Math.floor(p), f=p-k;
+    const base=src[k]+((src[Math.min(k+1,src.length-1)]-src[k])*f);
+    return base+(fbm(p*3.5)-.5)*amp;
+  });
+
+  const W=250, H=214, L=0, R=W, T=34, B=186;
+  /* цвет считаем по физиологической шкале показателя, а геометрию — по своему
+     кадру: на полной шкале сенсора у одних масса упиралась в потолок,
+     у других лежала полоской по дну, и карточки выглядели несопоставимо */
+  const lo=bm.sMin, hi=bm.sMax;
+  const b0=(bm.min-lo)/(hi-lo), b1=(bm.max-lo)/(hi-lo);
+  const id='tr'+(++gsId);
+
+  const xNow=L+(R-L)*.56;                  /* масса занимает ~3/5, дальше прогноз */
+  const xOf=i=>L+((xNow-L)*i)/(n-1);
+  const tone=v=>gsTone(gsDev((v-lo)/(hi-lo),b0,b1));
+
+  /* прогноз: формула тянет показатель к середине коридора, движение затухает */
+  const cur=t[n-1], target=(bm.min+bm.max)/2, fn=13;
+  const fc=Array.from({length:fn},(_,i)=>{
+    const k=(i+1)/fn, e=1-Math.pow(1-k,1.7);
+    /* разброс берём тем же гладким шумом, что и в ряду: у соседних штрихов
+       высоты связаны, и гребёнка не пилит зубцами вверх-вниз */
+    const wob=(fbm(60+i*.75)-.5)*(hi-lo)*.14;   /* на рефе штрихи гуляют сильно, вплоть до коротких */
+    return cur+(target-cur)*e*.72+wob;
+  });
+
+  /* кадр по данным: ряд, прогноз и коридор целиком, плюс воздух сверху и снизу */
+  const all=t.concat(fc,[bm.min,bm.max]);
+  const dMin=Math.min(...all), dMax=Math.max(...all);
+  const pad=Math.max((dMax-dMin)*.22,(hi-lo)*.04);
+  const vLo=Math.max(lo,dMin-pad), vHi=Math.min(hi,dMax+pad);
+  const yOf=v=>B-((v-vLo)/Math.max(1e-6,vHi-vLo))*(B-T);
+
+  /* цвет — непрерывное поле под силуэтом, а не набор пятен: на рефе паузы
+     возникают там, где сама масса проседает, а не потому что кто-то расставил шары */
+  let stops='';
+  for(let i=0;i<n;i++) stops+=`<stop offset="${(i/(n-1)).toFixed(4)}" stop-color="${tone(t[i])}"/>`;
+
+  /* кромку ведём Catmull-Rom: прежние кубики с горизонтальной касательной
+     в каждой точке давали «сосиски» — форма шла ступеньками, а не потоком */
+  const area=(x0,x1,yFn,base)=>{
+    const P=t.map((v,i)=>[x0+((x1-x0)*i)/(n-1), yFn(v)]);
+    let p=`M ${x0.toFixed(1)} ${base.toFixed(1)} L ${P[0][0].toFixed(1)} ${P[0][1].toFixed(1)}`;
+    for(let i=0;i<P.length-1;i++){
+      const p0=P[i-1]||P[i], p1=P[i], p2=P[i+1], p3=P[i+2]||P[i+1];
+      const c1x=p1[0]+(p2[0]-p0[0])/6, c1y=p1[1]+(p2[1]-p0[1])/6;
+      const c2x=p2[0]-(p3[0]-p1[0])/6, c2y=p2[1]-(p3[1]-p1[1])/6;
+      p+=` C ${c1x.toFixed(1)} ${c1y.toFixed(1)} ${c2x.toFixed(1)} ${c2y.toFixed(1)} ${p2[0].toFixed(1)} ${p2[1].toFixed(1)}`;
+    }
+    return p+` L ${x1.toFixed(1)} ${base.toFixed(1)} Z`;
+  };
+  /* отступ и размытие считаем от толщины самой массы: при фиксированных 9 и 4.4
+     у низкого показателя цветное поле оставалось тоньше размытия и не набирало
+     плотность — отсюда и блеклость */
+  /* сборка один в один как в генераторе: цветное поле повторяет силуэт по всей
+     ширине, отступ только сверху — доля локальной толщины, низ на B-2 */
+  const yIn=v=>{ const y=yOf(v), h=Math.max(6,B-y);
+    return Math.min(B-3, y+Math.max(2,h*.16)); };
+  const d=area(L,xNow,yOf,B);
+  const dIn=area(L,xNow,yIn,B-2);
+
+  const bx0=xNow+6, bw=(R-14-bx0);   /* последний штрих не заходит в скругление плиты */
+  let bars='';
+  for(let i=0;i<fn;i++){
+    const x=bx0+bw*i/(fn-1), y=yOf(fc[i]);
+    bars+=`<line class="tg-bar" x1="${x.toFixed(1)}" y1="${B}" x2="${x.toFixed(1)}" y2="${y.toFixed(1)}" `+
+      `stroke="${tone(fc[i])}"/>`;
+  }
+
+  const yStem=T+40, curTone=tone(cur);   /* число и точка опущены от верхней кромки плиты */
+
+  el.innerHTML=`<svg viewBox="0 0 ${W} ${H}">
+    <defs>
+      <linearGradient id="${id}" gradientUnits="userSpaceOnUse" x1="${L}" x2="${xNow}">${stops}</linearGradient>
+      <linearGradient id="${id}f" gradientUnits="userSpaceOnUse" x1="0" y1="${T}" x2="0" y2="${B}">
+        <stop offset="0" stop-color="#fff" stop-opacity=".6"/>
+        <stop offset=".3" stop-color="#fff" stop-opacity="1"/>
+        <stop offset=".82" stop-color="#fff" stop-opacity="1"/>
+        <stop offset="1" stop-color="#fff" stop-opacity="1"/>
+      </linearGradient>
+      <mask id="${id}m"><rect x="0" y="0" width="${W}" height="${H}" fill="url(#${id}f)"/></mask>
+      <filter id="${id}b" x="-20%" y="-30%" width="140%" height="170%">
+        <feGaussianBlur stdDeviation="5.1"/>
+        <!-- размытие съедает альфу в ядре: возвращаем её, края остаются мягкими -->
+        <feComponentTransfer><feFuncA type="linear" slope="1"/></feComponentTransfer>
+      </filter>
+      <clipPath id="${id}g"><path d="${d}"/></clipPath>
+      <!-- всё содержимое режем по плите: у неё скруглённые углы, а масса и
+           штрихи прямоугольные и вылезали за них -->
+      <!-- короткая растушёвка у самой кромки: жёсткого среза нет, но и пустого
+           серого захода слева тоже — график стартует с начала плиты -->
+      <linearGradient id="${id}h" gradientUnits="userSpaceOnUse" x1="${L}" x2="${R}">
+        <stop offset="0" stop-color="#fff" stop-opacity="0"/>
+        <stop offset=".015" stop-color="#fff" stop-opacity=".55"/>
+        <stop offset=".045" stop-color="#fff" stop-opacity="1"/>
+        <stop offset="1" stop-color="#fff" stop-opacity="1"/>
+      </linearGradient>
+      <mask id="${id}hm"><rect x="0" y="0" width="${W}" height="${H}" fill="url(#${id}h)"/></mask>
+      <clipPath id="${id}p"><rect x="${L}" y="${T-24}" width="${R-L}" height="${B-(T-24)}" rx="34"/></clipPath>
+      <!-- по бокам уводим в серый плиты, а не режем по контуру -->
+    </defs>
+    <rect class="tg-plate" x="${L}" y="${T-24}" width="${R-L}" height="${B-(T-24)}" rx="34"/>
+    <g clip-path="url(#${id}p)" mask="url(#${id}hm)">
+      <path class="tg-glass" d="${d}"/>
+      <g clip-path="url(#${id}g)">
+        <path class="tg-mass" d="${dIn}" fill="url(#${id})" filter="url(#${id}b)" mask="url(#${id}m)"/>
+      </g>
+      <g class="tg-bars">${bars}</g>
+    </g>
+    <line class="tg-stem" x1="${xNow.toFixed(1)}" y1="${B}" x2="${xNow.toFixed(1)}" y2="${yStem}"
+      style="stroke:${curTone}"/>
+    <circle class="tg-dot" cx="${xNow.toFixed(1)}" cy="${yStem}" r="3.4" style="fill:${curTone}"/>
+    <text class="tg-now" x="${xNow.toFixed(1)}" y="${T+18}">${fmtVal(bm,cur)}</text>
+  </svg>`;
+}
 
 
 const CW = 330, CH = 552;                 // drawing space with glow breathing room
@@ -2420,9 +2721,29 @@ class StateBlob{
    яркое свечение emit 2, быстрый дрейф, зелёные с акцентом #41ff4c.
    Холодный набор идёт индекс-в-индекс, чтобы при плохом состоянии
    каждая капля ушла в свой синий аналог той же светлоты. */
-const BLOB_WARM=['#b7f04a','#7ee06a','#d8f56a','#41ff4c','#a8e838'];
+const BLOB_NEON=['#7cff2e','#2eff7a','#c4ff1f','#00ff5e','#9dff14'];
 const BLOB_COLD=['#6fd0f0','#6ab6e6','#9fd8f5','#41c8ff','#58a8e8'];
+/* шкала состояния: непрерывная лесенка от жёлто-оранжевого через
+   голубо-жёлтый и жёлто-зелёный к исходному зелёному и неону на самом верху.
+   на 78 (сегодняшнее состояние) звучит ровно тот цвет, что был изначально */
+const BLOB_WARM=['#b7f04a','#7ee06a','#d8f56a','#41ff4c','#a8e838'];
+const BLOB_YEL =['#d8f56a','#c8e85a','#e8f56a','#b7f04a','#d0ee55'];
+const BLOB_MID =['#7fe0c8','#c8e86a','#8fe0d8','#e0e85a','#6fd8b0'];
+const BLOB_LOW =['#ffc247','#ff9a3d','#ffd45a','#ff8a2a','#ffb648'];
+const BLOB_STOPS=[[40,BLOB_LOW],[52,BLOB_MID],[62,BLOB_YEL],[76,BLOB_WARM],[93,BLOB_NEON]];
+/* у каждой капли своё смещение по шкале — клякса переливается,
+   а переход между ступенями непрерывный, без резкого скачка */
+function blobTone(slot,score,shift){
+  const v=score+(shift||0);
+  if(v<=BLOB_STOPS[0][0]) return BLOB_STOPS[0][1][slot];
+  for(let i=1;i<BLOB_STOPS.length;i++){
+    const [a,ca]=BLOB_STOPS[i-1], [b,cb]=BLOB_STOPS[i];
+    if(v<=b) return hexMix(ca[slot],cb[slot],(v-a)/(b-a));
+  }
+  return BLOB_STOPS[BLOB_STOPS.length-1][1][slot];
+}
 const BLOB_STYLE={soft:1.81,thr:.29,edge:1.07,dens:1.9,emit:2,depth:60,drift:18.5,speed:.9,grain:.03};
+const LOAD_STYLE={...BLOB_STYLE,thr:.22,dens:2.8,emit:2.9};
 const BLOB_PULSE={amp:.1,speed:1.01,sync:.37};
 const BLOB_SAVED=[
   {pos:[104.0864178078259,166.7277503790105], base:50.43015260631002, color:'#41ff4c', phase:0.796252603035623, rate:1.4137345679012345},
@@ -2444,7 +2765,27 @@ function blobRegenerate(){
   }));
 }
 /* score → температура палитры: 40 % и ниже — совсем холодно, 85 % и выше — тепло */
-function blobWarmth(score){ return Math.max(0,Math.min(1,(score-40)/45)); }
+/* холод включается только при заметном падении: на сегодняшних значениях
+   клякса звучит тем же тёплым зелёным, что и была */
+function blobWarmth(score){ return Math.max(0,Math.min(1,(score-30)/42)); }
+
+/* История считает цвет по своей шкале — относительно реального размаха за полгода.
+   На главном экране и на «сегодня» она даёт ровно ту же тёплую палитру, что и раньше,
+   поэтому основной экран остаётся нетронутым. */
+let HIST_SPAN={lo:70,hi:82}, blobHistMode=false;
+function histRel(score){
+  const sp=Math.max(4,HIST_SPAN.hi-HIST_SPAN.lo);
+  return Math.max(0,Math.min(1,(score-HIST_SPAN.lo)/sp));
+}
+const HIST_STOPS=[[0,'COLD'],[.34,'MID'],[.64,'YEL'],[1,'WARM']];
+function histSlotTone(slot,rel){
+  const P={COLD:BLOB_COLD,MID:BLOB_MID,YEL:BLOB_YEL,WARM:BLOB_WARM};
+  for(let i=1;i<HIST_STOPS.length;i++){
+    const [a,ka]=HIST_STOPS[i-1], [b,kb]=HIST_STOPS[i];
+    if(rel<=b) return hexMix(P[ka][slot],P[kb][slot],(rel-a)/(b-a));
+  }
+  return BLOB_WARM[slot];
+}
 function qLoop(w){ const n=Math.max(1,Math.round(w*BLOB_LOOP/(Math.PI*2))); return Math.PI*2*n/BLOB_LOOP; }
 
 /* тон подложки аватара живёт по той же логике, что и клякса:
@@ -2457,18 +2798,60 @@ function lavaTint(score){
   root.setProperty('--lava-medium', hexMix('#dbeaf6','#e6f5cf',warm));
 }
 function blobApply(t,score){
-  const warm=blobWarmth(score);
   blobNodes.forEach(b=>{
     const ph=b.phase*(1-BLOB_PULSE.sync);
     const rate=1+(b.rate-1)*(1-BLOB_PULSE.sync);
     /* пульс тоже кладём на целое число оборотов за период — иначе цикл разъезжается */
     b.r=b.base*(1+BLOB_PULSE.amp*Math.sin(t*qLoop(BLOB_PULSE.speed*rate*2)+ph));
-    b.color=hexMix(BLOB_COLD[b.slot],BLOB_WARM[b.slot],warm);
+    b.color = blobHistMode
+      ? histSlotTone(b.slot,histRel(score))
+      : hexMix(BLOB_COLD[b.slot],BLOB_WARM[b.slot],blobWarmth(score));
   });
 }
 blobRegenerate();
 /* аватар и иконка профиля — та же лава, только вектором */
 lavaTint(78);
+/* на входе тон задаётся положением: слева зелёный, дальше бирюза, синий,
+   сиреневый, справа розовый. Соседние капли всегда соседние по кругу тонов,
+   поэтому на слиянии не появляется грязь — она бывает только у противоположных. */
+function hslHex(h,sat,lig){
+  h=((h%360)+360)%360;
+  const a=sat*Math.min(lig,1-lig);
+  const f=n=>{ const k=(n+h/30)%12; const c=lig-a*Math.max(-1,Math.min(Math.min(k-3,9-k),1));
+    return Math.round(255*c).toString(16).padStart(2,'0'); };
+  return '#'+f(0)+f(8)+f(4);
+}
+function authTone(k){
+  k=Math.max(0,Math.min(1,k));
+  /* тепловая карта состояний: холодный край — недобор, зелёная середина —
+     норма, тёплый край — перебор. Ровно те зоны, которыми приложение
+     говорит о показателях, только развёрнутые в поле. */
+  /* холодная часть занимает больше поля: синий заходит глубже к середине */
+  const w=Math.pow(k,1.45);
+  /* сам тон остаётся насыщенным: светлеют только края — за счёт маски
+     и рассеянной внутренней тени плашки */
+  return hslHex(214-190*w, .54+.18*w, .5-.01*w);
+}
+/* вход: та же живая клякса, крупнее кадром */
+const authScreen=document.getElementById('authScreen');
+const authLoadEl=document.getElementById('authLoad');
+let authBlob=null, authOpen=true;
+try{ authBlob=new StateBlob(document.getElementById('authBlob')); authBlob.zoom=1.9; }catch(_){ }
+(function bindAuth(){
+  const load=authLoadEl;
+  const go=()=>{
+    if(!authOpen) return;
+    authOpen=false;
+    load.classList.add('on');                 /* приветствие поверх входа */
+    authScreen.classList.add('gone');
+    setTimeout(()=>{ authScreen.style.display='none'; },600);
+    setTimeout(()=>{ load.classList.remove('on'); },1900);
+  };
+  document.getElementById('authGo').onclick=go;
+  document.getElementById('authForgot').onclick=go;
+})();
+let loadBlob=null;
+try{ loadBlob=new StateBlob(document.getElementById('authLoadBlob')); loadBlob.zoom=1.45; }catch(_){ }
 let stateBlob=null;
 /* аватар профиля повторяет состояние с главной — тот же рендер, крупнее кадром */
 let avatarBlob=null;
@@ -2491,8 +2874,9 @@ const STATE_AREAS=[
 ];
 function renderStateWidget(){
   document.getElementById('heroEyebrow').textContent=T.stateKicker[lang];
-  const inRange=BIOMARKERS.filter(b=>statusOf(b)==='in').length;
-  const score=Math.round(inRange/BIOMARKERS.length*100);
+  /* тот же счёт, что и в истории: иначе на главной и в подробностях
+     фигурировали разные цифры за один и тот же день */
+  const score=scoreAt(0);
   document.getElementById('stateScore').innerHTML=`${score}<small>%</small>`;
   stateScoreValue=score;
   lavaTint(score);
@@ -2506,7 +2890,7 @@ function renderStateWidget(){
         <div class="aname">${b.name[lang]}<span class="attn-status" aria-label="${stText(st)}">${st==='high'?'&#8593;':'&#8595;'}</span></div>
         <div class="gscale mini" data-attn-scale="${b.key}"></div>
         <div class="aval">${fmtVal(b)}</div>
-        <span class="open-arrow">&#8250;</span>
+        <svg class="open-arrow" viewBox="0 0 12 12" aria-hidden="true"><path d="M4.6 2.6L8.3 6l-3.7 3.4"/></svg>
       </div>`;
     }).join('');
     rows.querySelectorAll('.attn-row').forEach(el=>{
@@ -2598,13 +2982,22 @@ function renderCapsuleDetail(){
   const rows=document.getElementById('capsuleRows');
   rows.innerHTML=s.dose.map(d=>`
     <div class="detail-row" data-supp="${d.key}">
-      <span>${d.key}<small>${d.name[lang]}</small></span>
-      <div class="gscale mini" data-level="${d.level}"></div>
-      <b>${fmtDose(d)}<small>${d.status[lang]}</small></b>
-      <i class="open-arrow">›</i>
+      <div class="dr-top">
+        <span>${d.name[lang]}</span>
+        <b>${d.status[lang]}</b>
+      </div>
+      <div class="gscale" data-supp="${d.key}"></div>
     </div>
   `).join('');
-  rows.querySelectorAll('.gscale').forEach(el=>gradScale(el,{t:+el.dataset.level}));
+  /* у компонента есть свой рабочий коридор в SUPPLEMENT_META — берём его,
+     иначе шкала была зелёной целиком и цвет ничего не значил */
+  rows.querySelectorAll('.gscale').forEach(el=>{
+    const d=s.dose.find(x=>x.key===el.dataset.supp), m=SUPPLEMENT_META[d.key];
+    const sp=m.sMax-m.sMin;
+    gradScale(el,{t:(doseValue(d)-m.sMin)/sp,
+      band:[(m.min-m.sMin)/sp,(m.max-m.sMin)/sp],
+      value:fmtDose(d)});
+  });
 }
 function openStore(){
   renderStore();
@@ -2612,28 +3005,57 @@ function openStore(){
 }
 /* новые цвета капель в витрине: зелёный, голубой, янтарный, графит */
 const STORE_META=[
-  ['$24.30',{hi:'#d6f7b8',mid:'#7fc95f',lo:'#4a8f3a'},{ru:'Хит',en:'Best seller',top:true}],
-  ['$19.90',{hi:'#dbe9ff',mid:'#8fb4f0',lo:'#4a6fb0'},{ru:'Хит',en:'Best seller',top:true}],
-  ['$45.00',{hi:'#ffe0b0',mid:'#f0a94e',lo:'#b06d18'},{ru:'Честная цена',en:'Fair price'}],
-  ['$38.00',{hi:'#eceff2',mid:'#b9c0c8',lo:'#7c848d'},{ru:'Честная цена',en:'Fair price'}]
+  ['$24.30',{ru:'Хит',en:'Best seller',top:true}],
+  ['$19.90',{ru:'Хит',en:'Best seller',top:true}],
+  ['$45.00',{ru:'Честная цена',en:'Fair price'}],
+  ['$38.00',{ru:'Честная цена',en:'Fair price'}]
 ];
+/* у каждой витринной капсулы свой сценарий движения и своя палитра */
+/* добавки — не наши формулы: палитры неоновые и не пересекаются с формулами.
+   малина, кислотный лайм, электрик и ультрафиолет */
+const STORE_LAVA=[
+  lcPreset('#ff2d78',['#ff9ec4','#ff1f6e','#ffd0e2','#f50060','#ff5c96','#ff86b4','#ffb8d4','#ff3d84'],'breathe',{orbitR:.74,speed:.52,emit:1.5,glow:0,halo:0}),
+  lcPreset('#c8ff2e',['#eaffb0','#b6ff1f','#d8ff7a','#a6f500','#e0ff8a','#c2ff45','#f0ffc4','#b0f52a'],'lamp',{orbitR:.58,speed:.78,emit:1.5,glow:0,halo:0}),
+  lcPreset('#1f7bff',['#8ac4ff','#0a63ff','#b6dcff','#0050e0','#4f9cff','#2e86ff','#a0d0ff','#1a72f5'],'spiral',{orbitR:.68,speed:.42,emit:1.5,glow:0,halo:0}),
+  lcPreset('#a12dff',['#dcaaff','#8f1fff','#c98aff','#7a00f0','#b45cff','#9c3dff','#d0a0ff','#8a2ef5'],'lamp',{orbitR:.84,speed:.3,emit:1.5,glow:0,halo:0})
+];
+let storeLava=null, storeCanvases=[];
 function renderStore(){
   const copy=lang==='ru'
-    ? {kicker:'Дополнительно',title:'Дополнить формулу',label:'Подобрано для текущего состояния',intro:'Необязательные добавки, которые можно подключить отдельно от персональной формулы.',items:[['L-теанин','Для спокойной концентрации'],['Мелатонин','Для мягкого засыпания'],['Пробиотик','Для поддержки пищеварения'],['Омега-3','Для сосудов и мозга']]}
-    : {kicker:'Optional additions',title:'Add to formula',label:'Picked for your current state',intro:'Optional additions you can add separately from your personalized formula.',items:[['L-theanine','For calm focus'],['Melatonin','For a gentler bedtime'],['Probiotic','For digestive support'],['Omega-3','For heart and brain']]};
+    ? {kicker:'Комплексы',title:'Дополнить формулу',label:'Подобрано под текущее состояние',
+       intro:'Готовые комплексы под конкретное состояние. Подключаются отдельно от персональной формулы.',
+       items:[['Ночное восстановление','сон и утренний кортизол'],['Спокойный фокус','концентрация без перегруза'],
+              ['Стрессоустойчивость','адаптация к нагрузке'],['Выносливость','энергия и сосуды']]}
+    : {kicker:'Complexes',title:'Add to formula',label:'Picked for your current state',
+       intro:'Ready complexes for a specific state. They plug in separately from your personal formula.',
+       items:[['Night recovery','sleep and morning cortisol'],['Calm focus','concentration without overload'],
+              ['Stress resilience','adapting to load'],['Endurance','energy and vessels']]};
   document.getElementById('storeKicker').textContent=copy.kicker;
   document.getElementById('storeTitle').textContent=copy.title;
   document.getElementById('storeIntroLabel').textContent=copy.label;
   document.getElementById('storeIntro').textContent=copy.intro;
   document.getElementById('storeList').innerHTML=copy.items.map((it,i)=>{
-    const [name,,price,orb,badge]=[...it,...STORE_META[i]];
+    const [name,,price,badge]=[...it,...STORE_META[i]];
     return `<div class="store-item">
       <span class="store-badge${badge.top?' top':''}">${badge[lang]}</span>
-      <div class="store-orb" style="--orb:${orb.mid};--orb-hi:${orb.hi};--orb-lo:${orb.lo}"></div>
+      <canvas class="store-lava" data-store-lava="${i}"></canvas>
       <div class="store-name">${name}</div>
       <div class="store-price">${price}</div>
     </div>`;
   }).join('');
+  /* контексты webgl создаём один раз: при повторном открытии переставляем
+     те же канвасы в свежую разметку */
+  if(!storeLava){
+    storeLava=[]; storeCanvases=[];
+    document.querySelectorAll('[data-store-lava]').forEach(cv=>{
+      const preset=STORE_LAVA[+cv.dataset.storeLava%STORE_LAVA.length];
+      try{ storeLava.push(new LavaCapsule(cv,preset.medium,preset)); storeCanvases.push(cv); }catch(_){ }
+    });
+  }else{
+    document.querySelectorAll('[data-store-lava]').forEach((ph,i)=>{
+      if(storeCanvases[i]) ph.replaceWith(storeCanvases[i]);
+    });
+  }
 }
 function renderSupplementDetail(){
   const d=currentDose(activeSupp);
@@ -2702,15 +3124,16 @@ function renderBioList(){
     const st=statusOfVal(b,v);
     const d=bioPeriod?v-bioValueAt(b,bioDay+bioPeriod):0;
     /* вместо подписи — знак: стрелка вверх/вниз или ровная черта */
+    /* вместо стрелок и шеврона — коридор нормы мелким текстом: он стоит на
+       постоянном месте и не спорит с материалом остального интерфейса */
     const delta=bioPeriod
       ? `<small>${d>=0?'+':'−'}${fmtVal(b,Math.abs(d))}</small>`
-      : stIcon(st);
+      : `${fmtVal(b,b.min)}–${fmtVal(b,b.max)}`;
     /* шкала отдельной строкой во всю ширину: в узкой колонке по ней ничего не читалось */
     return `<div class="bio-item" data-bio="${b.key}">
       <div class="bio-top">
-        <div class="bname">${b.name[lang]}<small>${b.unit}</small></div>
-        <div class="bval">${fmtVal(b,v)}${delta}</div>
-        <span class="open-arrow">&#8250;</span>
+        <div class="bname">${b.name[lang]}</div>
+        <div class="bstat">${delta}</div>
       </div>
       <div class="gscale" data-bio-scale="${b.key}"></div>
     </div>`;
@@ -2719,7 +3142,8 @@ function renderBioList(){
     const b=BIOMARKERS.find(x=>x.key===el.dataset.bioScale);
     gradScale(el,{warm:true,
       t:(bioValueAt(b,bioDay)-b.sMin)/(b.sMax-b.sMin),
-      band:[(b.min-b.sMin)/(b.sMax-b.sMin),(b.max-b.sMin)/(b.sMax-b.sMin)]});
+      band:[(b.min-b.sMin)/(b.sMax-b.sMin),(b.max-b.sMin)/(b.sMax-b.sMin)],
+      value:fmtVal(b,bioValueAt(b,bioDay)), sub:b.unit});
   });
   list.querySelectorAll('.bio-item').forEach(el=>el.onclick=()=>openBio(el.dataset.bio,'bio'));
 }
@@ -2748,11 +3172,14 @@ function renderBioDetail(){
   document.getElementById('biodAboutLabel').textContent=T.aboutLabel[lang];
   document.getElementById('biodAbout').innerHTML=`${b.about[lang]}<small>${b.aboutSub[lang]}</small>`;
   document.getElementById('biodTrendLabel').textContent=T.trendLabel[lang];
-  document.getElementById('biodPeriod').textContent=`${b.from[lang]} – ${b.to[lang]}`;
-  const d=b.trend[b.trend.length-1]-b.trend[0], up=d>=0;
+  const winFrom=trendWindowLabel(trendZoom,b);
+  document.getElementById('biodPeriod').textContent=
+    trendZoom>=6 ? `${b.from[lang]} – ${b.to[lang]}` : winFrom;
+  const src=b.trend, span=Math.max(2,Math.round(src.length*trendZoom/6));
+  const d=src[src.length-1]-src[src.length-span], up=d>=0;
   document.getElementById('biodDelta').innerHTML=
     `<i${up?'':' class="down"'}>${up?'▲':'▼'}</i>${fmtVal(b,Math.abs(d))} ${b.unit}`;
-  document.getElementById('trendFrom').textContent=b.from[lang];
+  document.getElementById('trendFrom').textContent=winFrom;
   document.getElementById('trendTo').textContent=b.to[lang];
   const tc=document.getElementById('trendCanvas');
   drawTrend(tc,b);
@@ -2790,11 +3217,16 @@ function renderWidgetDetails(s){
   document.getElementById('sensorReads').innerHTML=BIOMARKERS.map(b=>`<em>${b.name[lang]}</em>`).join('');
   document.getElementById('sensorNote').textContent=T.sensorNote[lang];
   /* next-shipment calendar (July, ships on 24) */
-  document.getElementById('histCaption').textContent=lang==='ru'?'Показатели за период':'Biomarkers over';
-  document.getElementById('histBio').textContent=lang==='ru'?'Открыть':'Open';
-  document.querySelectorAll('#histPeriods button').forEach(b=>{
-    b.textContent=lang==='ru'?`${b.dataset.period} дн.`:`${b.dataset.period} d`;
-  });
+  document.getElementById('authTagline').innerHTML=lang==='ru'
+    ? 'Состояние, которое читается каждый день<br>и на которое отвечает формула'
+    : 'Your state, read daily<br>and answered by the formula';
+  document.getElementById('authLead').innerHTML=lang==='ru'
+    ? 'Вход по вашим данным<br><em>или регистрация</em>' : 'Enter your credentials<br><em>or sign up</em>';
+  document.getElementById('authEmail').placeholder=lang==='ru'?'Почта':'Email';
+  document.getElementById('authPass').placeholder=lang==='ru'?'Пароль':'Password';
+  document.getElementById('authGo').textContent=lang==='ru'?'Войти':'Log in';
+  document.getElementById('authForgot').textContent=lang==='ru'?'Забыли пароль?':'Forgot password?';
+  document.getElementById('authWelcome').innerHTML=lang==='ru'?'С возвращением,<br>Алиса':'Welcome,<br>Alisa';
   document.getElementById('shipCalLabel').textContent=T.shipCalLabel[lang];
   document.getElementById('shipMonth').textContent=T.shipMonth[lang];
   const cal=document.getElementById('shipCal');
@@ -2841,6 +3273,7 @@ function setView(v){
   layout(true);
   syncTabs();
   syncScreenIndex();
+  requestAnimationFrame(updateSheetMasks);
 }
 
 let lastWidgetScreen='overview';
@@ -2897,14 +3330,40 @@ document.querySelectorAll('#tabbar .tab').forEach(t=>{
 function syncScreenIndex(){
   let current=view;
   if(view==='widget') current=lastWidgetScreen;
-  document.querySelectorAll('[data-prototype-screen]').forEach(button=>{
+  document.getElementById('trendZoom').addEventListener('click',e=>{
+  const b=e.target.closest('button'); if(!b) return;
+  trendZoom=+b.dataset.zoom;
+  [...e.currentTarget.children].forEach(x=>x.classList.toggle('on',x===b));
+  renderBioDetail();
+});
+document.querySelectorAll('[data-prototype-screen]').forEach(button=>{
     button.classList.toggle('on',button.dataset.prototypeScreen===current);
   });
 }
-document.querySelectorAll('[data-prototype-screen]').forEach(button=>{
-  button.addEventListener('click',()=>{
-    const screen=button.dataset.prototypeScreen;
-    if(screen==='home') setView('home');
+/* маршрут экрана вынесен в функцию: им управляет и список справа,
+   и лендинг снаружи через postMessage / хеш */
+function gotoScreen(screen){
+  {
+    if(screen!=='loading') authLoadEl.classList.remove('on');
+    if(screen!=='auth' && authOpen){        /* иначе экран входа остаётся сверху */
+      authOpen=false;
+      authScreen.classList.add('gone');
+      setTimeout(()=>{ authScreen.style.display='none'; },600);
+    }
+    if(screen==='auth'){
+      authOpen=true;
+      authScreen.style.display='';
+      requestAnimationFrame(()=>authScreen.classList.remove('gone'));
+      setView('home');
+    }
+    else if(screen==='loading'){
+      /* из списка прототипа экран держим, пока не выберут другой */
+      setView('home');
+      authLoadEl.classList.add('on');
+      return;
+    }
+    else if(screen==='home') setView('home');
+    else if(screen==='history') openHistory();
     else if(screen==='bio') setView('bio');
     else if(screen==='biodetail') openBio('vitd','home');
     else if(screen==='carousel') setView('carousel');
@@ -2912,8 +3371,16 @@ document.querySelectorAll('[data-prototype-screen]').forEach(button=>{
     else if(screen==='supplement') openSupplement('Mg','carousel');
     else if(screen==='sensor') openWidget('sensor','home');
     else if(screen==='profile') openProfile();
-  });
+  }
+}
+document.querySelectorAll('[data-prototype-screen]').forEach(button=>{
+  button.addEventListener('click',()=>gotoScreen(button.dataset.prototypeScreen));
 });
+/* встраивание: ?embed=1 убирает служебную обвязку, #<экран> открывает нужный */
+if(new URLSearchParams(location.search).has('embed')) document.documentElement.classList.add('embed');
+addEventListener('message',e=>{ const s=e.data&&e.data.impreScreen; if(s) gotoScreen(s); });
+if(location.hash.length>1){ const s=location.hash.slice(1);
+  requestAnimationFrame(()=>{ try{ gotoScreen(s); }catch(_){} }); }
 
 /* ── language ── */
 function setLang(l){
@@ -2921,11 +3388,8 @@ function setLang(l){
   try{ localStorage.setItem('impre-lang',l); }catch(_){}
   document.querySelectorAll('#lang button').forEach(b=>b.classList.toggle('on', b.dataset.l===l));
   document.getElementById('exportBtn').textContent=T.export[l];
-  document.getElementById('themeLabel').textContent=T.theme[l];
   document.getElementById('languageLabel').textContent=T.language[l];
   applyProfileLang(l);
-  document.querySelector('#themeOptions button[data-theme="light"]').textContent=T.light[l];
-  document.querySelector('#themeOptions button[data-theme="dark"]').textContent=T.dark[l];
   document.getElementById('tabHome').textContent=T.tabHome[l];
   document.getElementById('tabFormula').textContent=T.tabFormula[l];
   renderBioList();
@@ -2938,15 +3402,6 @@ document.querySelectorAll('#lang button').forEach(b=>{
 });
 
 /* ── settings ── */
-function setTheme(next){
-  theme=next;
-  try{ localStorage.setItem('impre-theme',next); }catch(_){}
-  document.documentElement.dataset.theme=next;
-  document.querySelectorAll('#themeOptions button').forEach(b=>b.classList.toggle('on', b.dataset.theme===next));
-}
-document.querySelectorAll('#themeOptions button').forEach(b=>{
-  b.onclick=()=>{ setTheme(b.dataset.theme); try{ localStorage.setItem('impre-theme',b.dataset.theme); }catch(_){} };
-});
 
 /* ── profile window ── */
 function applyProfileLang(l){
@@ -2961,7 +3416,7 @@ function applyProfileLang(l){
   set('ppSensorLabel',T.ppSensor[l]); set('ppBattLabel',T.ppBatt[l]); set('ppWearLabel',T.ppWear[l]);
   set('ppMailLabel',T.ppMail[l]);
   set('ppManage',T.ppManage[l]+' ›'); set('ppLogout',T.ppLogout[l]);
-  set('themeLabel',T.theme[l]); set('languageLabel',T.language[l]);
+  set('languageLabel',T.language[l]);
   set('ppHeightValue',l==='ru'?'168 см':'168 cm'); set('ppWeightValue',l==='ru'?'58 кг':'58 kg');
   set('ppAgeValue',l==='ru'?'27 лет':'27 yrs'); set('ppRoutineValue',l==='ru'?'7 ч 40 мин':'7 h 40 min');
   set('ppLimitsValue',l==='ru'?'Нет записей':'No entries');
@@ -3113,6 +3568,27 @@ function openDeliveryCalendar(){
 document.querySelectorAll('.profile-data-card').forEach(card=>card.onclick=()=>openProfileEditor(card.dataset.profileCard));
 document.getElementById('profileDeliveryLine').onclick=openDeliveryCalendar;
 
+/* затухание нужно только там, где содержимое не помещается;
+   верхний край гасим лишь после начала прокрутки */
+function updateSheetMasks(){
+  document.querySelectorAll('.widget-detail,.bio-panel,.biod-panel,.profile-panel').forEach(sheet=>{
+    let top=false, bottom=false;
+    sheet.querySelectorAll('.detail-panel,.profile-editor').forEach(sc=>{
+      if(sc.scrollHeight<=sc.clientHeight+6) return;      /* всё помещается — гасить нечего */
+      if(sc.scrollTop>4) top=true;                        /* сверху что-то ушло */
+      if(sc.scrollTop+sc.clientHeight<sc.scrollHeight-4) bottom=true;  /* снизу ещё есть */
+    });
+    sheet.classList.toggle('fade-top',top);
+    sheet.classList.toggle('fade-bottom',bottom);
+  });
+}
+(function bindSheetScroll(){
+  document.querySelectorAll('.detail-panel,.profile-editor').forEach(sc=>{
+    sc.addEventListener('scroll',updateSheetMasks,{passive:true});
+  });
+  window.addEventListener('resize',updateSheetMasks);
+})();
+
 /* ── drag ── */
 let startX=0, lastX=0, moved=0;
 stage.addEventListener('pointerdown',e=>{
@@ -3197,9 +3673,9 @@ function bioValueAt(b,day){
 }
 function statusOfVal(b,v){ return v>b.max?'high':v<b.min?'low':'in'; }
 function stIcon(st){
-  const d=st==='high'?'M6 10V2.6M3.2 5.6L6 2.8l2.8 2.8'
-        :st==='low' ?'M6 2v7.4M3.2 6.4L6 9.2l2.8-2.8'
-                    :'M3 6h6';
+  const d=st==='high'?'M3.4 7.2L6 4.4l2.6 2.8'
+        :st==='low' ?'M3.4 4.8L6 7.6l2.6-2.8'
+                    :'M3.2 6h5.6';
   return `<svg class="bi-st${st!=='in'?' warn':''}" viewBox="0 0 12 12" role="img" aria-label="${stText(st)}"><path d="${d}"/></svg>`;
 }
 /* три группы показателей — из их оценок складывается общее состояние */
@@ -3264,26 +3740,58 @@ function groupCount(g,day=0){
   el.classList.toggle('warn', ok<set.length);
   el.classList.toggle('all-ok', ok===set.length);
 }
+/* оценка группы считается той же мерой, что и общая: насколько показатели
+   близки к центру своего диапазона. Поэтому общий процент — это среднее
+   по группам, а не отдельное число */
 function groupScore(g,day=0){
   const set=BIOMARKERS.filter(b=>CARD_GROUPS[g].includes(b.key));
   if(!set.length) return 0;
-  const ok=set.filter(b=>statusOfVal(b,bioValueAt(b,day))==='in').length;
-  return Math.round(ok/set.length*100);
+  const sum=set.reduce((a,b)=>a+markerScore(b,day),0);
+  return Math.round(sum/set.length*100);
+}
+/* оценка непрерывная: считаем, насколько каждый показатель близок к центру
+   своего диапазона. Так процент меняется каждый день, а не ступенями по 11 */
+function markerScore(b,day){
+  const v=bioValueAt(b,day);
+  const c=(b.min+b.max)/2, half=Math.max(1e-6,(b.max-b.min)/2);
+  const d=Math.abs(v-c)/half;
+  return d<=1 ? 1-.52*d : Math.max(0,.48-.42*(d-1));
 }
 function scoreAt(day){
-  const ok=BIOMARKERS.filter(b=>statusOfVal(b,bioValueAt(b,day))==='in').length;
-  return Math.round(ok/BIOMARKERS.length*100);
+  const sum=BIOMARKERS.reduce((a,b)=>a+markerScore(b,day),0);
+  return Math.round(sum/BIOMARKERS.length*100);
 }
+(function measureHistSpan(){
+  let lo=100,hi=0;
+  for(let d=0;d<HIST_DAYS;d+=2){ const v=scoreAt(d); if(v<lo)lo=v; if(v>hi)hi=v; }
+  HIST_SPAN={lo,hi};
+})();
 const MONTHS={ru:['января','февраля','марта','апреля','мая','июня','июля','августа','сентября','октября','ноября','декабря'],
   en:['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec']};
 function histDate(day){
   const d=new Date(); d.setDate(d.getDate()-day);
   return lang==='ru' ? `${d.getDate()} ${MONTHS.ru[d.getMonth()]}` : `${MONTHS.en[d.getMonth()]} ${d.getDate()}`;
 }
+/* линейка это одновременно график: высота столбика — оценка того дня,
+   цвет — его зона. Так при прокрутке видно, откуда и куда шло состояние */
 function buildHistTicks(){
   const track=document.getElementById('histTrack');
   let html='';
-  for(let d=HIST_DAYS-1;d>=0;d--) html+=`<i class="hist-tick${d%30===0?' mo':''}"></i>`;
+  for(let i=0;i<HIST_DAYS;i++){
+    const day=HIST_DAYS-1-i;
+    const x=i*HIST_STEP+HIST_STEP/2;
+    const rel=histRel(scoreAt(day));
+    const h=(9+rel*46).toFixed(1);
+    const tone=histSlotTone(1,rel);
+    html+=`<i class="hist-tick" data-day="${day}" style="left:${x}px;height:${h}px;background:${tone}"></i>`;
+    if(day%30===0 && day!==0){
+      const d=new Date(); d.setDate(d.getDate()-day);
+      const m=lang==='ru'?MONTHS.ru[d.getMonth()].slice(0,3):MONTHS.en[d.getMonth()];
+      html+=`<span class="hist-month" style="left:${x}px">${m}</span>`;
+    }
+  }
+  html+=`<span class="hist-month hist-today" style="left:${((HIST_DAYS-1)*HIST_STEP+HIST_STEP/2)}px">${lang==='ru'?'сегодня':'today'}</span>`;
+  track.style.width=(HIST_DAYS*HIST_STEP)+'px';
   track.innerHTML=html;
 }
 function histLayout(){
@@ -3293,6 +3801,12 @@ function histLayout(){
 }
 function histApply(){
   const score=scoreAt(histDay);
+  blobHistMode = histDay>0;      /* «сегодня» звучит ровно как на главной */
+  /* подсвечиваем день под курсором */
+  const cur=document.querySelector('.hist-tick.on');
+  if(cur) cur.classList.remove('on');
+  const t=document.querySelector(`.hist-tick[data-day="${histDay}"]`);
+  if(t) t.classList.add('on');
   stateScoreValue=score;
   document.getElementById('stateScore').innerHTML=`${score}<small>%</small>`;
   document.getElementById('heroEyebrow').textContent=
@@ -3307,6 +3821,7 @@ function openHistory(){
 }
 function closeHistory(){
   histDay=0;
+  blobHistMode=false;
   renderStateWidget();          /* возвращаем сегодняшние цифры и подпись */
   setView('home');
 }
@@ -3327,15 +3842,6 @@ function closeHistory(){
   const end=()=>{ dragging=false; };
   ruler.addEventListener('pointerup',end);
   ruler.addEventListener('pointercancel',end);
-  document.getElementById('histPeriods').addEventListener('click',e=>{
-    const b=e.target.closest('button'); if(!b) return;
-    histPeriod=+b.dataset.period;
-    [...e.currentTarget.children].forEach(x=>x.classList.toggle('on',x===b));
-  });
-  document.getElementById('histBio').addEventListener('click',()=>{
-    bioDay=histDay; bioPeriod=histPeriod;   /* список показателей за выбранный период */
-    setView('bio');
-  });
 })();
 /* тап по главному блоку — история; показатели теперь открываются кнопкой */
 document.getElementById('seeMarkers').addEventListener('click',openHistory);
@@ -3365,7 +3871,7 @@ document.getElementById('exportBtn').onclick=()=>{
   const nm=s.name[lang], fm=s.formula[lang];
   const evw=(view==='carousel')?'carousel':'home';
 
-  const isLight=theme==='light';
+  const isLight=true;
   const ink=isLight?'#222327':'#f3f2ef';
   const mute=isLight?'#777b82':'#9a9ba0';
   const faint=isLight?'#9ba0a7':'#6b6c72';
@@ -3518,7 +4024,6 @@ function finishExport(c,s){
   (function persist(){
     try{
       const l=localStorage.getItem('impre-lang'); if(l) lang=l;
-      const t=localStorage.getItem('impre-theme'); if(t) theme=t;
     }catch(_){}
   })();
 
@@ -3542,11 +4047,40 @@ function finishExport(c,s){
   let prev=performance.now();
   function frame(now){
     const dt=Math.min(.05,(now-prev)/1000); prev=now;
-    if((stateBlob && view==='home') || (avatarBlob && view==='profile')){
+    if(loadBlob && authLoadEl.classList.contains('on')){
       const t=now*0.001;
       blobApply(t,stateScoreValue);
-      if(view==='home') stateBlob.draw(blobNodes,BLOB_STYLE,t);
-      else avatarBlob.draw(blobNodes,BLOB_STYLE,t);
+      /* растягиваем поле по горизонтали и прижимаем вниз: масса уходит в бока,
+         а не висит отдельной кляксой */
+      /* цвет берём как есть из blobApply — это ровно те же капли и та же
+         палитра, что на главном экране: приветствие показывает текущее
+         состояние. меняем только геометрию, не тон */
+      const spread=blobNodes.map(n=>({
+        pos:[170+(n.pos[0]-170)*2.1, 40+(n.pos[1]-170)*.5],
+        r:n.r*1.6, color:n.color
+      }));
+      /* поле растянуто вдвое, поэтому при базовых плотности и свечении цвет
+         размазывался и бледнел: поднимаем dens/emit и опускаем порог */
+      loadBlob.draw(spread,LOAD_STYLE,t);
+    }
+    if(storeLava && view==='widget' && lastWidgetScreen==='store'){
+      const lt=now*0.001;
+      storeLava.forEach(c=>c.draw(lt));
+    }
+    if(authOpen && authBlob){
+      const t=now*0.001;
+      blobApply(t,stateScoreValue);
+      /* нормируем по реальному разбросу капель, иначе тёплый край не набирается */
+      const xs=blobNodes.map(n=>n.pos[0]);
+      const lo=Math.min(...xs), hi=Math.max(...xs), sp=(hi-lo)||1;
+      const deep=blobNodes.map(n=>({pos:n.pos,r:n.r,color:authTone((n.pos[0]-lo)/sp)}));
+      authBlob.draw(deep,BLOB_STYLE,t);
+    }else if((stateBlob && (view==='home'||view==='history')) || (avatarBlob && view==='profile')){
+      const t=now*0.001;
+      blobApply(t,stateScoreValue);
+      /* в истории главный блок остаётся живым — иначе клякса замирала белой */
+      if(view==='profile') avatarBlob.draw(blobNodes,BLOB_STYLE,t);
+      else stateBlob.draw(blobNodes,BLOB_STYLE,t);
     }
     if(view!=='carousel'){
       /* skip expensive card rendering when the stage is hidden */
@@ -3574,7 +4108,6 @@ function finishExport(c,s){
   requestAnimationFrame(frame);
 
   /* ── init ── */
-  setTheme(theme);
   setView('home');
   setLang(lang);
 </script>
