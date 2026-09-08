@@ -926,8 +926,14 @@
     /* высота экрана у телефона с адресной строкой меньше макетных 844:
        фиксированные 452 у главной плашки не помещались, и нижний ряд
        обрезался. Отдаём ей остаток места, минимумы снимаем */
-    .hero-widget{flex:1 1 auto;min-height:0}
-    .state-visual{min-height:0}
+    .hero-widget{flex:1 1 auto;min-height:0;padding:20px 16px 18px;border-radius:112px}
+    .state-visual{min-height:0;margin:2px 0 0}
+    /* внутреннее свечение рассчитано на плашку 452 px. На невысоком экране
+       те же 40/18 съедают заметную долю бокса, и вокруг кляксы появляется
+       толстое белое кольцо — уменьшаем пропорционально */
+    .hero-widget::after{box-shadow:inset 0 0 24px 8px #fff}
+    .state-score{font-size:64px}
+    .state-bioage{bottom:22px}
     .dashboard{bottom:calc(env(safe-area-inset-bottom) + 86px)}
   }
   /* Safari (и всё, кроме свежего Chrome) не знает corner-shape, а `border-radius:50%`
