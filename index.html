@@ -923,6 +923,12 @@
     .view-carousel .stage{top:calc(env(safe-area-inset-top) + 50px);
       height:calc(100dvh - env(safe-area-inset-top) - env(safe-area-inset-bottom) - 210px)}
     .topbar{top:calc(env(safe-area-inset-top) + 8px)}
+    /* высота экрана у телефона с адресной строкой меньше макетных 844:
+       фиксированные 452 у главной плашки не помещались, и нижний ряд
+       обрезался. Отдаём ей остаток места, минимумы снимаем */
+    .hero-widget{flex:1 1 auto;min-height:0}
+    .state-visual{min-height:0}
+    .dashboard{bottom:calc(env(safe-area-inset-bottom) + 86px)}
   }
   /* Safari (и всё, кроме свежего Chrome) не знает corner-shape, а `border-radius:50%`
      без него превращается в честный эллипс — верхний блок входа и карточка
