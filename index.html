@@ -905,37 +905,15 @@
   .screen-index button.on{color:var(--ink);font-weight:650}
   .screen-index button.on::before{content:"";display:inline-block;width:5px;height:5px;margin:0 8px 1px 0;border-radius:50%;background:rgb(var(--accent));vertical-align:middle}
   @media (max-width:760px){.screen-index{display:none}}
-  /* ── телефон: приложение занимает весь экран, макет корпуса не нужен ──
-     100dvh, а не 100vh — иначе адресная строка Safari срезает низ,
-     а верхний контент уезжает под чёлку */
+  /* ── телефон: ничего не перекладываем, а целиком масштабируем макет ──
+     390×844 остаются как есть, меняется только scale — пропорции окон,
+     свечения и кегли сохраняются ровно такими, как на десктопе */
   @media (max-width:760px){
-    body{padding:0;display:block;min-height:100dvh;background:var(--bg-hi)}
-    .phone{width:100vw;height:100dvh;min-height:100dvh;border-radius:0;corner-shape:round;
-      box-shadow:none;transform:none}
+    body{padding:0;overflow:hidden;height:100dvh;min-height:0}
+    .phone{flex:none;transform:scale(var(--fit,1));transform-origin:center center}
     .export{display:none}
-    /* мокап статус-бара и чёлки — у настоящего телефона они свои */
-    .phone > .notch,.phone > .status{display:none}
-    /* освобождаем место под системную шапку и жест «домой» */
-    .dashboard{inset:calc(env(safe-area-inset-top) + 54px) 18px 96px}
-    .tabbar{bottom:calc(env(safe-area-inset-bottom) + 18px)}
-    .widget-detail,.bio-panel,.biod-panel,.profile-panel{
-      top:calc(env(safe-area-inset-top) + 54px)}
-    .view-carousel .stage{top:calc(env(safe-area-inset-top) + 50px);
-      height:calc(100dvh - env(safe-area-inset-top) - env(safe-area-inset-bottom) - 210px)}
-    .topbar{top:calc(env(safe-area-inset-top) + 8px)}
-    /* высота экрана у телефона с адресной строкой меньше макетных 844:
-       фиксированные 452 у главной плашки не помещались, и нижний ряд
-       обрезался. Отдаём ей остаток места, минимумы снимаем */
-    .hero-widget{flex:1 1 auto;min-height:0;padding:20px 16px 18px;border-radius:112px}
-    .state-visual{min-height:0;margin:2px 0 0}
-    /* внутреннее свечение рассчитано на плашку 452 px. На невысоком экране
-       те же 40/18 съедают заметную долю бокса, и вокруг кляксы появляется
-       толстое белое кольцо — уменьшаем пропорционально */
-    .hero-widget::after{box-shadow:inset 0 0 24px 8px #fff}
-    .state-score{font-size:64px}
-    .state-bioage{bottom:22px}
-    .dashboard{bottom:calc(env(safe-area-inset-bottom) + 86px)}
   }
+
   /* Safari (и всё, кроме свежего Chrome) не знает corner-shape, а `border-radius:50%`
      без него превращается в честный эллипс — верхний блок входа и карточка
      становились овалом и кругом. Поэтому по умолчанию радиус в пикселях,
@@ -2233,9 +2211,12 @@ void main(){
   col*=uExposure;
   col=(col*(2.51*col+0.03))/(col*(2.43*col+0.59)+0.14);
   col*=clamp(1.0-uVign*dot(c,c)*0.9,0.0,1.0);
-  col+=(hash(gl_FragCoord.xy+fract(uTime))-0.5)*uGrain;
+  float a=clamp(max(s.a,b.a*uBlurMix),0.0,1.0);
+  /* зерно только там, где есть фигура: на прозрачном холсте оно проступало
+     на телефоне видимым шумным прямоугольником по границам канваса */
+  col+=(hash(gl_FragCoord.xy+fract(uTime))-0.5)*uGrain*a;
   col=pow(clamp(col,0.0,1.0),vec3(1.0/2.2));
-  outColor=vec4(col, clamp(max(s.a,b.a*uBlurMix),0.0,1.0));
+  outColor=vec4(col,a);
 }`;
 
 const LC_PARAMS={
@@ -2697,7 +2678,7 @@ void main(){
   vec3 mass=c*lit*(1.0+uEmit*smoothstep(uThr,uThr+1.2,f));
   float a=clamp(smoothstep(uThr,uThr+uEdge,f)*uDens,0.0,1.0);
   mass=clamp(mass,0.0,1.0);
-  mass+=(hash(gl_FragCoord.xy+fract(uTime)*7.0)-0.5)*uGrain;
+  mass+=(hash(gl_FragCoord.xy+fract(uTime)*7.0)-0.5)*uGrain*a;
   mass=clamp(mass,0.0,1.0);
   vec3 srgb=mix(mass*12.92, 1.055*pow(mass,vec3(1.0/2.4))-0.055, step(vec3(0.0031308),mass));
   outColor=vec4(srgb,a);
@@ -4094,7 +4075,20 @@ function finishExport(c,s){
     return w;
   }
 
-  /* ── animation loop ── */
+  /* масштаб макета под экран телефона: раскладку не трогаем,
+   уменьшаем целиком, как лист бумаги */
+function fitPhone(){
+  const mob=matchMedia('(max-width:760px)').matches;
+  if(!mob){ document.documentElement.style.removeProperty('--fit'); return; }
+  const k=Math.min(window.innerWidth/390, window.innerHeight/844);
+  document.documentElement.style.setProperty('--fit', k.toFixed(4));
+}
+addEventListener('resize',fitPhone);
+addEventListener('orientationchange',()=>setTimeout(fitPhone,120));
+if(window.visualViewport) visualViewport.addEventListener('resize',fitPhone);
+fitPhone();
+
+/* ── animation loop ── */
   let prev=performance.now();
   function frame(now){
     const dt=Math.min(.05,(now-prev)/1000); prev=now;
