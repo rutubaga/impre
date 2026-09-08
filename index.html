@@ -2319,6 +2319,11 @@ class LavaCapsule{
     this.preset=preset||null;
     if(preset&&preset.medium) this.medium=preset.medium;
     const gl=this.gl=canvas.getContext('webgl2',{antialias:false,alpha:true,premultipliedAlpha:false});
+    /* экран айфона широкий (P3), и Safari трактует нетегированный буфер как P3.
+       Шейдер отдаёт числа уже в sRGB — без явного тега они растягиваются
+       на широкие первичные, и клякса становится кислотной. */
+    try{ if('drawingBufferColorSpace' in gl) gl.drawingBufferColorSpace='srgb';
+         if('unpackColorSpace' in gl) gl.unpackColorSpace='srgb'; }catch(_){ }
     if(!gl) throw new Error('no webgl2');
     const sh=(t,src)=>{ const s=gl.createShader(t); gl.shaderSource(s,src); gl.compileShader(s);
       if(!gl.getShaderParameter(s,gl.COMPILE_STATUS)) throw new Error(gl.getShaderInfoLog(s)); return s; };
@@ -2704,6 +2709,11 @@ class StateBlob{
   constructor(canvas){
     this.canvas=canvas;
     const gl=this.gl=canvas.getContext('webgl2',{antialias:false,alpha:true,premultipliedAlpha:false});
+    /* экран айфона широкий (P3), и Safari трактует нетегированный буфер как P3.
+       Шейдер отдаёт числа уже в sRGB — без явного тега они растягиваются
+       на широкие первичные, и клякса становится кислотной. */
+    try{ if('drawingBufferColorSpace' in gl) gl.drawingBufferColorSpace='srgb';
+         if('unpackColorSpace' in gl) gl.unpackColorSpace='srgb'; }catch(_){ }
     if(!gl) throw new Error('no webgl2');
     const sh=(t,src)=>{ const s=gl.createShader(t); gl.shaderSource(s,src); gl.compileShader(s);
       if(!gl.getShaderParameter(s,gl.COMPILE_STATUS)) throw new Error(gl.getShaderInfoLog(s)); return s; };
