@@ -1,0 +1,349 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Impre — блистер</title>
+<style>
+  /* токены один в один из index.html — материал таблетки общий с приложением */
+  :root{
+    --body-bg:#d6d9de;
+    --scrim:#e4e7eb;
+    --ink:#222327;
+    --ink-mute:#777b82;
+    --ink-faint:#9ba0a7;
+    --capsule-base-top:rgba(255,255,255,.72);
+    --capsule-base-mid:rgba(230,234,238,.46);
+    --capsule-base-bot:rgba(210,216,224,.58);
+    --rim-left:rgba(255,255,255,.8);
+    --rim-mid:rgba(80,88,98,.08);
+    --rim-right:rgba(255,255,255,.72);
+    --control-soft:rgba(120,126,136,.10);
+  }
+  *{box-sizing:border-box}
+  html,body{height:100%}
+  body{margin:0;background:var(--body-bg);color:var(--ink);
+    font:400 13px/1.45 "Arial Narrow",Arial,Helvetica,sans-serif;
+    display:flex;align-items:center;justify-content:center;gap:54px;padding:40px;
+    -webkit-font-smoothing:antialiased}
+
+  .stage{position:relative;flex:none}
+  canvas{display:block}
+
+  /* панель настроек — та же логика, что в graph-lab */
+  .panel{width:250px;flex:none;display:flex;flex-direction:column}
+  .panel h1{margin:0 0 4px;font-size:10px;font-weight:600;letter-spacing:1.7px;
+    text-transform:uppercase;color:var(--ink-faint)}
+  .panel .note{margin:0 0 16px;font-size:11.5px;line-height:1.5;color:var(--ink-mute)}
+  .grp{margin:10px 0 2px;font-size:9px;font-weight:600;letter-spacing:1.5px;
+    text-transform:uppercase;color:var(--ink-faint)}
+  .row{display:grid;grid-template-columns:1fr 50px;align-items:center;gap:10px;
+    padding:6px 0 2px;font-size:11.5px;color:var(--ink-mute)}
+  .row output{font-variant-numeric:tabular-nums;text-align:right;color:var(--ink)}
+  input[type=range]{grid-column:1 / 3;-webkit-appearance:none;appearance:none;
+    width:100%;height:3px;border-radius:999px;background:var(--control-soft);outline:none}
+  input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:15px;height:15px;
+    border-radius:50%;background:#fff;box-shadow:0 1px 4px rgba(40,46,56,.3);cursor:pointer}
+  .btns{display:flex;flex-wrap:wrap;gap:8px;margin-top:20px}
+  button{all:unset;padding:9px 15px;border-radius:999px;background:var(--control-soft);
+    font-size:10.5px;font-weight:600;letter-spacing:1.1px;text-transform:uppercase;
+    color:var(--ink);cursor:pointer}
+  button:active{opacity:.6}
+  button.on{background:var(--ink);color:var(--scrim)}
+  .hint{margin-top:14px;font-size:10.5px;line-height:1.5;color:var(--ink-faint)}
+
+  @media (max-width:900px){
+    body{flex-direction:column;gap:26px;padding:20px}
+    .panel{width:min(100%,420px)}
+  }
+</style>
+</head>
+<body>
+
+<div class="stage"><canvas id="cv"></canvas></div>
+
+<div class="panel">
+  <h1>Блистер</h1>
+  <p class="note">Поле 4×4 плотно набито кружками и таблетками. Пустых клеток нет,
+    поэтому движение идёт поворотами квадрата 2×2 на 90°: таблетка ложится на бок,
+    соседние кружки переезжают по кругу. Повороты перекрываются — блистер не замирает.</p>
+
+  <div class="grp">Раскладка</div>
+  <div class="row"><span>Размер клетки</span><output id="oCell"></output>
+    <input type="range" id="cell" min="60" max="130" step="1"></div>
+  <div class="row"><span>Зазор</span><output id="oGap"></output>
+    <input type="range" id="gap" min="0" max="26" step="1"></div>
+
+  <div class="grp">Движение</div>
+  <div class="row"><span>Длительность хода</span><output id="oDur"></output>
+    <input type="range" id="dur" min="240" max="1400" step="20"></div>
+  <div class="row"><span>Пауза между ходами</span><output id="oEvery"></output>
+    <input type="range" id="every" min="90" max="1200" step="10"></div>
+
+  <div class="grp">Материал</div>
+  <div class="row"><span>Тон стекла</span><output id="oTint"></output>
+    <input type="range" id="tint" min="0" max="220" step="1"></div>
+  <div class="row"><span>Внутреннее свечение</span><output id="oGlow"></output>
+    <input type="range" id="glow" min="0" max="200" step="1"></div>
+  <div class="row"><span>Мягкость кромки</span><output id="oSoft"></output>
+    <input type="range" id="soft" min="0" max="90" step="1"></div>
+  <div class="row"><span>Ядро</span><output id="oCore"></output>
+    <input type="range" id="core" min="0" max="160" step="1"></div>
+  <div class="row"><span>Ободок</span><output id="oRim"></output>
+    <input type="range" id="rim" min="0" max="200" step="1"></div>
+  <div class="row"><span>Тень</span><output id="oShadow"></output>
+    <input type="range" id="shadow" min="0" max="200" step="1"></div>
+
+  <div class="btns">
+    <button id="play" class="on">Пауза</button>
+    <button id="step">Ход</button>
+    <button id="png">PNG</button>
+    <button id="rec">Записать</button>
+  </div>
+  <p class="hint">«Записать» снимает 6 секунд в webm — им удобно показывать движение.
+    Файл ляжет в загрузки.</p>
+</div>
+
+<script>
+/* ── настройки ───────────────────────────────────────────────── */
+const CFG={cell:104,gap:9,dur:620,every:340,
+           tint:130,glow:52,soft:26,core:85,rim:120,shadow:34};
+const N=4;                       /* поле 4×4, как в референсе */
+const PAD=52;                    /* поле дышит от края холста */
+
+const cv=document.getElementById('cv'), ctx=cv.getContext('2d');
+let W=0,H=0,dpr=1;
+const CAN_BLUR = (()=>{ ctx.filter='blur(2px)'; const ok=ctx.filter!=='none'; ctx.filter='none'; return ok; })();
+
+function layout(){
+  W=H=N*CFG.cell+(N-1)*CFG.gap+PAD*2;
+  dpr=Math.min(2,window.devicePixelRatio||1);
+  cv.width=Math.round(W*dpr); cv.height=Math.round(H*dpr);
+  cv.style.width=W+'px'; cv.style.height=H+'px';
+  ctx.setTransform(dpr,0,0,dpr,0,0);
+}
+
+/* ── раскладка ───────────────────────────────────────────────── */
+/* стартовая укладка снята с первого кадра референса:
+   6 кружков 1×1 + 5 таблеток на 2 клетки = ровно 16 */
+function initPieces(){
+  return [
+    {r:0,c:0,w:2,h:1},{r:0,c:2,w:1,h:1},{r:0,c:3,w:1,h:2},
+    {r:1,c:0,w:1,h:1},{r:1,c:1,w:1,h:1},{r:1,c:2,w:1,h:1},
+    {r:2,c:0,w:1,h:2},{r:2,c:1,w:2,h:1},{r:2,c:3,w:1,h:1},
+    {r:3,c:1,w:1,h:1},{r:3,c:2,w:2,h:1}
+  ].map(p=>({...p,anim:null}));
+}
+let pieces=initPieces();
+
+function rectOf(p){
+  const s=CFG.cell+CFG.gap;
+  return {x:PAD+p.c*s, y:PAD+p.r*s,
+          w:p.w*CFG.cell+(p.w-1)*CFG.gap,
+          h:p.h*CFG.cell+(p.h-1)*CFG.gap};
+}
+
+/* ── ход: поворот квадрата 2×2 на 90° ────────────────────────── */
+function pickBlock(){
+  const cand=[];
+  for(let br=0;br<N-1;br++) for(let bc=0;bc<N-1;bc++){
+    const inside=[]; let ok=true;
+    for(const p of pieces){
+      const overlaps=!(p.r+p.h<=br||p.r>=br+2||p.c+p.w<=bc||p.c>=bc+2);
+      if(!overlaps) continue;
+      /* фигура, торчащая наружу или уже едущая, запирает квадрат */
+      if(p.anim||p.r<br||p.r+p.h>br+2||p.c<bc||p.c+p.w>bc+2){ ok=false; break; }
+      inside.push(p);
+    }
+    /* поворот четырёх кружков не виден — такие квадраты пропускаем */
+    if(ok && inside.some(p=>p.w>1||p.h>1)) cand.push({br,bc,inside});
+  }
+  return cand.length ? cand[Math.random()*cand.length|0] : null;
+}
+
+function move(now){
+  const b=pickBlock(); if(!b) return false;
+  const cw=Math.random()<.5;
+  for(const p of b.inside){
+    const lr=p.r-b.br, lc=p.c-b.bc;
+    /* по часовой: клетка (lr,lc) → (lc, 1−lr); против — зеркально */
+    const t = cw ? {r:b.br+lc,       c:b.bc+2-lr-p.h, w:p.h, h:p.w}
+                 : {r:b.br+2-lc-p.w, c:b.bc+lr,       w:p.h, h:p.w};
+    p.from=rectOf(p); p.to=rectOf(t); p.next=t;
+    p.anim={t0:now,dur:CFG.dur};
+  }
+  return true;
+}
+
+const ease=t=>t<.5 ? 4*t*t*t : 1-Math.pow(-2*t+2,3)/2;
+
+/* ── материал таблетки ───────────────────────────────────────── */
+const css=(()=>{ const s=getComputedStyle(document.documentElement);
+                 return n=>s.getPropertyValue(n).trim(); })();
+
+function pillPath(x,y,w,h){
+  const r=Math.min(w,h)/2;
+  ctx.beginPath();
+  ctx.moveTo(x+r,y);
+  ctx.arcTo(x+w,y,   x+w,y+h, r);
+  ctx.arcTo(x+w,y+h, x,  y+h, r);
+  ctx.arcTo(x,  y+h, x,  y,   r);
+  ctx.arcTo(x,  y,   x+w,y,   r);
+  ctx.closePath();
+}
+function blur(px){ if(CAN_BLUR) ctx.filter = px>0 ? 'blur('+px.toFixed(2)+'px)' : 'none'; }
+
+function drawPill(x,y,w,h){
+  const short=Math.min(w,h);
+  const soft=short*CFG.soft/1000;          /* кромка размывается от размера фигуры */
+  const elong=Math.max(w,h)/short;         /* кружок или таблетка */
+
+  /* 1. тень — только чтобы блистер не парил над фоном */
+  if(CFG.shadow>0){
+    const k=CFG.shadow/100;
+    ctx.save();
+    ctx.shadowColor='rgba(44,50,60,'+(0.15*k).toFixed(3)+')';
+    ctx.shadowBlur=24*k; ctx.shadowOffsetY=9*k;
+    ctx.fillStyle='rgba(255,255,255,.45)';
+    pillPath(x,y,w,h); ctx.fill();
+    ctx.restore();
+  }
+
+  /* 2. тело — холодное полупрозрачное стекло чуть темнее фона.
+        именно за счёт него потом читается светящаяся кромка */
+  if(CFG.tint>0){
+    ctx.save(); blur(soft);
+    ctx.fillStyle='rgba(120,126,136,'+(0.13*CFG.tint/100).toFixed(3)+')';
+    pillPath(x,y,w,h); ctx.fill();
+    ctx.restore(); blur(0);
+  }
+
+  ctx.save();
+  pillPath(x,y,w,h); ctx.clip();
+
+  /* 3. внутреннее свечение по кромке — тот же приём, что --glow-m
+        в приложении (inset 0 0 26px 12px #fff). в канвасе это толстая
+        размытая белая обводка, обрезанная собственной формой */
+  if(CFG.glow>0){
+    const gk=CFG.glow/100;
+    ctx.save(); blur(short*0.10*Math.max(.4,gk));
+    ctx.globalAlpha=Math.min(1,0.55+0.45*gk);
+    ctx.strokeStyle='#fff'; ctx.lineWidth=short*0.30*gk;
+    pillPath(x,y,w,h); ctx.stroke();
+    ctx.restore(); blur(0);
+  }
+
+  /* 4. ядро вдоль длинной оси. у кружка его почти нет — в референсе
+        круглое стекло наоборот темнее в центре, светится только кромка */
+  const coreK=(CFG.core/100)*(elong>1.4?1:0.14);
+  if(coreK>0.01){
+    const cw=Math.max(0,w-short)+short*0.30;
+    const ch=Math.max(0,h-short)+short*0.30;
+    ctx.save(); blur(short*0.16);
+    ctx.globalAlpha=Math.min(1,0.62*coreK);
+    ctx.fillStyle='#fff';
+    pillPath(x+(w-cw)/2, y+(h-ch)/2, cw, ch); ctx.fill();
+    ctx.restore(); blur(0);
+  }
+
+  /* 5. блик по верхней кромке — стекло ловит свет сверху */
+  const hi=ctx.createLinearGradient(0,y,0,y+h*.5);
+  hi.addColorStop(0,'rgba(255,255,255,.20)');
+  hi.addColorStop(1,'rgba(255,255,255,0)');
+  ctx.fillStyle=hi; ctx.fillRect(x,y,w,h*.5);
+  ctx.restore();
+
+  /* 6. ободок-волосок: слева и справа белый, посередине уходит в тень */
+  if(CFG.rim>0){
+    const rim=ctx.createLinearGradient(x,0,x+w,0);
+    rim.addColorStop(0, css('--rim-left'));
+    rim.addColorStop(.5,css('--rim-mid'));
+    rim.addColorStop(1, css('--rim-right'));
+    ctx.save(); blur(soft*0.35);
+    ctx.globalAlpha=Math.min(1,CFG.rim/100);
+    ctx.strokeStyle=rim; ctx.lineWidth=1.3;
+    pillPath(x+.65,y+.65,w-1.3,h-1.3); ctx.stroke();
+    ctx.restore(); blur(0);
+  }
+}
+
+/* ── цикл ────────────────────────────────────────────────────── */
+let last=0, playing=true;
+
+function frame(now){
+  requestAnimationFrame(frame);
+  if(playing && now-last>CFG.every){ if(move(now)) last=now; }
+
+  ctx.clearRect(0,0,W,H);
+
+  for(const p of pieces){
+    let x,y,w,h;
+    if(p.anim){
+      const t=Math.min(1,(now-p.anim.t0)/p.anim.dur), e=ease(t);
+      /* геометрию гоним интерполяцией прямоугольника: таблетка не крутится,
+         а перетекает через почти круглую форму — ровно как в референсе */
+      x=p.from.x+(p.to.x-p.from.x)*e;
+      y=p.from.y+(p.to.y-p.from.y)*e;
+      w=p.from.w+(p.to.w-p.from.w)*e;
+      h=p.from.h+(p.to.h-p.from.h)*e;
+      if(t>=1){ Object.assign(p,p.next); p.anim=null; }
+    }else{
+      const r=rectOf(p); x=r.x; y=r.y; w=r.w; h=r.h;
+    }
+    drawPill(x,y,w,h);
+  }
+}
+
+/* ── управление ──────────────────────────────────────────────── */
+const fmt={cell:v=>v+' px',gap:v=>v+' px',dur:v=>v+' мс',every:v=>v+' мс',
+           tint:v=>v+' %',glow:v=>v+' %',soft:v=>v+' %',core:v=>v+' %',
+           rim:v=>v+' %',shadow:v=>v+' %'};
+Object.keys(fmt).forEach(id=>{
+  const el=document.getElementById(id);
+  const out=document.getElementById('o'+id[0].toUpperCase()+id.slice(1));
+  el.value=CFG[id]; out.textContent=fmt[id](CFG[id]);
+  el.addEventListener('input',()=>{
+    CFG[id]=+el.value; out.textContent=fmt[id](CFG[id]);
+    if(id==='cell'||id==='gap'){
+      /* размер клетки меняет геометрию — едущие фигуры досаживаем на место */
+      pieces.forEach(p=>{ if(p.anim){ Object.assign(p,p.next); p.anim=null; } });
+      layout();
+    }
+  });
+});
+
+const playBtn=document.getElementById('play');
+playBtn.addEventListener('click',()=>{
+  playing=!playing;
+  playBtn.textContent=playing?'Пауза':'Пуск';
+  playBtn.classList.toggle('on',playing);
+});
+document.getElementById('step').addEventListener('click',()=>move(performance.now()));
+document.getElementById('png').addEventListener('click',()=>{
+  const a=document.createElement('a');
+  a.download='impre-blister.png'; a.href=cv.toDataURL('image/png'); a.click();
+});
+
+const recBtn=document.getElementById('rec');
+recBtn.addEventListener('click',()=>{
+  if(recBtn.dataset.on) return;
+  const type=['video/webm;codecs=vp9','video/webm'].find(t=>MediaRecorder.isTypeSupported(t));
+  if(!type){ recBtn.textContent='нет записи'; return; }
+  const rec=new MediaRecorder(cv.captureStream(60),{mimeType:type,videoBitsPerSecond:6e6});
+  const chunks=[];
+  rec.ondataavailable=e=>e.data.size&&chunks.push(e.data);
+  rec.onstop=()=>{
+    const a=document.createElement('a');
+    a.download='impre-blister.webm';
+    a.href=URL.createObjectURL(new Blob(chunks,{type})); a.click();
+    recBtn.textContent='Записать'; delete recBtn.dataset.on;
+  };
+  rec.start(); recBtn.dataset.on='1'; recBtn.textContent='Идёт запись';
+  setTimeout(()=>rec.stop(),6000);
+});
+
+layout();
+requestAnimationFrame(frame);
+</script>
+</body>
+</html>
