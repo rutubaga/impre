@@ -397,7 +397,11 @@
   .subscription-row{display:flex;align-items:flex-start;justify-content:space-between;gap:16px;padding:14px 0;border-top:0}
   .subscription-row:last-child{padding-bottom:6px}
   .subscription-row b{color:var(--ink);font-size:13px;font-weight:600;text-align:right;max-width:150px}
-  .subscription-actions{display:flex;gap:8px;margin-top:16px}
+  /* кнопки занимают всю ширину карточки: раньше они стояли по своей ширине
+     и справа оставалась мёртвая зона — «Пауза» висела в воздухе */
+  .subscription-actions{display:flex;gap:8px;margin-top:18px}
+  .subscription-actions button.primary{flex:1 1 auto;min-width:0}
+  .subscription-actions button{flex:0 0 auto;white-space:nowrap}
   /* второстепенное действие — та же мягкая плашка, главное — плотная тёмная пилюля */
   .subscription-actions button{border:0;border-radius:999px;background:var(--control-soft);box-shadow:none;
     height:38px;padding:0 18px;color:var(--ink);font-size:11px;font-weight:600;letter-spacing:1.4px;text-transform:uppercase}
