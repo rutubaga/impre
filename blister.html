@@ -17,15 +17,20 @@
     --control-soft:rgba(120,126,136,.10);
   }
   *{box-sizing:border-box}
-  html,body{height:100%}
+  html,body{min-height:100%}
   body{margin:0;background:var(--body-bg);color:var(--ink);
     font:400 13px/1.45 "Arial Narrow",Arial,Helvetica,sans-serif;
-    display:flex;align-items:center;justify-content:center;gap:54px;padding:40px;
+    display:flex;align-items:safe center;justify-content:safe center;gap:54px;padding:40px;
     -webkit-font-smoothing:antialiased}
 
+  /* в узком окне блистер не переверстывается, а просто уменьшается:
+     обёртка держит место под уменьшенный размер, .stage — сам масштаб */
+  .fit{flex:none;position:relative}
   /* блистер лежит на экране приложения, а не на голом столе:
      тот же цвет, радиус и тень, что у .phone в index.html */
-  .stage{position:relative;flex:none;padding:22px;
+  /* width:max-content обязателен: обёртке .fit мы задаём уменьшенный размер,
+     и без него .stage сжался бы до неё, а холст внутри вылез бы за плашку */
+  .stage{position:relative;flex:none;width:max-content;transform-origin:top left;padding:22px;
     background:var(--bg-hi);border-radius:52px;corner-shape:squircle;
     box-shadow:var(--phone-shadow)}
   canvas#cv{display:block}
@@ -58,14 +63,14 @@
   .hint{margin-top:14px;font-size:10.5px;line-height:1.5;color:var(--ink-faint)}
 
   @media (max-width:900px){
-    body{flex-direction:column;gap:26px;padding:20px}
+    body{flex-direction:column;align-items:center;justify-content:flex-start;gap:26px;padding:20px}
     .panel{width:min(100%,420px)}
   }
 </style>
 </head>
 <body>
 
-<div class="stage"><canvas id="cv"></canvas></div>
+<div class="fit" id="fit"><div class="stage" id="stage"><canvas id="cv"></canvas></div></div>
 <div class="pool" id="pool"></div>
 
 <div class="panel">
@@ -647,12 +652,47 @@ function buildRigs(){
   }
 }
 
+/* Подгон под окно: пропорции и кегли не трогаем, меняется только масштаб —
+   тот же приём, что у .phone в приложении. Обёртка забирает уменьшенный
+   размер, иначе вокруг остаётся дырка от неотмасштабированного бокса. */
+const stageEl=document.getElementById('stage'), fitEl=document.getElementById('fit');
+/* fitStage меняет размер обёртки, а обёртка живёт в body — без флага
+   ResizeObserver вызвал бы сам себя по кругу */
+let fitting=false, fitK=null;
+function fitStage(){
+  if(fitting) return;
+  fitting=true;
+  const prev=stageEl.style.transform;
+  stageEl.style.transform='none';
+  const w=stageEl.offsetWidth, h=stageEl.offsetHeight;
+  stageEl.style.transform=prev;
+  if(w&&h){
+    const row=matchMedia('(min-width:901px)').matches;
+    const availW=row ? innerWidth-250-54-80 : innerWidth-40;
+    const availH=row ? innerHeight-104 : Infinity;
+    const k=Math.max(.2, Math.min(1, availW/w, availH/h));
+    if(fitK===null || Math.abs(k-fitK)>0.002){
+      fitK=k;
+      if(k<0.999){
+        stageEl.style.transform='scale('+k.toFixed(4)+')';
+        fitEl.style.width=Math.round(w*k)+'px';
+        fitEl.style.height=Math.round(h*k)+'px';
+      }else{
+        stageEl.style.transform='none';
+        fitEl.style.width=''; fitEl.style.height='';
+      }
+    }
+  }
+  requestAnimationFrame(()=>{ fitting=false; });
+}
+
 function layout(){
   W=H=N*CFG.cell+(N-1)*CFG.gap+PAD*2;
   dpr=Math.min(2,window.devicePixelRatio||1);
   cv.width=Math.round(W*dpr); cv.height=Math.round(H*dpr);
   cv.style.width=W+'px'; cv.style.height=H+'px';
   ctx.setTransform(dpr,0,0,dpr,0,0);
+  fitK=null; fitStage();
 }
 
 /* ── раскладка ───────────────────────────────────────────────── */
@@ -827,6 +867,9 @@ recBtn.addEventListener('click',()=>{
   setTimeout(()=>rec.stop(),6000);
 });
 
+addEventListener('resize',fitStage);
+matchMedia('(min-width:901px)').addEventListener('change',fitStage);
+if(window.ResizeObserver) new ResizeObserver(()=>fitStage()).observe(document.body);
 buildRigs();
 layout();
 requestAnimationFrame(frame);
