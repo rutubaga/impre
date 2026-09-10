@@ -613,16 +613,22 @@ class LavaCapsule{
    (BLOB_COLD → BLOB_WARM → BLOB_LOW), чтобы блистер не выпадал из
    цветового языка приложения. */
 const TONES=[
-  {key:'blue',   name:'Восстановление', hex:'#3f9ce0', warm:0},
-  {key:'green',  name:'Баланс',         hex:'#3fb98a', warm:0},
-  {key:'violet', name:'Фокус',          hex:'#7f6fd8', warm:0},
+  /* у трёх формул палитра капель взята из пресетов дословно, а не собрана
+     lcPalette: иначе голубая капсула перестаёт быть той самой */
+  {key:'blue',   name:'Восстановление', hex:'#3f9ce0', warm:0,
+   colors:['#7ff2ff','#2b9ef0','#b6f6ff','#1e8ae0','#3aa8f0','#5cf0ff','#56b8f5','#9beeff']},
+  {key:'green',  name:'Баланс',         hex:'#3fb98a', warm:0,
+   colors:['#a8ffd0','#2bcf8a','#7ff2c8','#41ff9e','#5ce8b0','#b6ffd9','#35c99a','#7ff2c8']},
+  {key:'violet', name:'Фокус',          hex:'#7f6fd8', warm:0,
+   colors:['#ceb8ff','#6a5ce0','#b9a8ff','#a08cff','#d9ceff','#7f6ff0','#9b86ff','#c3aeff']},
   {key:'sky',    name:'Небесный',       hex:'#41c8ff', warm:0},
   {key:'mint',   name:'Мятный',         hex:'#41d8a8', warm:0},
   {key:'grass',  name:'Травяной',       hex:'#7ed06a', warm:1},
   {key:'lime',   name:'Лаймовый',       hex:'#b7d84a', warm:1},
   {key:'ochre',  name:'Охра',           hex:'#e0c04a', warm:1},
   {key:'amber',  name:'Янтарный',       hex:'#f0a63f', warm:1},
-  {key:'grey',   name:'Нейтральный',    hex:'#a8b0b9', warm:0, grey:1}
+  {key:'grey',   name:'Нейтральный',    hex:'#a8b0b9', warm:0, grey:1,
+   colors:['#dfe3e7','#9aa3ad','#cdd3d9','#b3bac2','#d6dbe0','#a2aab3','#c2c8cf','#b8bfc7']}
 ];
 const SETS={
   all:    TONES.filter(t=>!t.grey),
@@ -656,11 +662,7 @@ function buildRigs(){
     rig=new LavaCapsule(c,TONES[0].hex,LC_BLUE);
     /* P.blur задан в пикселях под холст карусели (500 px). здесь холст
        меньше, и то же число размыло бы капсулу в кляксу — пересчитываем */
-    rig.P.blur=rig.P.blur*S/500*0.7;
-    /* blurMix .92 в пресете — капсула во весь экран нарочно мягкая, как
-       клякса на главной. в клетке 104 px та же мягкость съедает силуэт,
-       поэтому резкую версию поднимаем до половины */
-    rig.P.blurMix=0.45;
+    rig.P.blur=rig.P.blur*S/500;
     /* снимаем прибитые цвета капель: тогда они берутся из палитры,
        которую пересобирает setColor */
     rig.blobs.forEach(b=>{ delete b.color; });
@@ -671,9 +673,6 @@ function buildRigs(){
     rig.origDens=rig.P.mediumDens;
     rig.blobs.forEach(b=>{ b.origY=b.pos.y; b.origR=b.radius; });
     rig.origCount=rig.P.count;
-    /* свечение пресета рассчитано на капсулу во весь экран. в клетке
-       блистера оно выносило массу за оболочку, и кружки бугрились */
-    rig.P.glow*=.55; rig.P.emit*=.82; rig.P.glowR*=.8;
   }catch(e){ c.remove(); rig=null; }
 }
 
@@ -730,7 +729,8 @@ function initPieces(){
     {r:1,c:0,w:1,h:1},{r:1,c:1,w:1,h:1},{r:1,c:2,w:1,h:1},
     {r:2,c:0,w:1,h:2},{r:2,c:1,w:2,h:1},{r:2,c:3,w:1,h:1},
     {r:3,c:1,w:1,h:1},{r:3,c:2,w:2,h:1}
-  ].map((p,i)=>({...p, anim:null, hex:set[i%set.length].hex, seed:Math.random()*40}));
+  ].map((p,i)=>{ const t=set[i%set.length];
+    return {...p, anim:null, hex:t.hex, colors:t.colors||null, seed:Math.random()*40}; });
 }
 let pieces=initPieces();
 
@@ -773,20 +773,28 @@ const keyOf=st=>st.map(p=>p.r+','+p.c+','+p.w+','+p.h).sort().join(';');
    вернётся к исходной, успев задеть все шестнадцать клеток. */
 function findLoop(base){
   const start=keyOf(base);
-  for(let attempt=0;attempt<600;attempt++){
+  for(let attempt=0;attempt<1200;attempt++){
     const st=base.map(p=>({r:p.r,c:p.c,w:p.w,h:p.h}));
     const seq=[], touched=new Set();
-    for(let step=0;step<64;step++){
+    const used=new Map();                       /* квадрат → номер последнего хода */
+    for(let step=0;step<120;step++){
       const opts=[];
       for(let br=0;br<N-1;br++) for(let bc=0;bc<N-1;bc++)
         if(insideBlock(st,br,bc)) opts.push([br,bc]);
       if(!opts.length) break;
-      const [br,bc]=opts[Math.random()*opts.length|0];
+      /* Выбираем самый давно не тронутый квадрат. Без этого случайное
+         блуждание залипает: гоняет один и тот же квадрат туда-сюда, и
+         таблетки дёргаются на месте вместо того, чтобы обходить поле. */
+      let oldest=Infinity;
+      for(const [r,c] of opts) oldest=Math.min(oldest, used.get(r+'x'+c) ?? -1);
+      const pool=opts.filter(([r,c])=>(used.get(r+'x'+c) ?? -1)===oldest);
+      const [br,bc]=pool[Math.random()*pool.length|0];
+      used.set(br+'x'+bc, step);
       const cw=Math.random()<.5;
       for(const p of insideBlock(st,br,bc)) Object.assign(p,turned(p,br,bc,cw));
       seq.push({br,bc,cw});
       for(let dr=0;dr<2;dr++) for(let dc=0;dc<2;dc++) touched.add((br+dr)+'x'+(bc+dc));
-      if(seq.length>=14 && touched.size===16 && keyOf(st)===start) return seq;
+      if(seq.length>=16 && touched.size===16 && keyOf(st)===start) return seq;
     }
   }
   return null;
@@ -821,7 +829,15 @@ const mix=(a,b,k)=>a+(b-a)*k;
 /* ── укладка готовой капсулы в клетку ────────────────────────── */
 function drawPill(p,x,y,w,h,t){
   if(!rig) return;
-  rig.setColor(p.hex);
+  /* контекст общий на все таблетки — чистим буфер явно, чтобы не зависеть
+     от того, когда браузер соберётся сделать это сам */
+  const gl=rig.gl;
+  gl.bindFramebuffer(gl.FRAMEBUFFER,null);
+  gl.clearColor(0,0,0,0);
+  gl.clear(gl.COLOR_BUFFER_BIT);
+
+  rig.medium=p.hex;
+  rig.palette=p.colors||lcPalette(p.hex);
   const long=Math.max(w,h), short=Math.min(w,h);
 
   /* капсула в шейдере — тело высотой 2·capH с шапками радиуса capR.
@@ -837,16 +853,21 @@ function drawPill(p,x,y,w,h,t){
   const elong=long/short;
   /* чем короче таблетка, тем мельче и малочисленнее капли: иначе они
      распирают шар изнутри и круглая форма расплывается клевером */
-  const round=elong<1.4;
+  /* Настройку содержимого под форму нельзя переключать порогом: таблетка
+     во время поворота проходит через круг, и на пороге картинка внутри
+     скачком менялась — это и было мигание. Поэтому всё едет плавно.
+     doln 0 — круг, 1 — вытянутая таблетка. */
+  const doln=Math.min(1,Math.max(0,(elong-1)/0.8));
   /* в длинной таблетке капли читаются как лава и это правильно. в круглой
-     та же гирлянда превращается в кляксу с хвостом, поэтому там оставляем
-     три крупные капли: они сливаются в одно ядро, и таблетка читается диском */
-  const rk=round ? 1.25 : Math.min(1,.72+.28*(elong-1));
-  for(const b of rig.blobs){ b.pos.y=b.origY*k2*(round?.45:1); b.radius=b.origR*rk; }
-  rig.P.count=round ? 3 : rig.origCount;
-  /* среда должна добивать оболочку до края, иначе таблетка выглядит
-     наполовину пустой: короткий путь луча компенсируем плотностью */
-  rig.P.mediumDens=rig.origDens*2.2/Math.max(.62,k2);
+     та же гирлянда вытягивается в хвост, поэтому лишние капли там гаснут,
+     а оставшиеся собираются к центру: таблетка читается диском */
+  rig.blobs.forEach((b,i)=>{
+    b.pos.y=b.origY*k2*(0.55+0.45*doln);
+    b.radius=b.origR*(i>=5 ? doln : 1);
+  });
+  rig.P.count=rig.origCount;
+  /* короче путь луча — плотнее среда, иначе цвет не добивает до края */
+  rig.P.mediumDens=rig.origDens/Math.max(.62,k2);
 
   rig.draw(t+p.seed);
 
@@ -913,7 +934,7 @@ document.getElementById('palette').addEventListener('click',e=>{
   document.querySelectorAll('#palette button').forEach(x=>x.classList.toggle('on',x===b));
   /* цвета перекладываем, раскладку не трогаем */
   const set=SETS[PAL];
-  pieces.forEach((p,i)=>p.hex=set[i%set.length].hex);
+  pieces.forEach((p,i)=>{ const t=set[i%set.length]; p.hex=t.hex; p.colors=t.colors||null; });
 });
 
 const playBtn=document.getElementById('play');
