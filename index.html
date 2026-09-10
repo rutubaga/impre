@@ -308,6 +308,18 @@
   .system-item .widget-sub{margin-top:5px;white-space:nowrap}
   .pack-price{font-size:24px;line-height:1;font-weight:700;letter-spacing:-.8px;color:var(--ink)}
   .pack-price small{font-size:11px;font-weight:600;color:var(--ink-faint);letter-spacing:0;margin-left:2px}
+  /* линейка цикла: одна засечка на день, принятые плотные, сегодня выше
+     и тёмная, оставшиеся приглушены. Тот же приём, что в ленте истории */
+  .pack-ruler{position:relative;height:36px;margin-top:14px}
+  .pack-ruler .pt{position:absolute;bottom:0;width:2px;border-radius:999px;
+    background:var(--ink-faint);transform:translateX(-50%)}
+  .pack-ruler .pt.taken{height:11px;opacity:.5}
+  .pack-ruler .pt.left{height:11px;opacity:.2}
+  .pack-ruler .pt.today{height:21px;width:3px;opacity:1;background:var(--ink)}
+  .pack-ruler .pt-now{position:absolute;top:0;transform:translateX(-50%);
+    font-size:8px;letter-spacing:1.6px;text-transform:uppercase;color:var(--ink-mute);white-space:nowrap}
+  .pack-foot{display:flex;align-items:baseline;justify-content:space-between;gap:12px;margin-top:10px}
+  .pack-count{font-size:11px;color:var(--ink-faint)}
   .pack-row{position:absolute;left:22px;right:22px;bottom:22px;display:flex;align-items:center;gap:8px}
   .pack-day{position:relative;width:38px;height:38px;border-radius:50%;display:flex;align-items:center;justify-content:center;
     background:var(--control-soft);box-shadow:none;border:0;font-size:12px;font-weight:600;color:var(--ink)}
@@ -1015,7 +1027,8 @@
         </div>
         <button class="profile-pack-widget profile-shipment" type="button" id="profileDeliveryLine">
           <div class="system-item"><div><div class="widget-title" id="ppShipLabel">Next shipment</div><div class="widget-sub" id="ppShipSub">adaptive formula ships in 5 days</div></div><div class="pack-price"><span id="ppShipDays">5</span><small id="ppShipDaysUnit">d</small></div></div>
-          <div class="pack-row"><span class="pack-day muted">M</span><span class="pack-day">T</span><span class="pack-day on">W</span><span class="pack-day">T</span><span class="pack-day muted">F</span><div class="pack-actions"><span class="pack-all" id="ppShipOpen">See all</span></div></div>
+          <div class="pack-ruler" id="packRuler" aria-hidden="true"></div>
+          <div class="pack-foot"><span class="pack-count" id="packCount"></span><span class="pack-all" id="ppShipOpen">See all</span></div>
         </button>
         <div class="biod-card">
           <div class="prow"><span id="ppPayLabel">Payment</span><b id="ppPayValue">Visa •••• 4242</b></div>
@@ -1396,6 +1409,8 @@ const T = {
   sensorSub:{en:'last read · 12 min ago', ru:'последнее считывание · 12 мин назад'},
   nextPack:{en:'Next Pack', ru:'Следующий набор'},
   nextPackSub:{en:'adaptive formula ships in 5 days', ru:'адаптивная формула через 5 дней'},
+  packNow:{en:'today', ru:'сегодня'},
+  packCount:{en:(a,b)=>`${a} of ${b} taken`, ru:(a,b)=>`принято ${a} из ${b}`},
   tabHome:{en:'State', ru:'Состояние'},
   tabBio:{en:'Biomarkers', ru:'Биомаркеры'},
   tabFormula:{en:'Formula', ru:'Формула'},
@@ -3422,6 +3437,24 @@ addEventListener('message',e=>{ const s=e.data&&e.data.impreScreen; if(s) gotoSc
 if(location.hash.length>1){ const s=location.hash.slice(1);
   requestAnimationFrame(()=>{ try{ gotoScreen(s); }catch(_){} }); }
 
+/* линейка цикла поставки: капсула в день, 30 дней в партии.
+   до сегодняшнего дня — принято, дальше — осталось */
+const PACK_TOTAL=30, PACK_LEFT=5;
+function renderPackRuler(){
+  const el=document.getElementById('packRuler'); if(!el) return;
+  const done=PACK_TOTAL-PACK_LEFT;
+  const x=i=>((i+.5)/PACK_TOTAL*100).toFixed(2)+'%';
+  let h='';
+  for(let i=0;i<PACK_TOTAL;i++){
+    const cls=i<done-1?'taken':i===done-1?'today':'left';
+    h+=`<i class="pt ${cls}" style="left:${x(i)}"></i>`;
+  }
+  h+=`<span class="pt-now" style="left:${x(done-1)}">${T.packNow[lang]}</span>`;
+  el.innerHTML=h;
+  const c=document.getElementById('packCount');
+  if(c) c.textContent=T.packCount[lang](done,PACK_TOTAL);
+}
+
 /* ── language ── */
 function setLang(l){
   lang=l;
@@ -3452,6 +3485,7 @@ function applyProfileLang(l){
   set('ppBaselineLabel',T.ppBaseline[l]); set('ppAgeLabel',T.ppAge[l]); set('ppRoutineLabel',T.ppRoutine[l]); set('ppLimitsLabel',T.ppLimits[l]); set('ppGoalsLabel',T.ppGoals[l]);
   set('ppShipLabel',T.ppShip[l]);
   set('ppShipSub',T.nextPackSub[l]); set('ppShipDaysUnit',l==='ru'?'д':'d'); set('ppShipOpen',l==='ru'?'Открыть':'See all');
+  renderPackRuler();
   set('ppPayLabel',T.ppPay[l]); set('ppLastLabel',T.ppLast[l]);
   set('ppSensorLabel',T.ppSensor[l]); set('ppBattLabel',T.ppBatt[l]); set('ppWearLabel',T.ppWear[l]);
   set('ppMailLabel',T.ppMail[l]);
