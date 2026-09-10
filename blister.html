@@ -6,7 +6,10 @@
 <title>Impre — блистер</title>
 <style>
   :root{
+    /* фон ровно как в приложении: стол — --body-bg, экран — --bg-hi */
     --body-bg:#d6d9de;
+    --bg-hi:#e4e7eb;
+    --phone-shadow:0 36px 110px -42px rgba(32,36,44,.55), inset 0 0 0 1px rgba(255,255,255,.82);
     --scrim:#e4e7eb;
     --ink:#222327;
     --ink-mute:#777b82;
@@ -20,7 +23,11 @@
     display:flex;align-items:center;justify-content:center;gap:54px;padding:40px;
     -webkit-font-smoothing:antialiased}
 
-  .stage{position:relative;flex:none}
+  /* блистер лежит на экране приложения, а не на голом столе:
+     тот же цвет, радиус и тень, что у .phone в index.html */
+  .stage{position:relative;flex:none;padding:22px;
+    background:var(--bg-hi);border-radius:52px;corner-shape:squircle;
+    box-shadow:var(--phone-shadow)}
   canvas#cv{display:block}
 
   /* капсулы рендерятся своим шейдером в эти холсты, а на блистер попадают
