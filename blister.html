@@ -80,13 +80,13 @@
     соседние кружки переезжают по кругу. Сами капсулы — те же, что в карусели
     «Формула»: их рисует шейдер приложения, а не копия.</p>
 
-  <div class="grp">Формулы</div>
+  <div class="grp">Палитра</div>
   <div class="seg" id="palette">
-    <button data-p="all" class="on">Все</button>
-    <button data-p="blue">Восстановление</button>
-    <button data-p="green">Баланс</button>
-    <button data-p="violet">Фокус</button>
-    <button data-p="mix">С серыми</button>
+    <button data-p="all" class="on">Все цвета</button>
+    <button data-p="three">Три формулы</button>
+    <button data-p="cold">Холодные</button>
+    <button data-p="warm">Тёплые</button>
+    <button data-p="grey">Нейтральные</button>
   </div>
 
   <div class="grp">Раскладка</div>
@@ -99,7 +99,7 @@
   <div class="row"><span>Длительность хода</span><output id="oDur"></output>
     <input type="range" id="dur" min="240" max="1400" step="20"></div>
   <div class="row"><span>Пауза между ходами</span><output id="oEvery"></output>
-    <input type="range" id="every" min="90" max="1200" step="10"></div>
+    <input type="range" id="every" min="60" max="1200" step="10"></div>
   <div class="row"><span>Жизнь содержимого</span><output id="oSpeed"></output>
     <input type="range" id="speed" min="0" max="220" step="1"></div>
   <div class="row"><span>Чёткость капсул</span><output id="oQual"></output>
@@ -608,56 +608,81 @@ class LavaCapsule{
 
 /* ═══ Дальше — только блистер: раскладка, ходы и укладка готовых капсул ═══ */
 
-/* формулы: цвет состояния из STATES + свой пресет, как в карусели */
-const FORMULAS={
-  blue  :{hex:'#8ab6e4', preset:LC_BLUE},
-  green :{hex:'#5cd6a2', preset:LC_GREEN},
-  violet:{hex:'#988ee4', preset:LC_VIOLET},
-  grey  :{hex:'#b7bec7', preset:LC_GREY}
+/* Палитра блистера. Голубой, зелёный и фиолетовый — цвета формул из
+   карусели; остальные набраны из палитры кляксы на главном экране
+   (BLOB_COLD → BLOB_WARM → BLOB_LOW), чтобы блистер не выпадал из
+   цветового языка приложения. */
+const TONES=[
+  {key:'blue',   name:'Восстановление', hex:'#3f9ce0', warm:0},
+  {key:'green',  name:'Баланс',         hex:'#3fb98a', warm:0},
+  {key:'violet', name:'Фокус',          hex:'#7f6fd8', warm:0},
+  {key:'sky',    name:'Небесный',       hex:'#41c8ff', warm:0},
+  {key:'mint',   name:'Мятный',         hex:'#41d8a8', warm:0},
+  {key:'grass',  name:'Травяной',       hex:'#7ed06a', warm:1},
+  {key:'lime',   name:'Лаймовый',       hex:'#b7d84a', warm:1},
+  {key:'ochre',  name:'Охра',           hex:'#e0c04a', warm:1},
+  {key:'amber',  name:'Янтарный',       hex:'#f0a63f', warm:1},
+  {key:'grey',   name:'Нейтральный',    hex:'#a8b0b9', warm:0, grey:1}
+];
+const SETS={
+  all:    TONES.filter(t=>!t.grey),
+  three:  TONES.filter(t=>['blue','green','violet'].includes(t.key)),
+  cold:   TONES.filter(t=>!t.warm&&!t.grey),
+  warm:   TONES.filter(t=>t.warm),
+  grey:   TONES.filter(t=>t.grey)
 };
-const SETS={ all:['blue','green','violet'], blue:['blue'], green:['green'],
-             violet:['violet'], mix:['blue','green','violet','grey','grey'] };
 let PAL='all';
 
-const CFG={cell:104,gap:11,dur:620,every:340,speed:100,qual:260};
+const CFG={cell:104,gap:11,dur:900,every:170,speed:100,qual:260};
 const N=4, PAD=46;
 
 const cv=document.getElementById('cv'), ctx=cv.getContext('2d');
 const pool=document.getElementById('pool');
 let W=0,H=0,dpr=1;
 
-/* по одному холсту с шейдером на формулу: четыре контекста вместо
-   одиннадцати. таблетки различаются тем, что каждой отдаём своё время */
-const rigs={};
+/* Рендерер один на всех: цвет капсулы задаётся перед каждой отрисовкой
+   через setColor, поэтому палитра ничем не ограничена, а WebGL-контекст
+   всего один. Сценарий движения берём у голубой капсулы — «лампа»:
+   в короткой таблетке она читается чище, чем орбиты зелёной и фиолетовой,
+   от которых капли смазывались в кашу. */
+let rig=null;
 function buildRigs(){
-  Object.keys(rigs).forEach(k=>{ rigs[k].canvas.remove(); delete rigs[k]; });
+  if(rig){ rig.canvas.remove(); rig=null; }
   const S=CFG.qual;
-  for(const k in FORMULAS){
-    const c=document.createElement('canvas');
-    c.style.width=S+'px'; c.style.height=S+'px';
-    pool.appendChild(c);
-    try{
-      const rig=new LavaCapsule(c,FORMULAS[k].hex,FORMULAS[k].preset);
-      /* P.blur задан в пикселях под холст карусели (500 px). здесь холст
-         меньше, и то же число размыло бы капсулу в кляксу — пересчитываем */
-      rig.P.blur=rig.P.blur*S/500;
-      /* запоминаем исходную геометрию пресета: капсула в блистере короче
-         той, что в карусели, и под неё надо пересадить капли */
-      const inner=Math.max(rig.P.capR-rig.P.wall-rig.P.inset,.02);
-      rig.origSpan=rig.P.capH+inner;
-      rig.origDens=rig.P.mediumDens;
-      rig.blobs.forEach(b=>b.origY=b.pos.y);
-      rigs[k]=rig;
-    }catch(e){ c.remove(); }
-  }
+  const c=document.createElement('canvas');
+  c.style.width=S+'px'; c.style.height=S+'px';
+  pool.appendChild(c);
+  try{
+    rig=new LavaCapsule(c,TONES[0].hex,LC_BLUE);
+    /* P.blur задан в пикселях под холст карусели (500 px). здесь холст
+       меньше, и то же число размыло бы капсулу в кляксу — пересчитываем */
+    rig.P.blur=rig.P.blur*S/500*0.7;
+    /* blurMix .92 в пресете — капсула во весь экран нарочно мягкая, как
+       клякса на главной. в клетке 104 px та же мягкость съедает силуэт,
+       поэтому резкую версию поднимаем до половины */
+    rig.P.blurMix=0.45;
+    /* снимаем прибитые цвета капель: тогда они берутся из палитры,
+       которую пересобирает setColor */
+    rig.blobs.forEach(b=>{ delete b.color; });
+    /* запоминаем исходную геометрию пресета: капсула в блистере короче
+       карусельной, и под неё надо пересадить капли */
+    const inner=Math.max(rig.P.capR-rig.P.wall-rig.P.inset,.02);
+    rig.origSpan=rig.P.capH+inner;
+    rig.origDens=rig.P.mediumDens;
+    rig.blobs.forEach(b=>{ b.origY=b.pos.y; b.origR=b.radius; });
+    rig.origCount=rig.P.count;
+    /* свечение пресета рассчитано на капсулу во весь экран. в клетке
+       блистера оно выносило массу за оболочку, и кружки бугрились */
+    rig.P.glow*=.55; rig.P.emit*=.82; rig.P.glowR*=.8;
+  }catch(e){ c.remove(); rig=null; }
 }
 
 /* Подгон под окно: пропорции и кегли не трогаем, меняется только масштаб —
    тот же приём, что у .phone в приложении. Обёртка забирает уменьшенный
-   размер, иначе вокруг остаётся дырка от неотмасштабированного бокса. */
+   размер, иначе вокруг остаётся дырка от неотмасштабированного бокса.
+   fitStage меняет размер обёртки, а обёртка живёт в body — без флага
+   ResizeObserver вызвал бы сам себя по кругу. */
 const stageEl=document.getElementById('stage'), fitEl=document.getElementById('fit');
-/* fitStage меняет размер обёртки, а обёртка живёт в body — без флага
-   ResizeObserver вызвал бы сам себя по кругу */
 let fitting=false, fitK=null;
 function fitStage(){
   if(fitting) return;
@@ -705,7 +730,7 @@ function initPieces(){
     {r:1,c:0,w:1,h:1},{r:1,c:1,w:1,h:1},{r:1,c:2,w:1,h:1},
     {r:2,c:0,w:1,h:2},{r:2,c:1,w:2,h:1},{r:2,c:3,w:1,h:1},
     {r:3,c:1,w:1,h:1},{r:3,c:2,w:2,h:1}
-  ].map((p,i)=>({...p, anim:null, key:set[i%set.length], seed:Math.random()*40}));
+  ].map((p,i)=>({...p, anim:null, hex:set[i%set.length].hex, seed:Math.random()*40}));
 }
 let pieces=initPieces();
 
@@ -716,35 +741,77 @@ function rectOf(p){
           h:p.h*CFG.cell+(p.h-1)*CFG.gap};
 }
 
-/* ── ход: поворот квадрата 2×2 на 90° ────────────────────────── */
-function pickBlock(){
-  const cand=[];
-  for(let br=0;br<N-1;br++) for(let bc=0;bc<N-1;bc++){
-    const inside=[]; let ok=true;
-    for(const p of pieces){
-      const overlaps=!(p.r+p.h<=br||p.r>=br+2||p.c+p.w<=bc||p.c>=bc+2);
-      if(!overlaps) continue;
-      /* фигура, торчащая наружу или уже едущая, запирает квадрат */
-      if(p.anim||p.r<br||p.r+p.h>br+2||p.c<bc||p.c+p.w>bc+2){ ok=false; break; }
-      inside.push(p);
-    }
-    /* поворот четырёх кружков не виден — такие квадраты пропускаем */
-    if(ok && inside.some(p=>p.w>1||p.h>1)) cand.push({br,bc,inside});
+/* ── ход: поворот квадрата 2×2 на 90° ────────────────────────────
+   Поле забито под завязку, поэтому единственное осмысленное движение —
+   развернуть квадрат 2×2: таблетка внутри ложится на бок, кружки едут
+   по кругу. Дальше из таких ходов собирается ЗАМКНУТАЯ последовательность:
+   она обходит все девять квадратов и возвращает укладку в исходную,
+   так что композиция повторяется, а без дела не стоит ни одна таблетка. */
+
+/* поворот по часовой: клетка (lr,lc) → (lc, 1−lr); против — зеркально */
+function turned(p,br,bc,cw){
+  const lr=p.r-br, lc=p.c-bc;
+  return cw ? {r:br+lc,       c:bc+2-lr-p.h, w:p.h, h:p.w}
+            : {r:br+2-lc-p.w, c:bc+lr,       w:p.h, h:p.w};
+}
+/* фигуры внутри квадрата, если квадрат вообще можно повернуть */
+function insideBlock(st,br,bc){
+  const inside=[];
+  for(const p of st){
+    const overlaps=!(p.r+p.h<=br||p.r>=br+2||p.c+p.w<=bc||p.c>=bc+2);
+    if(!overlaps) continue;
+    /* фигура, торчащая наружу, запирает квадрат */
+    if(p.r<br||p.r+p.h>br+2||p.c<bc||p.c+p.w>bc+2) return null;
+    inside.push(p);
   }
-  return cand.length ? cand[Math.random()*cand.length|0] : null;
+  /* поворот четырёх кружков не виден — такие квадраты не считаем ходом */
+  return inside.some(p=>p.w>1||p.h>1) ? inside : null;
+}
+const keyOf=st=>st.map(p=>p.r+','+p.c+','+p.w+','+p.h).sort().join(';');
+
+/* Ищем замкнутый маршрут: случайно бродим по ходам, пока укладка не
+   вернётся к исходной, успев задеть все шестнадцать клеток. */
+function findLoop(base){
+  const start=keyOf(base);
+  for(let attempt=0;attempt<600;attempt++){
+    const st=base.map(p=>({r:p.r,c:p.c,w:p.w,h:p.h}));
+    const seq=[], touched=new Set();
+    for(let step=0;step<64;step++){
+      const opts=[];
+      for(let br=0;br<N-1;br++) for(let bc=0;bc<N-1;bc++)
+        if(insideBlock(st,br,bc)) opts.push([br,bc]);
+      if(!opts.length) break;
+      const [br,bc]=opts[Math.random()*opts.length|0];
+      const cw=Math.random()<.5;
+      for(const p of insideBlock(st,br,bc)) Object.assign(p,turned(p,br,bc,cw));
+      seq.push({br,bc,cw});
+      for(let dr=0;dr<2;dr++) for(let dc=0;dc<2;dc++) touched.add((br+dr)+'x'+(bc+dc));
+      if(seq.length>=14 && touched.size===16 && keyOf(st)===start) return seq;
+    }
+  }
+  return null;
 }
 
+let seq=null, seqAt=0;
+function buildLoop(){ seq=findLoop(pieces); seqAt=0; }
+
+/* Ход начинаем сразу, как освободятся его клетки: несколько поворотов
+   идут внахлёст, поэтому поле не замирает между ними. Цель фиксируем
+   в тот же момент — маршрут посчитан заранее и должен совпадать. */
 function move(now){
-  const b=pickBlock(); if(!b) return false;
-  const cw=Math.random()<.5;
-  for(const p of b.inside){
-    const lr=p.r-b.br, lc=p.c-b.bc;
-    /* по часовой: клетка (lr,lc) → (lc, 1−lr); против — зеркально */
-    const t = cw ? {r:b.br+lc,       c:b.bc+2-lr-p.h, w:p.h, h:p.w}
-                 : {r:b.br+2-lc-p.w, c:b.bc+lr,       w:p.h, h:p.w};
-    p.from=rectOf(p); p.to=rectOf(t); p.next=t;
+  if(!seq||!seq.length) return false;
+  const m=seq[seqAt];
+  const inside=insideBlock(pieces,m.br,m.bc);
+  if(!inside) return false;
+  if(inside.some(p=>p.anim)) return false;
+  for(const p of inside){
+    const t=turned(p,m.br,m.bc,m.cw);
+    p.from=rectOf(p);
+    Object.assign(p,t);
+    p.to=rectOf(p);
     p.anim={t0:now,dur:CFG.dur};
   }
+  seqAt=(seqAt+1)%seq.length;
   return true;
 }
 
@@ -753,7 +820,8 @@ const mix=(a,b,k)=>a+(b-a)*k;
 
 /* ── укладка готовой капсулы в клетку ────────────────────────── */
 function drawPill(p,x,y,w,h,t){
-  const rig=rigs[p.key]; if(!rig) return;
+  if(!rig) return;
+  rig.setColor(p.hex);
   const long=Math.max(w,h), short=Math.min(w,h);
 
   /* капсула в шейдере — тело высотой 2·capH с шапками радиуса capR.
@@ -766,8 +834,19 @@ function drawPill(p,x,y,w,h,t){
      быть, чтобы цвет звучал так же, как в приложении */
   const inner=Math.max(rig.P.capR-rig.P.wall-rig.P.inset,.02);
   const k2=(rig.P.capH+inner)/rig.origSpan;
-  for(const b of rig.blobs) b.pos.y=b.origY*k2;
-  rig.P.mediumDens=rig.origDens/Math.max(.5,k2);
+  const elong=long/short;
+  /* чем короче таблетка, тем мельче и малочисленнее капли: иначе они
+     распирают шар изнутри и круглая форма расплывается клевером */
+  const round=elong<1.4;
+  /* в длинной таблетке капли читаются как лава и это правильно. в круглой
+     та же гирлянда превращается в кляксу с хвостом, поэтому там оставляем
+     три крупные капли: они сливаются в одно ядро, и таблетка читается диском */
+  const rk=round ? 1.25 : Math.min(1,.72+.28*(elong-1));
+  for(const b of rig.blobs){ b.pos.y=b.origY*k2*(round?.45:1); b.radius=b.origR*rk; }
+  rig.P.count=round ? 3 : rig.origCount;
+  /* среда должна добивать оболочку до края, иначе таблетка выглядит
+     наполовину пустой: короткий путь луча компенсируем плотностью */
+  rig.P.mediumDens=rig.origDens*2.2/Math.max(.62,k2);
 
   rig.draw(t+p.seed);
 
@@ -802,7 +881,7 @@ function frame(now){
          содержимое едет вместе с ней, потому что capH считается от текущих w и h */
       x=mix(p.from.x,p.to.x,e); y=mix(p.from.y,p.to.y,e);
       w=mix(p.from.w,p.to.w,e); h=mix(p.from.h,p.to.h,e);
-      if(t>=1){ Object.assign(p,p.next); p.anim=null; }
+      if(t>=1) p.anim=null;
     }else{
       const r=rectOf(p); x=r.x; y=r.y; w=r.w; h=r.h;
     }
@@ -821,7 +900,7 @@ Object.keys(fmt).forEach(id=>{
     CFG[id]=+el.value; out.textContent=fmt[id](CFG[id]);
     if(id==='cell'||id==='gap'){
       /* размер клетки меняет геометрию — едущие фигуры досаживаем на место */
-      pieces.forEach(p=>{ if(p.anim){ Object.assign(p,p.next); p.anim=null; } });
+      pieces.forEach(p=>{ if(p.anim){ p.from=p.to=rectOf(p); p.anim=null; } });
       layout();
     }
     if(id==='qual') buildRigs();
@@ -832,9 +911,9 @@ document.getElementById('palette').addEventListener('click',e=>{
   const b=e.target.closest('button'); if(!b) return;
   PAL=b.dataset.p;
   document.querySelectorAll('#palette button').forEach(x=>x.classList.toggle('on',x===b));
-  /* формулы перекладываем, раскладку не трогаем */
+  /* цвета перекладываем, раскладку не трогаем */
   const set=SETS[PAL];
-  pieces.forEach((p,i)=>p.key=set[i%set.length]);
+  pieces.forEach((p,i)=>p.hex=set[i%set.length].hex);
 });
 
 const playBtn=document.getElementById('play');
@@ -871,6 +950,7 @@ addEventListener('resize',fitStage);
 matchMedia('(min-width:901px)').addEventListener('change',fitStage);
 if(window.ResizeObserver) new ResizeObserver(()=>fitStage()).observe(document.body);
 buildRigs();
+buildLoop();
 layout();
 requestAnimationFrame(frame);
 </script>
